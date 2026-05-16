@@ -21,7 +21,7 @@ from __future__ import annotations
 from typing import Optional
 
 from ..ast_nodes import (
-    KQLQuery, LetBinding, PipeOp,
+    KQLQuery, LetBinding,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
     DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp,
     AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
@@ -29,7 +29,7 @@ from ..ast_nodes import (
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
-    OrderItem, DatetimeLit,
+    DatetimeLit,
 )
 
 # KQL timespan unit → SQL INTERVAL unit
@@ -103,7 +103,6 @@ class SparkSQLGenerator:
         order: str = ""
         limit: str = ""
         distinct: bool = False
-        is_count_only: bool = False
         is_union: Optional[str] = None
 
         for op in query.pipes:
@@ -149,7 +148,6 @@ class SparkSQLGenerator:
                 is_union = self._union(table, op)
 
             elif isinstance(op, CountOp):
-                is_count_only = True
                 select_cols = ["COUNT(*) AS count_"]
 
         # Handle union — short-circuit assembly

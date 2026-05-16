@@ -14,6 +14,7 @@ Karpathy Principle 2: one method per operator, no speculative abstraction.
 """
 
 from __future__ import annotations
+import re as _re
 from pathlib import Path
 from lark import Lark, Tree, Token
 
@@ -32,7 +33,7 @@ from .ast_nodes import (
     # Bool expressions
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
     # Order
-    OrderItem,
+    OrderItem, DatetimeLit,
 )
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
@@ -53,7 +54,6 @@ _TIMEUNIT_MAP = {
     "ms": "milliseconds",
 }
 
-import re as _re
 
 # KQL keywords that must be lowercased before parsing (case-insensitive in spec)
 _KQL_KEYWORDS = {
