@@ -122,7 +122,7 @@ All contributions must include a corresponding test case in `tests/eval/benchmar
 PRs that do not include a new test case will not be merged.
 
 ```bash
-git clone https://github.com/navakanth/kqlbridge
+git clone https://github.com/navakanth1984/kqlbridge
 cd kqlbridge
 pip install -e ".[dev]"
 python tests/eval/prepare.py  # baseline score

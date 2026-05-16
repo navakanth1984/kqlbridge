@@ -34,9 +34,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/navakanth/kqlbridge"
-Repository = "https://github.com/navakanth/kqlbridge"
-Issues = "https://github.com/navakanth/kqlbridge/issues"
+Homepage = "https://github.com/navakanth1984/kqlbridge"
+Repository = "https://github.com/navakanth1984/kqlbridge"
+Issues = "https://github.com/navakanth1984/kqlbridge/issues"
 
 [project.scripts]
 kqlbridge = "kqlbridge.cli:main"
