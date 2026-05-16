@@ -76,7 +76,7 @@ jobs:
 
       - name: Check format (agent-modifiable files only)
         run: |
-          ruff check src/kqlbridge/parser.py src/kqlbridge/generators/spark_sql.py
+          ruff check src/kqlbridge/parser.py src/kqlbridge/generators/spark_sql.py src/kqlbridge/cli.py
 
   guard-locked-files:
     name: Guard Locked Files
