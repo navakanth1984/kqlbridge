@@ -1,0 +1,76 @@
+---
+name: kql-operator-let
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL let variables → SQL CTEs (WITH ... AS)
+complexity: HIGH — requires hoisting to WITH clause before main query
+---
+
+# let → CTE Translation
+
+## What it does in KQL
+
+`let` defines a named variable that can be a table expression or a scalar.
+Multiple `let` statements chain before the main query, separated by semicolons.
+
+## Basic Translation
+
+```kql
+let errors = AppLogs | where Level == 'Error';
+errors | summarize count() by ServiceName
+```
+```sql
+WITH errors AS (
+  SELECT * FROM AppLogs WHERE Level = 'Error'
+)
+SELECT ServiceName, COUNT(*) FROM errors GROUP BY ServiceName
+```
+
+## Multiple let Bindings → Chained CTEs
+
+```kql
+let errors = AppLogs | where Level == 'Error';
+let summary = errors | summarize count() by ServiceName;
+summary | order by count_ desc
+```
+```sql
+WITH errors AS (
+  SELECT * FROM AppLogs WHERE Level = 'Error'
+),
+summary AS (
+  SELECT ServiceName, COUNT(*) FROM errors GROUP BY ServiceName
+)
+SELECT * FROM summary ORDER BY count_ DESC
+```
+
+CTE order MUST match definition order. Each CTE can reference previous CTEs.
+
+## Structural Rules
+
+1. All `let` bindings must be hoisted BEFORE the main `SELECT`.
+2. They become `WITH cte_name AS (...), next_cte AS (...) main_query`.
+3. The main query always follows the WITH block.
+4. Binding order in the WITH clause must match the KQL source order.
+
+## Scalar let (not a table expression)
+
+```kql
+let threshold = 100;
+AppLogs | where Duration > threshold
+```
+
+Scalar lets are NOT supported in v0.1. They require inline substitution.
+The routing agent should detect scalar lets and keep these in KQL engine.
+
+## Known Limits
+
+- Circular references between let bindings → error (KQLBridge detects this via semantic.py)
+- Scalar let (non-table value) → NOT SUPPORTED v0.1
+- Re-assignment of the same binding name → NOT SUPPORTED (error raised)
+- `let` with a function definition → NOT SUPPORTED
+
+## Routing Rules
+
+If all `let` bindings are table expressions using supported operators → translate.
+If any `let` binding is a scalar value or function → keep in KQL engine.

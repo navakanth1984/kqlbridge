@@ -1,0 +1,38 @@
+# operator_extend.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What extend does in KQL
+Adds computed columns to the result set without dropping existing ones.
+Equivalent to SELECT *, expr AS alias in SQL.
+
+## Translation table
+| KQL                                      | Spark SQL                                    |
+|------------------------------------------|----------------------------------------------|
+| T | extend double = value * 2            | SELECT *, (value * 2) AS double FROM T        |
+| T | extend IsLarge = Amount > 1000       | SELECT *, (Amount > 1000) AS IsLarge FROM T   |
+| T | extend a = x + 1, b = y - 1         | SELECT *, (x + 1) AS a, (y - 1) AS b FROM T  |
+
+## Full examples
+```kql
+Orders | extend Profit = Revenue - Cost | where Profit > 0
+```
+```sql
+SELECT *
+FROM (SELECT *, (Revenue - Cost) AS Profit FROM Orders) t
+WHERE Profit > 0
+```
+Note: chained extend+where is simplified in v0.1 to a flat SELECT.
+
+## Edge cases
+- Boolean extend (v0.1 supported): `extend IsActive = Status == "active"` renders as scalar comparison
+- Multiple assignments in one extend: all rendered as additional SELECT cols
+- Extend after project: only projected cols are base; extended col appended
+
+## Known limits
+- Extending with a subquery is NOT supported in v0.1
+- Self-referencing extend (`extend b = a + 1, c = b * 2`) renders literally; SQL engines evaluate left-to-right
+
+## Routing rules
+- extend_op → SUPPORTED → SparkSQLGenerator._build_body() ExtendOp branch
+- Comparison in extend → assign_comparison grammar rule → Comparison AST node

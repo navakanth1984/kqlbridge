@@ -1,0 +1,35 @@
+# operator_project.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What project does in KQL
+Selects a specific subset of columns, projecting them forward in the pipe.
+Drops all columns not listed. Analogous to SELECT col1, col2 in SQL.
+
+## Translation table
+| KQL                              | Spark SQL                         |
+|----------------------------------|-----------------------------------|
+| T | project a, b, c              | SELECT a, b, c FROM T             |
+| T | project a | summarize count() | SELECT COUNT(*) FROM (SELECT a FROM T) |
+
+## Full examples
+```kql
+Heartbeat | project Computer, TimeGenerated, Category
+```
+```sql
+SELECT Computer, TimeGenerated, Category
+FROM Heartbeat
+```
+
+## Edge cases
+- project after where: WHERE is applied first, SELECT uses projected cols
+- project before summarize: summarize still works on the projected cols
+- Quoted column names: KQL allows `project ["odd column"]` — not supported in v0.1
+
+## Known limits
+- v0.1 does NOT support `project-away` or `project-rename`
+- Column rename in project (`project newname = oldcol`) → v0.2 roadmap
+
+## Routing rules
+- project_op → SUPPORTED → SparkSQLGenerator._project()
+- `project-away` keyword → UNSUPPORTED → raise UnsupportedOperatorError

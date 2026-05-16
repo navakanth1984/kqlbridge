@@ -1,0 +1,36 @@
+# operator_count.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What count does in KQL
+Returns a single integer: the total row count of the table/pipe result.
+Different from `summarize count()` — count is a terminal operator.
+
+## Translation table
+| KQL              | Spark SQL                     |
+|------------------|-------------------------------|
+| T | count        | SELECT COUNT(*) AS count_ FROM T |
+| T | where x > 1 | count | SELECT COUNT(*) AS count_ FROM T WHERE x > 1 |
+
+## Full examples
+```kql
+SecurityAlert | where Severity == "High" | count
+```
+```sql
+SELECT COUNT(*) AS count_
+FROM SecurityAlert
+WHERE Severity = 'High'
+```
+
+## Edge cases
+- count after where: WHERE is applied first, count runs on filtered set
+- count after join: counts rows of the joined result
+- The output column is named `count_` (trailing underscore) to avoid SQL reserved word collision
+
+## Known limits
+- `count` combined with `by` (like summarize): use `summarize count() by col` instead
+- `count()` inside summarize is a different AST node (AggCount), not CountOp
+
+## Routing rules
+- count_op → SUPPORTED → CountOp → `SELECT COUNT(*) AS count_ FROM ...`
+- `summarize count()` → AggCount → routed through _agg(), not CountOp

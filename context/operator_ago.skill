@@ -1,0 +1,48 @@
+---
+name: kql-operator-ago
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL ago() function — relative time → SQL CURRENT_TIMESTAMP - INTERVAL
+---
+
+# ago() → INTERVAL Translation
+
+## What it does in KQL
+
+`ago(duration)` returns the current timestamp minus the given timespan.
+Almost always used in a `where` clause for time-window filtering.
+
+## Translation Table
+
+| KQL | SQL |
+|---|---|
+| `ago(1h)` | `CURRENT_TIMESTAMP - INTERVAL '1 hours'` |
+| `ago(24h)` | `CURRENT_TIMESTAMP - INTERVAL '24 hours'` |
+| `ago(7d)` | `CURRENT_TIMESTAMP - INTERVAL '7 days'` |
+| `ago(30m)` | `CURRENT_TIMESTAMP - INTERVAL '30 minutes'` |
+| `ago(300s)` | `CURRENT_TIMESTAMP - INTERVAL '300 seconds'` |
+
+## Unit Mapping
+
+| KQL unit | SQL INTERVAL unit |
+|---|---|
+| `d` | `days` |
+| `h` | `hours` |
+| `m` | `minutes` |
+| `s` | `seconds` |
+| `ms` | `milliseconds` |
+
+## Full Example
+
+```kql
+AppLogs | where TimeGenerated > ago(24h) | project Message, Level
+→ SELECT Message, Level
+  FROM AppLogs
+  WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'
+```
+
+## Known Limits
+
+- `ago()` with a variable timespan (e.g. `ago(window_size)`) — NOT SUPPORTED v0.1
+- `now()` function → `CURRENT_TIMESTAMP` (supported as function call)

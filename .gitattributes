@@ -1,0 +1,22 @@
+# KQLBridge .gitattributes
+# ─────────────────────────────────────────────────────────────────────────────
+# LOCKED FILES — Agent MUST NEVER generate PRs touching these.
+# CI will fail on any PR that modifies locked files (guard-locked-files job).
+
+# Eval oracle
+tests/eval/prepare.py       linguist-generated=false
+tests/eval/benchmark.json   linguist-generated=false
+
+# Grammar and AST — human-designed architecture
+src/kqlbridge/grammar/kql.lark  linguist-language=EBNF
+src/kqlbridge/ast_nodes.py      linguist-generated=false
+src/kqlbridge/semantic.py       linguist-generated=false
+
+# Normalize line endings
+*.py    text eol=lf
+*.json  text eol=lf
+*.md    text eol=lf
+*.lark  text eol=lf
+*.skill text eol=lf
+*.yml   text eol=lf
+*.toml  text eol=lf

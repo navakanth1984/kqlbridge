@@ -1,0 +1,101 @@
+name: KQLBridge Eval
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  eval:
+    name: Eval Harness (target ≥ 85%)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install kqlbridge + eval deps
+        run: |
+          pip install -e ".[dev]"
+          pip install sqlglot
+
+      - name: Run eval oracle (LOCKED — never modify prepare.py)
+        run: python tests/eval/prepare.py
+
+      - name: Fail CI if score < 85%
+        run: |
+          python -c "
+          import subprocess, sys
+          result = subprocess.run(
+              ['python', 'tests/eval/prepare.py'],
+              capture_output=True, text=True
+          )
+          print(result.stdout)
+          if result.returncode != 0:
+              print('Eval failed — score below 85%')
+              sys.exit(1)
+          "
+
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run unit tests
+        run: pytest tests/test_operators.py -v --tb=short
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install ruff
+        run: pip install ruff
+
+      - name: Check format (agent-modifiable files only)
+        run: |
+          ruff check src/kqlbridge/parser.py src/kqlbridge/generators/spark_sql.py
+
+  guard-locked-files:
+    name: Guard Locked Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Fail if locked files were modified
+        run: |
+          LOCKED="tests/eval/prepare.py tests/eval/benchmark.json src/kqlbridge/ast_nodes.py src/kqlbridge/grammar/kql.lark src/kqlbridge/semantic.py"
+          CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+          for file in $LOCKED; do
+            if echo "$CHANGED" | grep -q "^$file$"; then
+              echo "❌ LOCKED FILE MODIFIED: $file"
+              echo "This file must never be modified by the agent loop or non-maintainer PRs."
+              exit 1
+            fi
+          done
+          echo "✅ All locked files intact"

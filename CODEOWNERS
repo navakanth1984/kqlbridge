@@ -1,0 +1,20 @@
+# KQLBridge CODEOWNERS
+# Locked files require maintainer review. No exceptions.
+# The agent loop MUST NOT generate PRs that touch these files.
+
+# Eval oracle — LOCKED
+tests/eval/prepare.py        @navakanth
+tests/eval/benchmark.json    @navakanth
+
+# AST and grammar — LOCKED
+src/kqlbridge/ast_nodes.py   @navakanth
+src/kqlbridge/grammar/       @navakanth
+src/kqlbridge/semantic.py    @navakanth
+
+# Package config — HUMAN ONLY
+pyproject.toml               @navakanth
+LICENSE                      @navakanth
+program.md                   @navakanth
+
+# Context skills — maintainer review (CDLC Distribute phase)
+context/                     @navakanth

@@ -1,0 +1,38 @@
+# operator_union.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What union does in KQL
+Combines rows from multiple tables. Always UNION ALL in v0.1 (no dedup by default in KQL).
+
+## Translation table
+| KQL                          | Spark SQL                                              |
+|------------------------------|--------------------------------------------------------|
+| T1 \| union T2              | SELECT * FROM T1 UNION ALL SELECT * FROM T2            |
+| T1 \| union T2, T3          | SELECT * FROM T1 UNION ALL SELECT * FROM T2 UNION ALL SELECT * FROM T3 |
+
+## Full examples
+```kql
+AppLogs | union ErrorLogs, DebugLogs
+```
+```sql
+SELECT * FROM AppLogs
+UNION ALL
+SELECT * FROM ErrorLogs
+UNION ALL
+SELECT * FROM DebugLogs
+```
+
+## Edge cases
+- `union T2, T3` as pipe: the left table (T1) is the implicit first table
+- Standalone `union T1, T2` (without preceding pipe): NOT supported in v0.1 grammar
+- Subquery union `union (T2 | where ...)`: grammar allows, but complex union subqueries are simplified
+
+## Known limits
+- `union withsource=col` metadata column → not supported
+- Column schema mismatch: SQL will raise at runtime, not translation time
+- UNION DISTINCT (KQL `union kind=outer` equivalent) → v0.2
+
+## Routing rules
+- union_op as pipe → SUPPORTED → UnionOp → SparkSQLGenerator._union()
+- Standalone union → UNSUPPORTED (use pipe form instead)

@@ -1,0 +1,328 @@
+"""
+test_operators.py — Per-Operator Unit Tests
+============================================
+Unit tests for each of the 14 v0.1 KQL operators.
+
+These are NOT the locked eval benchmark — they are development aids.
+Run with: pytest tests/test_operators.py -v
+
+Unlike prepare.py:
+- These tests may be modified as the implementation evolves
+- They use a simpler equality check (no canonical form)
+- They're meant for fast TDD cycles during BIT Build phase
+"""
+
+import pytest
+from kqlbridge import translate, detect_operators, is_supported
+
+
+# ─── Helpers ────────────────────────────────────────────────────────────────
+
+def sql(kql: str) -> str:
+    """Shorthand: translate KQL → Spark SQL."""
+    return translate(kql, target="spark")
+
+
+def lines(kql: str) -> list[str]:
+    """Split result into non-empty lines for structural checks."""
+    return [line.strip() for line in sql(kql).splitlines() if line.strip()]
+
+
+# ─── 01 where ───────────────────────────────────────────────────────────────
+
+class TestWhere:
+    def test_basic_equality(self):
+        result = sql("AppLogs | where Level == 'Error'")
+        assert "WHERE Level = 'Error'" in result
+
+    def test_not_equal(self):
+        result = sql("AppLogs | where Level != 'Debug'")
+        assert "WHERE Level <> 'Debug'" in result
+
+    def test_greater_than(self):
+        result = sql("AppLogs | where Duration > 500")
+        assert "WHERE Duration > 500" in result
+
+    def test_and_condition(self):
+        result = sql("AppLogs | where Level == 'Error' and Region == 'east'")
+        assert "AND" in result
+        assert "Level = 'Error'" in result
+
+    def test_or_condition(self):
+        result = sql("AppLogs | where Level == 'Error' or Level == 'Warning'")
+        assert "OR" in result
+
+    def test_contains(self):
+        result = sql("AppLogs | where Message contains 'timeout'")
+        assert "LIKE '%timeout%'" in result
+
+    def test_startswith(self):
+        result = sql("AppLogs | where Host startswith 'web'")
+        assert "LIKE 'web%'" in result
+
+    def test_in_list(self):
+        result = sql("AppLogs | where Level in ('Error', 'Warning')")
+        assert "IN ('Error', 'Warning')" in result
+
+    def test_not_in_list(self):
+        result = sql("AppLogs | where Level !in ('Debug', 'Info')")
+        assert "NOT IN ('Debug', 'Info')" in result
+
+    def test_isnotnull(self):
+        result = sql("AppLogs | where isnotnull(UserId)")
+        assert "UserId IS NOT NULL" in result
+
+    def test_isnull(self):
+        result = sql("AppLogs | where isnull(Region)")
+        assert "Region IS NULL" in result
+
+    def test_chained_where(self):
+        result = sql("AppLogs | where Level == 'Error' | where Duration > 500")
+        assert "WHERE" in result
+        assert "Level = 'Error'" in result
+        assert "Duration > 500" in result
+
+
+# ─── 02 project ─────────────────────────────────────────────────────────────
+
+class TestProject:
+    def test_single_column(self):
+        result = sql("AppLogs | project Message")
+        assert result.startswith("SELECT Message")
+
+    def test_multiple_columns(self):
+        result = sql("AppLogs | project Message, Level, ServiceName")
+        assert "SELECT Message, Level, ServiceName" in result
+
+    def test_from_clause_preserved(self):
+        result = sql("AppLogs | project Message")
+        assert "FROM AppLogs" in result
+
+
+# ─── 03 + 04 summarize ───────────────────────────────────────────────────────
+
+class TestSummarize:
+    def test_count_by(self):
+        result = sql("AppLogs | summarize count() by ServiceName")
+        assert "COUNT(*)" in result
+        assert "GROUP BY ServiceName" in result
+        assert "SELECT ServiceName" in result
+
+    def test_sum_by(self):
+        result = sql("Orders | summarize total = sum(Amount) by Region")
+        assert "SUM(Amount) AS total" in result
+        assert "GROUP BY Region" in result
+
+    def test_avg_by(self):
+        result = sql("Orders | summarize avg_val = avg(Amount) by Region")
+        assert "AVG(Amount) AS avg_val" in result
+
+    def test_min_by(self):
+        result = sql("AppLogs | summarize min_dur = min(Duration) by Level")
+        assert "MIN(Duration) AS min_dur" in result
+
+    def test_max_by(self):
+        result = sql("AppLogs | summarize max_dur = max(Duration) by Level")
+        assert "MAX(Duration) AS max_dur" in result
+
+    def test_no_group_by(self):
+        result = sql("AppLogs | summarize count()")
+        assert "COUNT(*)" in result
+        assert "GROUP BY" not in result
+
+    def test_multiple_aggregations(self):
+        result = sql("Orders | summarize cnt = count(), total = sum(Amount) by Region")
+        assert "COUNT(*) AS cnt" in result
+        assert "SUM(Amount) AS total" in result
+
+    def test_multiple_group_by_cols(self):
+        result = sql("AppLogs | summarize count() by Level, ServiceName")
+        assert "GROUP BY Level, ServiceName" in result
+
+    def test_dcount(self):
+        result = sql("AppLogs | summarize unique_users = dcount(UserId)")
+        assert "COUNT(DISTINCT UserId) AS unique_users" in result
+
+
+# ─── 05 bin ──────────────────────────────────────────────────────────────────
+
+class TestBin:
+    def test_bin_hour(self):
+        result = sql("AppLogs | summarize count() by bin(TimeGenerated, 1h)")
+        assert "DATE_TRUNC('hour', TimeGenerated)" in result
+
+    def test_bin_day(self):
+        result = sql("AppLogs | summarize count() by bin(TimeGenerated, 1d)")
+        assert "DATE_TRUNC('day', TimeGenerated)" in result
+
+    def test_bin_minute_single(self):
+        result = sql("AppLogs | summarize count() by bin(TimeGenerated, 1m)")
+        assert "DATE_TRUNC('minute', TimeGenerated)" in result
+
+    def test_bin_5m_floor_logic(self):
+        result = sql("AppLogs | summarize count() by bin(TimeGenerated, 5m)")
+        assert "FLOOR" in result
+        assert "300" in result  # 5 * 60
+
+
+# ─── 06 ago ──────────────────────────────────────────────────────────────────
+
+class TestAgo:
+    def test_ago_hours(self):
+        result = sql("AppLogs | where TimeGenerated > ago(24h)")
+        assert "INTERVAL '24 hours'" in result
+        assert "CURRENT_TIMESTAMP" in result
+
+    def test_ago_days(self):
+        result = sql("AppLogs | where TimeGenerated > ago(7d)")
+        assert "INTERVAL '7 days'" in result
+
+    def test_ago_minutes(self):
+        result = sql("AppLogs | where TimeGenerated > ago(30m)")
+        assert "INTERVAL '30 minutes'" in result
+
+
+# ─── 07 extend ───────────────────────────────────────────────────────────────
+
+class TestExtend:
+    def test_extend_literal(self):
+        result = sql("AppLogs | extend ErrorCode = 500")
+        assert "500 AS ErrorCode" in result
+
+    def test_extend_function(self):
+        result = sql("AppLogs | extend MsgUpper = toupper(Message)")
+        assert "UPPER(Message) AS MsgUpper" in result
+
+    def test_extend_preserves_star(self):
+        result = sql("AppLogs | extend X = 1")
+        assert "SELECT *" in result
+
+    def test_extend_two_columns(self):
+        result = sql("AppLogs | extend A = 1, B = 2")
+        assert "1 AS A" in result
+        assert "2 AS B" in result
+
+
+# ─── 08 order by / sort by ───────────────────────────────────────────────────
+
+class TestOrder:
+    def test_order_by_desc(self):
+        result = sql("AppLogs | order by TimeGenerated desc")
+        assert "ORDER BY TimeGenerated DESC" in result
+
+    def test_sort_by_alias(self):
+        result = sql("AppLogs | sort by Level asc")
+        assert "ORDER BY Level ASC" in result
+
+    def test_multiple_order_cols(self):
+        result = sql("AppLogs | order by Level asc, TimeGenerated desc")
+        assert "Level ASC, TimeGenerated DESC" in result
+
+    def test_default_direction_is_asc(self):
+        result = sql("AppLogs | order by Level")
+        assert "ORDER BY Level ASC" in result
+
+
+# ─── 09 take / limit ─────────────────────────────────────────────────────────
+
+class TestTake:
+    def test_take_keyword(self):
+        result = sql("AppLogs | take 100")
+        assert "LIMIT 100" in result
+
+    def test_limit_keyword(self):
+        result = sql("AppLogs | limit 50")
+        assert "LIMIT 50" in result
+
+
+# ─── 10 distinct ─────────────────────────────────────────────────────────────
+
+class TestDistinct:
+    def test_distinct_single(self):
+        result = sql("AppLogs | distinct Level")
+        assert "SELECT DISTINCT Level" in result
+
+    def test_distinct_multiple(self):
+        result = sql("AppLogs | distinct Level, ServiceName")
+        assert "SELECT DISTINCT Level, ServiceName" in result
+
+    def test_distinct_star(self):
+        result = sql("AppLogs | distinct *")
+        assert "SELECT DISTINCT *" in result
+
+
+# ─── 11 join ─────────────────────────────────────────────────────────────────
+
+class TestJoin:
+    def test_inner_join_default(self):
+        result = sql("AppLogs | join (Users) on UserId")
+        assert "INNER JOIN Users" in result
+        assert "AppLogs.UserId = Users.UserId" in result
+
+    def test_leftouter_join(self):
+        result = sql("AppLogs | join kind=leftouter (Users) on UserId")
+        assert "LEFT OUTER JOIN Users" in result
+
+    def test_join_multiple_keys(self):
+        result = sql("Orders | join (Customers) on CustomerId, Region")
+        assert "CustomerId" in result
+        assert "Region" in result
+
+
+# ─── 12 union ────────────────────────────────────────────────────────────────
+
+class TestUnion:
+    def test_union_two_tables(self):
+        result = sql("AppLogs | union ErrorLogs")
+        assert "UNION ALL" in result
+        assert "SELECT * FROM AppLogs" in result
+        assert "SELECT * FROM ErrorLogs" in result
+
+    def test_union_three_tables(self):
+        result = sql("T1 | union T2, T3")
+        assert result.count("UNION ALL") == 2
+
+
+# ─── 13 let ──────────────────────────────────────────────────────────────────
+
+class TestLet:
+    def test_single_let(self):
+        kql = "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName"
+        result = sql(kql)
+        assert "WITH errors AS" in result
+        assert "CTE" not in result  # no accidental prose
+
+    def test_let_used_as_table(self):
+        kql = "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName"
+        result = sql(kql)
+        assert "FROM errors" in result
+
+
+# ─── 14 count ────────────────────────────────────────────────────────────────
+
+class TestCount:
+    def test_count_only(self):
+        result = sql("AppLogs | count")
+        assert "COUNT(*) AS count_" in result
+
+    def test_where_then_count(self):
+        result = sql("AppLogs | where Level == 'Error' | count")
+        assert "COUNT(*) AS count_" in result
+        assert "WHERE Level = 'Error'" in result
+
+
+# ─── API Tests ───────────────────────────────────────────────────────────────
+
+class TestPublicAPI:
+    def test_detect_operators(self):
+        ops = detect_operators("AppLogs | where x == 1 | summarize count() by y")
+        assert "where" in ops
+        assert "summarize" in ops
+
+    def test_is_supported_basic(self):
+        assert is_supported("AppLogs | where Level == 'Error'") is True
+
+    def test_translate_returns_string(self):
+        result = translate("AppLogs", target="spark")
+        assert isinstance(result, str)
+        assert len(result) > 0

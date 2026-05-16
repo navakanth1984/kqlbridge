@@ -1,0 +1,188 @@
+// kql.lark — KQLBridge Grammar
+// ============================================================
+// LOCKED FILE — Human-designed. Agent MUST NEVER modify this.
+// ============================================================
+// Version: 0.1.0
+// Covers: 14 v0.1 operators (see program.md for full list)
+// Parser: Earley (handles ambiguous KQL constructs safely)
+
+// ─── Entry Point ────────────────────────────────────────────
+
+start: let_stmt* table_expr ("|" pipe_op)*
+
+// ─── Let / CTE ──────────────────────────────────────────────
+
+let_stmt: "let" NAME "=" (table_ref_expr | expr) ";"
+
+table_ref_expr: NAME ("|" pipe_op)*
+
+// ─── Table ──────────────────────────────────────────────────
+
+table_expr: NAME
+
+// ─── Pipe Operators ─────────────────────────────────────────
+
+pipe_op: where_op
+       | project_op
+       | summarize_op
+       | order_op
+       | take_op
+       | distinct_op
+       | extend_op
+       | join_op
+       | union_op
+       | count_op
+
+// ─── where ──────────────────────────────────────────────────
+
+where_op: "where" bool_expr
+
+// ─── project ────────────────────────────────────────────────
+
+project_op: "project" col_list
+
+// ─── summarize ──────────────────────────────────────────────
+
+summarize_op: "summarize" agg_list ("by" groupby_list)?
+
+agg_list: agg_item ("," agg_item)*
+
+agg_item: NAME "=" agg_func   -> named_agg
+        | agg_func             -> anon_agg
+
+agg_func: "count" "()"                         -> agg_count
+        | "sum"   "(" expr ")"                  -> agg_sum
+        | "avg"   "(" expr ")"                  -> agg_avg
+        | "min"   "(" expr ")"                  -> agg_min
+        | "max"   "(" expr ")"                  -> agg_max
+        | "dcount" "(" expr ")"                 -> agg_dcount
+        | "countif" "(" bool_expr ")"           -> agg_countif
+        | "bin"   "(" expr "," timespan ")"     -> agg_bin
+
+groupby_list: groupby_item ("," groupby_item)*
+groupby_item: "bin" "(" expr "," timespan ")"  -> bin_group
+            | expr                              -> plain_group
+
+// ─── order by / sort by ─────────────────────────────────────
+
+order_op: ("order" | "sort") "by" order_list
+
+order_list: order_item ("," order_item)*
+order_item: expr ORDER_DIR?
+
+ORDER_DIR: "asc" | "desc"
+
+// ─── take / limit ───────────────────────────────────────────
+
+take_op: ("take" | "limit") INT
+
+// ─── distinct ───────────────────────────────────────────────
+
+distinct_op: "distinct" col_list
+           | "distinct" "*"
+
+// ─── extend ─────────────────────────────────────────────────
+
+extend_op: "extend" assign_list
+
+assign_list: assign_item ("," assign_item)*
+assign_item: NAME "=" assign_val
+assign_val: expr COMP_OP expr   -> assign_comparison
+          | expr                 -> assign_expr
+
+// ─── join ───────────────────────────────────────────────────
+
+join_op: "join" join_kind? "(" table_expr ("|" pipe_op)* ")" "on" join_keys
+
+join_kind: "kind" "=" JOIN_KIND_VAL
+
+JOIN_KIND_VAL: "inner" | "leftouter" | "rightouter" | "fullouter"
+
+join_keys: NAME ("," NAME)*
+
+// ─── union ──────────────────────────────────────────────────
+
+union_op: "union" union_tables
+
+union_tables: NAME ("," NAME)*
+            | "(" table_expr ("|" pipe_op)* ")" ("," "(" table_expr ("|" pipe_op)* ")")*
+
+// ─── count ──────────────────────────────────────────────────
+
+count_op: "count"
+
+// ─── Expressions ─────────────────────────────────────────────
+
+bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
+         | "not" bool_expr                       -> negation
+         | "(" bool_expr ")"                     -> paren_bool
+         | comparison
+
+comparison: expr COMP_OP expr
+          | expr "in" "(" value_list ")"         -> in_expr
+          | expr "!in" "(" value_list ")"        -> not_in_expr
+          | expr "has" STRING                    -> has_expr
+          | expr "contains" STRING               -> contains_expr
+          | expr "startswith" STRING             -> startswith_expr
+          | expr "endswith" STRING               -> endswith_expr
+          | expr "matches" "regex" STRING        -> regex_expr
+          | "isnotnull" "(" expr ")"             -> isnotnull_expr
+          | "isnull" "(" expr ")"                -> isnull_expr
+
+COMP_OP: "==" | "!=" | "<=" | ">=" | "<" | ">" | "=~"
+LOGICAL_OP: "and" | "or"
+
+value_list: literal ("," literal)*
+
+// ─── Expressions (arithmetic / function calls) ────────────────
+
+expr: expr "+" term   -> add
+    | expr "-" term   -> sub
+    | term
+
+term: term "*" factor -> mul
+    | term "/" factor -> div
+    | factor
+
+factor: ago_expr
+      | bin_expr
+      | func_call
+      | NAME            -> column_ref
+      | literal
+      | "(" expr ")"   -> paren_expr
+
+ago_expr  : "ago" "(" timespan ")"
+bin_expr  : "bin" "(" expr "," timespan ")"
+
+func_call : NAME "(" (expr ("," expr)*)? ")"
+
+// ─── Literals ────────────────────────────────────────────────
+
+literal: STRING    -> string_lit
+       | FLOAT     -> float_lit
+       | INT       -> int_lit
+       | BOOL      -> bool_lit
+       | DATETIME  -> datetime_lit
+
+BOOL: "true" | "false"
+DATETIME: /datetime\([^)]+\)/
+
+// ─── Timespan ────────────────────────────────────────────────
+
+timespan: INT TIMEUNIT
+
+TIMEUNIT: "d" | "h" | "m" | "s" | "ms" | "us" | "ns"
+
+// ─── Helpers ─────────────────────────────────────────────────
+
+col_list: NAME ("," NAME)*
+
+// ─── Terminals ───────────────────────────────────────────────
+
+NAME   : /[a-zA-Z_][a-zA-Z0-9_.]*/ 
+STRING : /\"[^\"]*\"/ | /\'[^\']*\'/
+INT    : /[0-9]+/
+FLOAT  : /[0-9]+\.[0-9]+/
+
+%ignore /\s+/
+%ignore /\/\/[^\n]*/    // line comments

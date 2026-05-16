@@ -1,0 +1,35 @@
+# operator_take.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What take / limit does in KQL
+Returns the first N rows. `limit` is a full alias.
+Non-deterministic without `order by` — KQL spec explicitly warns this.
+
+## Translation table
+| KQL                  | Spark SQL               |
+|----------------------|-------------------------|
+| T | take 10          | SELECT * FROM T LIMIT 10|
+| T | limit 100        | SELECT * FROM T LIMIT 100|
+
+## Full examples
+```kql
+Heartbeat | order by TimeGenerated desc | take 50
+```
+```sql
+SELECT *
+FROM Heartbeat
+ORDER BY TimeGenerated DESC
+LIMIT 50
+```
+
+## Edge cases
+- `take` without `order by`: valid SQL, non-deterministic result (acceptable)
+- `take 0`: renders as LIMIT 0 (returns schema only)
+- Combined with summarize: LIMIT applied after GROUP BY
+
+## Known limits
+- `top N by col` shorthand → v0.2; use `order by col | take N` for now
+
+## Routing rules
+- take_op / limit keyword → SUPPORTED → TakeOp → SparkSQLGenerator `limit` clause

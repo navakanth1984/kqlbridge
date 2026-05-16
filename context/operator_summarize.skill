@@ -1,0 +1,96 @@
+---
+name: kql-operator-summarize
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL summarize operator → SQL GROUP BY + aggregation
+jagged_risk: HIGH — human review required on every output
+---
+
+# summarize → GROUP BY Translation
+
+## ⚠ Jagged Intelligence Warning (Karpathy Principle 5)
+
+The `summarize` → `GROUP BY` rewrite is the **highest-risk semantic translation** in KQLBridge.
+
+KQL `summarize` is left-to-right: aggregations first, then group-by columns.
+SQL `SELECT` must include group-by columns AND aggregation expressions.
+
+**Human review is REQUIRED on every aggregate operator output before accepting as passing.**
+Silently wrong outputs look correct syntactically but return wrong result sets.
+
+## Column Ordering Rule (CRITICAL)
+
+KQL:
+```kql
+| summarize total = sum(Amount), n = count() by Region, ServiceName
+```
+
+SQL SELECT order MUST be: **group-by columns FIRST, then aggregations**:
+```sql
+SELECT Region, ServiceName, SUM(Amount) AS total, COUNT(*) AS n
+FROM ...
+GROUP BY Region, ServiceName
+```
+
+Getting this order wrong produces syntactically valid SQL that may fail or
+return unexpected columns in downstream consumers.
+
+## Aggregation Function Map
+
+| KQL | SQL | Notes |
+|---|---|---|
+| `count()` | `COUNT(*)` | No alias → unnamed column |
+| `sum(col)` | `SUM(col)` | |
+| `avg(col)` | `AVG(col)` | |
+| `min(col)` | `MIN(col)` | |
+| `max(col)` | `MAX(col)` | |
+| `dcount(col)` | `COUNT(DISTINCT col)` | |
+| `countif(cond)` | `COUNT(CASE WHEN cond THEN 1 END)` | |
+
+## with `by` Clause (GROUP BY)
+
+```kql
+AppLogs | summarize count() by ServiceName
+→ SELECT ServiceName, COUNT(*) FROM AppLogs GROUP BY ServiceName
+```
+
+## without `by` Clause (Global Aggregate)
+
+```kql
+AppLogs | summarize count()
+→ SELECT COUNT(*) FROM AppLogs
+(no GROUP BY)
+```
+
+## with `bin()` in GROUP BY
+
+```kql
+AppLogs | summarize count() by bin(TimeGenerated, 1h)
+→ SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*)
+  FROM AppLogs
+  GROUP BY DATE_TRUNC('hour', TimeGenerated)
+```
+
+The bin expression appears in BOTH SELECT and GROUP BY.
+The alias should match the original column name for downstream readability.
+
+## Multiple Aggregations
+
+```kql
+Orders | summarize cnt = count(), total = sum(Amount), avg_val = avg(Amount) by Region
+→ SELECT Region, COUNT(*) AS cnt, SUM(Amount) AS total, AVG(Amount) AS avg_val
+  FROM Orders
+  GROUP BY Region
+```
+
+## Known Limits
+
+- `summarize by bin_at(t, 1h, start)` — NOT SUPPORTED v0.1 (offset calculation needed)
+- `summarize by dynamic(bin_size)` — NOT SUPPORTED (dynamic bin sizes)
+- Multiple `summarize` pipes: only the last one generates GROUP BY — warn user
+
+## Routing Rules
+
+If all aggregation functions are in the supported list → translate to Spark SQL.
+If `make-series`, `series_*`, or plugin-style `evaluate` → keep in KQL engine.

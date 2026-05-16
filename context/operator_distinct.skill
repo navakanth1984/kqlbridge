@@ -1,0 +1,33 @@
+# operator_distinct.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What distinct does in KQL
+Returns unique rows across the specified columns. `distinct *` deduplicates all columns.
+
+## Translation table
+| KQL                        | Spark SQL                         |
+|----------------------------|-----------------------------------|
+| T | distinct col1, col2     | SELECT DISTINCT col1, col2 FROM T |
+| T | distinct *              | SELECT DISTINCT * FROM T          |
+
+## Full examples
+```kql
+SecurityEvent | distinct EventID, Computer
+```
+```sql
+SELECT DISTINCT EventID, Computer
+FROM SecurityEvent
+```
+
+## Edge cases
+- `distinct *`: `*` is an anonymous terminal in the grammar and is dropped from
+  the parse tree → detected by empty children in distinct_op → returns star=True
+- distinct after project: DISTINCT applied over the projected columns
+
+## Known limits
+- `distinct` with expressions (e.g. `distinct tolower(col)`) → not supported in v0.1
+
+## Routing rules
+- distinct_op → SUPPORTED → DistinctOp(star=True or columns=[...])
+- Empty children in distinct_op tree → star=True (grammar drops anonymous `*`)

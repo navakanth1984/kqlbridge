@@ -1,0 +1,82 @@
+---
+name: kql-operator-bin
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL bin() operator — time-series bucketing → SQL DATE_TRUNC / FLOOR
+---
+
+# bin() → DATE_TRUNC / FLOOR Translation
+
+## What it does in KQL
+
+`bin(TimeGenerated, 1h)` buckets timestamps into fixed-width windows.
+Used almost always inside a `summarize by` clause to create time-series aggregations.
+
+## Standard Translation (whole-unit bins)
+
+```kql
+bin(TimeGenerated, 1h)  → DATE_TRUNC('hour', TimeGenerated)
+bin(TimeGenerated, 1d)  → DATE_TRUNC('day', TimeGenerated)
+bin(TimeGenerated, 1m)  → DATE_TRUNC('minute', TimeGenerated)
+bin(TimeGenerated, 1s)  → DATE_TRUNC('second', TimeGenerated)
+```
+
+## Sub-Unit Bins — The Edge Case (5m, 10m, 15m, etc.)
+
+When `amount > 1` and `unit == 'm'`, `DATE_TRUNC` rounds to the nearest minute —
+not to the 5-minute boundary. This is a **silent failure**.
+
+Correct translation uses FLOOR arithmetic:
+
+```kql
+bin(TimeGenerated, 5m)
+→ TIMESTAMP_SECONDS(FLOOR(UNIX_TIMESTAMP(TimeGenerated) / 300) * 300)
+```
+
+General formula: `interval_seconds = amount * seconds_per_unit`
+- 5m → 300 seconds
+- 10m → 600 seconds
+- 15m → 900 seconds
+
+The same applies to hours with non-1 amounts:
+```kql
+bin(TimeGenerated, 6h)
+→ TIMESTAMP_SECONDS(FLOOR(UNIX_TIMESTAMP(TimeGenerated) / 21600) * 21600)
+```
+
+## Non-Timestamp Columns
+
+```kql
+bin(val, 10)
+→ FLOOR(val / 10) * 10
+```
+
+Numeric binning — no DATE_TRUNC involved.
+
+## Full Summarize Context
+
+```kql
+AppLogs | summarize count() by bin(TimeGenerated, 1h)
+```
+```sql
+SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated,
+       COUNT(*)
+FROM AppLogs
+GROUP BY DATE_TRUNC('hour', TimeGenerated)
+```
+
+The bin expression appears in BOTH the SELECT alias AND the GROUP BY.
+Alias should match the source column name for readability.
+
+## Known Limits
+
+- `bin_at(t, 1h, startTime)` — NOT SUPPORTED v0.1 (requires offset calculation)
+- Dynamic bin sizes from variables — NOT SUPPORTED (bin size must be a literal)
+- Month/year bins (e.g. `bin(t, 30d)`) — approximate only; use `startofmonth()` instead
+
+## Routing Rules
+
+If bin size is a literal and unit is one of d/h/m/s → translate.
+If `bin_at` is used → keep in KQL engine.
+If bin size comes from a variable → keep in KQL engine.

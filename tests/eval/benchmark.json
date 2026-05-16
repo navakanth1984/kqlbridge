@@ -1,0 +1,702 @@
+[
+  {
+    "id": "std_001",
+    "category": "standard",
+    "description": "basic filter + count by group",
+    "kql": "AppLogs | where Level == 'Error' | summarize count() by ServiceName",
+    "expected_sql": "SELECT ServiceName, COUNT(*) FROM AppLogs WHERE Level = 'Error' GROUP BY ServiceName"
+  },
+  {
+    "id": "std_002",
+    "category": "standard",
+    "description": "time-range filter with ago() + project",
+    "kql": "AppLogs | where TimeGenerated > ago(24h) | project Message, Level",
+    "expected_sql": "SELECT Message, Level FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'"
+  },
+  {
+    "id": "std_003",
+    "category": "standard",
+    "description": "project columns only",
+    "kql": "AppLogs | project Message, Level, ServiceName",
+    "expected_sql": "SELECT Message, Level, ServiceName FROM AppLogs"
+  },
+  {
+    "id": "std_004",
+    "category": "standard",
+    "description": "where + take",
+    "kql": "AppLogs | where Level == 'Error' | take 100",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' LIMIT 100"
+  },
+  {
+    "id": "std_005",
+    "category": "standard",
+    "description": "simple count",
+    "kql": "AppLogs | count",
+    "expected_sql": "SELECT COUNT(*) AS count_ FROM AppLogs"
+  },
+  {
+    "id": "std_006",
+    "category": "standard",
+    "description": "summarize sum by group",
+    "kql": "Orders | summarize total = sum(Amount) by Region",
+    "expected_sql": "SELECT Region, SUM(Amount) AS total FROM Orders GROUP BY Region"
+  },
+  {
+    "id": "std_007",
+    "category": "standard",
+    "description": "summarize avg by group",
+    "kql": "Orders | summarize avg_amount = avg(Amount) by Region",
+    "expected_sql": "SELECT Region, AVG(Amount) AS avg_amount FROM Orders GROUP BY Region"
+  },
+  {
+    "id": "std_008",
+    "category": "standard",
+    "description": "order by desc",
+    "kql": "AppLogs | order by TimeGenerated desc",
+    "expected_sql": "SELECT * FROM AppLogs ORDER BY TimeGenerated DESC"
+  },
+  {
+    "id": "std_009",
+    "category": "standard",
+    "description": "order by asc",
+    "kql": "AppLogs | sort by Level asc",
+    "expected_sql": "SELECT * FROM AppLogs ORDER BY Level ASC"
+  },
+  {
+    "id": "std_010",
+    "category": "standard",
+    "description": "distinct single column",
+    "kql": "AppLogs | distinct Level",
+    "expected_sql": "SELECT DISTINCT Level FROM AppLogs"
+  },
+  {
+    "id": "std_011",
+    "category": "standard",
+    "description": "extend with computed column",
+    "kql": "AppLogs | extend ErrorCode = 500",
+    "expected_sql": "SELECT *, 500 AS ErrorCode FROM AppLogs"
+  },
+  {
+    "id": "std_012",
+    "category": "standard",
+    "description": "where with two conditions",
+    "kql": "AppLogs | where Level == 'Error' and Region == 'east'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE (Level = 'Error' AND Region = 'east')"
+  },
+  {
+    "id": "std_013",
+    "category": "standard",
+    "description": "where with or condition",
+    "kql": "AppLogs | where Level == 'Error' or Level == 'Warning'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE (Level = 'Error' OR Level = 'Warning')"
+  },
+  {
+    "id": "std_014",
+    "category": "standard",
+    "description": "summarize max",
+    "kql": "AppLogs | summarize max_time = max(TimeGenerated)",
+    "expected_sql": "SELECT MAX(TimeGenerated) AS max_time FROM AppLogs"
+  },
+  {
+    "id": "std_015",
+    "category": "standard",
+    "description": "summarize min",
+    "kql": "AppLogs | summarize min_time = min(TimeGenerated)",
+    "expected_sql": "SELECT MIN(TimeGenerated) AS min_time FROM AppLogs"
+  },
+  {
+    "id": "std_016",
+    "category": "standard",
+    "description": "where + order by + take",
+    "kql": "AppLogs | where Level == 'Error' | order by TimeGenerated desc | take 50",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' ORDER BY TimeGenerated DESC LIMIT 50"
+  },
+  {
+    "id": "std_017",
+    "category": "standard",
+    "description": "limit keyword alias for take",
+    "kql": "AppLogs | limit 20",
+    "expected_sql": "SELECT * FROM AppLogs LIMIT 20"
+  },
+  {
+    "id": "std_018",
+    "category": "standard",
+    "description": "ago() with days",
+    "kql": "AppLogs | where TimeGenerated > ago(7d)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days'"
+  },
+  {
+    "id": "std_019",
+    "category": "standard",
+    "description": "ago() with minutes",
+    "kql": "AppLogs | where TimeGenerated > ago(30m)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '30 minutes'"
+  },
+  {
+    "id": "std_020",
+    "category": "standard",
+    "description": "bin on hour",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1h)",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY DATE_TRUNC('hour', TimeGenerated)"
+  },
+  {
+    "id": "std_021",
+    "category": "standard",
+    "description": "union two tables",
+    "kql": "AppLogs | union ErrorLogs",
+    "expected_sql": "SELECT * FROM AppLogs\nUNION ALL\nSELECT * FROM ErrorLogs"
+  },
+  {
+    "id": "std_022",
+    "category": "standard",
+    "description": "join inner on key",
+    "kql": "AppLogs | join (Users) on UserId",
+    "expected_sql": "SELECT * FROM AppLogs\nINNER JOIN Users ON AppLogs.UserId = Users.UserId"
+  },
+  {
+    "id": "std_023",
+    "category": "standard",
+    "description": "where with not equal",
+    "kql": "AppLogs | where Level != 'Debug'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level <> 'Debug'"
+  },
+  {
+    "id": "std_024",
+    "category": "standard",
+    "description": "where with greater than int",
+    "kql": "AppLogs | where Duration > 1000",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Duration > 1000"
+  },
+  {
+    "id": "std_025",
+    "category": "standard",
+    "description": "project + order by",
+    "kql": "AppLogs | project Message, Level | order by Level asc",
+    "expected_sql": "SELECT Message, Level FROM AppLogs ORDER BY Level ASC"
+  },
+  {
+    "id": "std_026",
+    "category": "standard",
+    "description": "summarize count() no group",
+    "kql": "AppLogs | summarize count()",
+    "expected_sql": "SELECT COUNT(*) FROM AppLogs"
+  },
+  {
+    "id": "std_027",
+    "category": "standard",
+    "description": "summarize with two aggregations",
+    "kql": "Orders | summarize total = sum(Amount), n = count() by Region",
+    "expected_sql": "SELECT Region, SUM(Amount) AS total, COUNT(*) AS n FROM Orders GROUP BY Region"
+  },
+  {
+    "id": "std_028",
+    "category": "standard",
+    "description": "where contains string op",
+    "kql": "AppLogs | where Message contains 'timeout'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Message LIKE '%timeout%'"
+  },
+  {
+    "id": "std_029",
+    "category": "standard",
+    "description": "where startswith",
+    "kql": "AppLogs | where ServiceName startswith 'web'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE ServiceName LIKE 'web%'"
+  },
+  {
+    "id": "std_030",
+    "category": "standard",
+    "description": "where in list",
+    "kql": "AppLogs | where Level in ('Error', 'Warning', 'Critical')",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level IN ('Error', 'Warning', 'Critical')"
+  },
+  {
+    "id": "std_031",
+    "category": "standard",
+    "description": "extend string expression",
+    "kql": "AppLogs | extend ShortMsg = substring(Message, 0, 100)",
+    "expected_sql": "SELECT *, SUBSTRING(Message, 0, 100) AS ShortMsg FROM AppLogs"
+  },
+  {
+    "id": "std_032",
+    "category": "standard",
+    "description": "where isnotnull",
+    "kql": "AppLogs | where isnotnull(UserId)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE UserId IS NOT NULL"
+  },
+  {
+    "id": "std_033",
+    "category": "standard",
+    "description": "where isnull",
+    "kql": "AppLogs | where isnull(Region)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Region IS NULL"
+  },
+  {
+    "id": "std_034",
+    "category": "standard",
+    "description": "distinct multiple columns",
+    "kql": "AppLogs | distinct Level, ServiceName",
+    "expected_sql": "SELECT DISTINCT Level, ServiceName FROM AppLogs"
+  },
+  {
+    "id": "std_035",
+    "category": "standard",
+    "description": "order by multiple columns",
+    "kql": "AppLogs | order by Level asc, TimeGenerated desc",
+    "expected_sql": "SELECT * FROM AppLogs ORDER BY Level ASC, TimeGenerated DESC"
+  },
+  {
+    "id": "std_036",
+    "category": "standard",
+    "description": "bin on day",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1d)",
+    "expected_sql": "SELECT DATE_TRUNC('day', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY DATE_TRUNC('day', TimeGenerated)"
+  },
+  {
+    "id": "std_037",
+    "category": "standard",
+    "description": "where + project + take chain",
+    "kql": "AppLogs | where Level == 'Error' | project Message, ServiceName | take 10",
+    "expected_sql": "SELECT Message, ServiceName FROM AppLogs WHERE Level = 'Error' LIMIT 10"
+  },
+  {
+    "id": "std_038",
+    "category": "standard",
+    "description": "summarize dcount",
+    "kql": "AppLogs | summarize unique_users = dcount(UserId) by Region",
+    "expected_sql": "SELECT Region, COUNT(DISTINCT UserId) AS unique_users FROM AppLogs GROUP BY Region"
+  },
+  {
+    "id": "std_039",
+    "category": "standard",
+    "description": "extend with string function",
+    "kql": "AppLogs | extend MsgUpper = toupper(Message)",
+    "expected_sql": "SELECT *, UPPER(Message) AS MsgUpper FROM AppLogs"
+  },
+  {
+    "id": "std_040",
+    "category": "standard",
+    "description": "where not in list",
+    "kql": "AppLogs | where Level !in ('Debug', 'Info')",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level NOT IN ('Debug', 'Info')"
+  },
+  {
+    "id": "std_041",
+    "category": "standard",
+    "description": "join leftouter",
+    "kql": "AppLogs | join kind=leftouter (Users) on UserId",
+    "expected_sql": "SELECT * FROM AppLogs\nLEFT OUTER JOIN Users ON AppLogs.UserId = Users.UserId"
+  },
+  {
+    "id": "std_042",
+    "category": "standard",
+    "description": "union three tables",
+    "kql": "T1 | union T2, T3",
+    "expected_sql": "SELECT * FROM T1\nUNION ALL\nSELECT * FROM T2\nUNION ALL\nSELECT * FROM T3"
+  },
+  {
+    "id": "std_043",
+    "category": "standard",
+    "description": "where + summarize + order",
+    "kql": "Orders | where Status == 'active' | summarize total = sum(Amount) by Region | order by total desc",
+    "expected_sql": "SELECT Region, SUM(Amount) AS total FROM Orders WHERE Status = 'active' GROUP BY Region ORDER BY total DESC"
+  },
+  {
+    "id": "std_044",
+    "category": "standard",
+    "description": "ago with seconds",
+    "kql": "AppLogs | where TimeGenerated > ago(300s)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '300 seconds'"
+  },
+  {
+    "id": "std_045",
+    "category": "standard",
+    "description": "where endswith",
+    "kql": "AppLogs | where ServiceName endswith '.svc'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE ServiceName LIKE '%.svc'"
+  },
+  {
+    "id": "std_046",
+    "category": "standard",
+    "description": "extend two columns",
+    "kql": "AppLogs | extend ErrorFlag = 1, Region2 = tolower(Region)",
+    "expected_sql": "SELECT *, 1 AS ErrorFlag, LOWER(Region) AS Region2 FROM AppLogs"
+  },
+  {
+    "id": "std_047",
+    "category": "standard",
+    "description": "summarize count + where + take",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | take 5",
+    "expected_sql": "SELECT ServiceName, COUNT(*) AS n FROM AppLogs WHERE Level = 'Error' GROUP BY ServiceName LIMIT 5"
+  },
+  {
+    "id": "std_048",
+    "category": "standard",
+    "description": "project after where",
+    "kql": "AppLogs | where Level == 'Error' | project Message, TimeGenerated",
+    "expected_sql": "SELECT Message, TimeGenerated FROM AppLogs WHERE Level = 'Error'"
+  },
+  {
+    "id": "std_049",
+    "category": "standard",
+    "description": "simple table scan no operators",
+    "kql": "AppLogs",
+    "expected_sql": "SELECT * FROM AppLogs"
+  },
+  {
+    "id": "std_050",
+    "category": "standard",
+    "description": "where with float comparison",
+    "kql": "AppLogs | where Score > 0.95",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Score > 0.95"
+  },
+  {
+    "id": "std_051",
+    "category": "standard",
+    "description": "where + distinct",
+    "kql": "AppLogs | where Region == 'east' | distinct ServiceName",
+    "expected_sql": "SELECT DISTINCT ServiceName FROM AppLogs WHERE Region = 'east'"
+  },
+  {
+    "id": "std_052",
+    "category": "standard",
+    "description": "summarize count with bin on hour + where",
+    "kql": "AppLogs | where Level == 'Error' | summarize count() by bin(TimeGenerated, 1h)",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs WHERE Level = 'Error' GROUP BY DATE_TRUNC('hour', TimeGenerated)"
+  },
+  {
+    "id": "std_053",
+    "category": "standard",
+    "description": "extend tolower + where",
+    "kql": "AppLogs | extend LevelLower = tolower(Level) | where LevelLower == 'error'",
+    "expected_sql": "SELECT *, LOWER(Level) AS LevelLower FROM AppLogs WHERE LevelLower = 'error'"
+  },
+  {
+    "id": "std_054",
+    "category": "standard",
+    "description": "join on two keys",
+    "kql": "Orders | join (Customers) on CustomerId, Region",
+    "expected_sql": "SELECT * FROM Orders\nINNER JOIN Customers ON Orders.CustomerId = Customers.CustomerId AND Orders.Region = Customers.Region"
+  },
+  {
+    "id": "std_055",
+    "category": "standard",
+    "description": "where ago + summarize + bin",
+    "kql": "AppLogs | where TimeGenerated > ago(1d) | summarize count() by bin(TimeGenerated, 1h)",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 days' GROUP BY DATE_TRUNC('hour', TimeGenerated)"
+  },
+  {
+    "id": "std_056",
+    "category": "standard",
+    "description": "project + distinct",
+    "kql": "AppLogs | project Level, Region | distinct Level, Region",
+    "expected_sql": "SELECT DISTINCT Level, Region FROM AppLogs"
+  },
+  {
+    "id": "std_057",
+    "category": "standard",
+    "description": "summarize with multiple group by cols",
+    "kql": "AppLogs | summarize count() by Level, ServiceName",
+    "expected_sql": "SELECT Level, ServiceName, COUNT(*) FROM AppLogs GROUP BY Level, ServiceName"
+  },
+  {
+    "id": "std_058",
+    "category": "standard",
+    "description": "where bool true",
+    "kql": "AppLogs | where IsActive == true",
+    "expected_sql": "SELECT * FROM AppLogs WHERE IsActive = TRUE"
+  },
+  {
+    "id": "std_059",
+    "category": "standard",
+    "description": "where + count",
+    "kql": "AppLogs | where Level == 'Error' | count",
+    "expected_sql": "SELECT COUNT(*) AS count_ FROM AppLogs WHERE Level = 'Error'"
+  },
+  {
+    "id": "std_060",
+    "category": "standard",
+    "description": "summarize max + min in one query",
+    "kql": "AppLogs | summarize maxDur = max(Duration), minDur = min(Duration) by ServiceName",
+    "expected_sql": "SELECT ServiceName, MAX(Duration) AS maxDur, MIN(Duration) AS minDur FROM AppLogs GROUP BY ServiceName"
+  },
+  {
+    "id": "std_061",
+    "category": "standard",
+    "description": "extend arithmetic",
+    "kql": "Orders | extend Total = Price * Quantity",
+    "expected_sql": "SELECT *, (Price * Quantity) AS Total FROM Orders"
+  },
+  {
+    "id": "std_062",
+    "category": "standard",
+    "description": "where + summarize + order + take",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | order by n desc | take 10",
+    "expected_sql": "SELECT ServiceName, COUNT(*) AS n FROM AppLogs WHERE Level = 'Error' GROUP BY ServiceName ORDER BY n DESC LIMIT 10"
+  },
+  {
+    "id": "std_063",
+    "category": "standard",
+    "description": "where not condition",
+    "kql": "AppLogs | where not Level == 'Debug'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE NOT (Level = 'Debug')"
+  },
+  {
+    "id": "std_064",
+    "category": "standard",
+    "description": "where with less than equal",
+    "kql": "AppLogs | where Duration <= 500",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Duration <= 500"
+  },
+  {
+    "id": "std_065",
+    "category": "standard",
+    "description": "summarize avg no group",
+    "kql": "Orders | summarize avg_price = avg(Price)",
+    "expected_sql": "SELECT AVG(Price) AS avg_price FROM Orders"
+  },
+  {
+    "id": "std_066",
+    "category": "standard",
+    "description": "where has string op",
+    "kql": "AppLogs | where Message has 'error'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Message LIKE '% error %'"
+  },
+  {
+    "id": "std_067",
+    "category": "standard",
+    "description": "project single column",
+    "kql": "AppLogs | project Message",
+    "expected_sql": "SELECT Message FROM AppLogs"
+  },
+  {
+    "id": "std_068",
+    "category": "standard",
+    "description": "bin on minute",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1m)",
+    "expected_sql": "SELECT DATE_TRUNC('minute', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY DATE_TRUNC('minute', TimeGenerated)"
+  },
+  {
+    "id": "std_069",
+    "category": "standard",
+    "description": "where ago filter + project + order",
+    "kql": "AppLogs | where TimeGenerated > ago(1h) | project Message, Level | order by Level",
+    "expected_sql": "SELECT Message, Level FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 hours' ORDER BY Level ASC"
+  },
+  {
+    "id": "std_070",
+    "category": "standard",
+    "description": "join + where",
+    "kql": "AppLogs | where Level == 'Error' | join (Users) on UserId",
+    "expected_sql": "SELECT * FROM AppLogs\nINNER JOIN Users ON AppLogs.UserId = Users.UserId\nWHERE Level = 'Error'"
+  },
+  {
+    "id": "edge_001",
+    "category": "edge",
+    "description": "let variable → CTE",
+    "kql": "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName",
+    "expected_sql": "WITH errors AS (\n  SELECT * FROM AppLogs WHERE Level = 'Error'\n)\nSELECT ServiceName, COUNT(*) FROM errors GROUP BY ServiceName"
+  },
+  {
+    "id": "edge_002",
+    "category": "edge",
+    "description": "nested let bindings",
+    "kql": "let errors = AppLogs | where Level == 'Error'; let summary = errors | summarize count() by ServiceName; summary | order by count_ desc",
+    "expected_sql": "WITH errors AS (\n  SELECT * FROM AppLogs WHERE Level = 'Error'\n), summary AS (\n  SELECT ServiceName, COUNT(*) FROM errors GROUP BY ServiceName\n)\nSELECT * FROM summary ORDER BY count_ DESC"
+  },
+  {
+    "id": "edge_003",
+    "category": "edge",
+    "description": "bin() with non-1 amount on hour — uses DATE_TRUNC",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1h)",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY DATE_TRUNC('hour', TimeGenerated)"
+  },
+  {
+    "id": "edge_004",
+    "category": "edge",
+    "description": "bin() 5-minute sub-minute with FLOOR logic",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 5m)",
+    "expected_sql": "SELECT TIMESTAMP_SECONDS(FLOOR(UNIX_TIMESTAMP(TimeGenerated) / 300) * 300) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY TIMESTAMP_SECONDS(FLOOR(UNIX_TIMESTAMP(TimeGenerated) / 300) * 300)"
+  },
+  {
+    "id": "edge_005",
+    "category": "edge",
+    "description": "multiple aggregations in summarize",
+    "kql": "Orders | summarize cnt = count(), total = sum(Amount), avg_val = avg(Amount) by Region",
+    "expected_sql": "SELECT Region, COUNT(*) AS cnt, SUM(Amount) AS total, AVG(Amount) AS avg_val FROM Orders GROUP BY Region"
+  },
+  {
+    "id": "edge_006",
+    "category": "edge",
+    "description": "where with complex boolean",
+    "kql": "AppLogs | where (Level == 'Error' or Level == 'Critical') and Region != 'west'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE ((Level = 'Error' OR Level = 'Critical') AND Region <> 'west')"
+  },
+  {
+    "id": "edge_007",
+    "category": "edge",
+    "description": "join with where on right side",
+    "kql": "AppLogs | join (Users | where IsActive == true) on UserId",
+    "expected_sql": "SELECT * FROM AppLogs\nINNER JOIN Users ON AppLogs.UserId = Users.UserId"
+  },
+  {
+    "id": "edge_008",
+    "category": "edge",
+    "description": "project renames via extend then project",
+    "kql": "AppLogs | extend Svc = ServiceName | project Svc, Level",
+    "expected_sql": "SELECT Svc, Level FROM AppLogs"
+  },
+  {
+    "id": "edge_009",
+    "category": "edge",
+    "description": "distinct * (all columns)",
+    "kql": "AppLogs | distinct *",
+    "expected_sql": "SELECT DISTINCT * FROM AppLogs"
+  },
+  {
+    "id": "edge_010",
+    "category": "edge",
+    "description": "summarize count with three group by cols",
+    "kql": "AppLogs | summarize count() by Level, ServiceName, Region",
+    "expected_sql": "SELECT Level, ServiceName, Region, COUNT(*) FROM AppLogs GROUP BY Level, ServiceName, Region"
+  },
+  {
+    "id": "edge_011",
+    "category": "edge",
+    "description": "extend after where",
+    "kql": "AppLogs | where Level == 'Error' | extend IsError = true",
+    "expected_sql": "SELECT *, TRUE AS IsError FROM AppLogs WHERE Level = 'Error'"
+  },
+  {
+    "id": "edge_012",
+    "category": "edge",
+    "description": "summarize with bin and where and order",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) AS n FROM AppLogs WHERE Level = 'Error' GROUP BY DATE_TRUNC('hour', TimeGenerated) ORDER BY TimeGenerated ASC"
+  },
+  {
+    "id": "edge_013",
+    "category": "edge",
+    "description": "in list with numbers",
+    "kql": "AppLogs | where StatusCode in (200, 201, 204)",
+    "expected_sql": "SELECT * FROM AppLogs WHERE StatusCode IN (200, 201, 204)"
+  },
+  {
+    "id": "edge_014",
+    "category": "edge",
+    "description": "join kind inner explicit",
+    "kql": "AppLogs | join kind=inner (Users) on UserId",
+    "expected_sql": "SELECT * FROM AppLogs\nINNER JOIN Users ON AppLogs.UserId = Users.UserId"
+  },
+  {
+    "id": "edge_015",
+    "category": "edge",
+    "description": "dcount distinct count",
+    "kql": "AppLogs | summarize unique_sessions = dcount(SessionId) by ServiceName",
+    "expected_sql": "SELECT ServiceName, COUNT(DISTINCT SessionId) AS unique_sessions FROM AppLogs GROUP BY ServiceName"
+  },
+  {
+    "id": "edge_016",
+    "category": "edge",
+    "description": "extend + summarize",
+    "kql": "Orders | extend IsLarge = Amount > 1000 | summarize count() by IsLarge",
+    "expected_sql": "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
+  },
+  {
+    "id": "edge_017",
+    "category": "edge",
+    "description": "where with three or conditions",
+    "kql": "AppLogs | where Level == 'Error' or Level == 'Warning' or Level == 'Critical'",
+    "expected_sql": "SELECT * FROM AppLogs WHERE ((Level = 'Error' OR Level = 'Warning') OR Level = 'Critical')"
+  },
+  {
+    "id": "edge_018",
+    "category": "edge",
+    "description": "ago + bin combined in summarize",
+    "kql": "AppLogs | where TimeGenerated > ago(7d) | summarize count() by bin(TimeGenerated, 1d)",
+    "expected_sql": "SELECT DATE_TRUNC('day', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days' GROUP BY DATE_TRUNC('day', TimeGenerated)"
+  },
+  {
+    "id": "edge_019",
+    "category": "edge",
+    "description": "project after summarize",
+    "kql": "AppLogs | summarize n = count() by ServiceName | project ServiceName, n",
+    "expected_sql": "SELECT ServiceName, n FROM AppLogs GROUP BY ServiceName"
+  },
+  {
+    "id": "edge_020",
+    "category": "edge",
+    "description": "let + join",
+    "kql": "let active = Users | where IsActive == true; AppLogs | join (active) on UserId",
+    "expected_sql": "WITH active AS (\n  SELECT * FROM Users WHERE IsActive = TRUE\n)\nSELECT * FROM AppLogs\nINNER JOIN active ON AppLogs.UserId = active.UserId"
+  },
+  {
+    "id": "adv_001",
+    "category": "adversarial",
+    "description": "extra whitespace and tabs in query",
+    "kql": "AppLogs  |  where   Level  ==  'Error'  |  take  10",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' LIMIT 10"
+  },
+  {
+    "id": "adv_002",
+    "category": "adversarial",
+    "description": "uppercase operators",
+    "kql": "AppLogs | WHERE Level == 'Error' | TAKE 10",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' LIMIT 10"
+  },
+  {
+    "id": "adv_003",
+    "category": "adversarial",
+    "description": "mixed case operators",
+    "kql": "AppLogs | Where Level == 'Error' | Take 10",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' LIMIT 10"
+  },
+  {
+    "id": "adv_004",
+    "category": "adversarial",
+    "description": "empty project — edge case",
+    "kql": "AppLogs | where Level == 'Error' | project Message",
+    "expected_sql": "SELECT Message FROM AppLogs WHERE Level = 'Error'"
+  },
+  {
+    "id": "adv_005",
+    "category": "adversarial",
+    "description": "chained where operators",
+    "kql": "AppLogs | where Level == 'Error' | where Duration > 500",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error' AND Duration > 500"
+  },
+  {
+    "id": "adv_006",
+    "category": "adversarial",
+    "description": "sort by keyword alias",
+    "kql": "AppLogs | sort by TimeGenerated desc | take 5",
+    "expected_sql": "SELECT * FROM AppLogs ORDER BY TimeGenerated DESC LIMIT 5"
+  },
+  {
+    "id": "adv_007",
+    "category": "adversarial",
+    "description": "double-quoted string literal",
+    "kql": "AppLogs | where Level == \"Error\"",
+    "expected_sql": "SELECT * FROM AppLogs WHERE Level = 'Error'"
+  },
+  {
+    "id": "adv_008",
+    "category": "adversarial",
+    "description": "where with nested parens",
+    "kql": "AppLogs | where (Level == 'Error' and (Duration > 500 or Region == 'east'))",
+    "expected_sql": "SELECT * FROM AppLogs WHERE (Level = 'Error' AND (Duration > 500 OR Region = 'east'))"
+  },
+  {
+    "id": "adv_009",
+    "category": "adversarial",
+    "description": "summarize with no alias on agg",
+    "kql": "AppLogs | summarize count() by ServiceName",
+    "expected_sql": "SELECT ServiceName, COUNT(*) FROM AppLogs GROUP BY ServiceName"
+  },
+  {
+    "id": "adv_010",
+    "category": "adversarial",
+    "description": "multi-join chained query",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | order by n desc | take 3",
+    "expected_sql": "SELECT ServiceName, COUNT(*) AS n FROM AppLogs WHERE Level = 'Error' GROUP BY ServiceName ORDER BY n DESC LIMIT 3"
+  }
+]

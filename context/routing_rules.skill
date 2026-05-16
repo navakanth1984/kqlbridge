@@ -1,0 +1,86 @@
+---
+name: kqlbridge-routing-rules
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Distribute
+description: Engine selection rules for the DE-Context Kit routing agent
+---
+
+# KQLBridge Routing Rules
+
+## The Routing Decision
+
+Given a KQL query, the routing agent must decide:
+- **Spark SQL** (Databricks, Fabric Spark notebook) — if all operators are translatable
+- **KQL engine** (Eventhouse, ADX) — if any operator has no SQL equivalent
+
+## API
+
+```python
+from kqlbridge import translate, detect_operators, is_supported
+
+def route_query(query: str, schema: dict) -> dict:
+    # Fast path: is_supported() checks all operators at once
+    if not is_supported(query):
+        return {"engine": "kql", "sql": query, "reason": "unsupported operators"}
+
+    sql = translate(query, target="spark")
+    return {"engine": "spark", "sql": sql}
+```
+
+## Supported Operators (v0.1) → Spark SQL
+
+- where, project, summarize, order by, take, distinct
+- extend, join (inner), union, let, count
+- bin(), ago() within summarize/where
+
+## Unsupported Operators → Keep in KQL Engine
+
+| Operator | Reason |
+|---|---|
+| `make-series` | Time-series array — no SQL mapping |
+| `series_decompose_anomalies` | ML operator — no SQL equivalent |
+| `bag_unpack()` | Dynamic schema — breaks typed SQL |
+| `render` | Visualization — no SQL concept |
+| `ipv4_is_in_range()` | Network ops — no standard SQL mapping |
+| User-defined functions | Cluster-registered — unknowable at transpile time |
+
+## Routing Decision Tree
+
+```
+Query received
+  ↓
+is_supported(query) ?
+  NO → engine: kql   (keep in Eventhouse)
+  YES
+    ↓
+  target schema is Spark / Databricks?
+    YES → engine: spark, sql: translate(query, "spark")
+    NO  → target schema is Fabric SQL Warehouse?
+      YES → engine: tsql, sql: translate(query, "tsql")  [v0.2]
+      NO  → engine: kql (safe default)
+```
+
+## Cost Signals (for routing optimization)
+
+- KQL engine: best for time-series operators, full-text search, anomaly detection
+- Spark SQL: best for large-scale batch aggregations, joins with data lake tables
+- T-SQL: best for BI tools, Power BI DirectQuery, row-level security
+
+## Error Handling
+
+```python
+from kqlbridge import check
+
+result = check(query)
+if not result.is_supported:
+    # Log errors and warnings for observability
+    for error in result.errors:
+        logger.warning(f"KQLBridge routing: {error}")
+```
+
+## CDLC Observe Phase
+
+Every query that routes to KQL engine (unsupported operator) is a signal
+that a new operator skill is needed. The routing agent should log these
+for the CDLC Observe feedback loop → new eval test cases.

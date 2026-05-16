@@ -1,0 +1,39 @@
+# operator_orderby.skill — CDLC Context Package
+# KQLBridge v0.1 | Generate → Test → Distribute → Observe
+# ============================================================
+
+## What order by / sort by does in KQL
+Sorts the result set. `sort by` is an alias for `order by`.
+Default direction when omitted: asc (Spark SQL default).
+
+## Translation table
+| KQL                                 | Spark SQL                             |
+|-------------------------------------|---------------------------------------|
+| T | order by ts desc                | SELECT * FROM T ORDER BY ts DESC      |
+| T | order by ts asc                 | SELECT * FROM T ORDER BY ts ASC       |
+| T | sort by name                    | SELECT * FROM T ORDER BY name ASC     |
+| T | order by a desc, b asc          | SELECT * FROM T ORDER BY a DESC, b ASC|
+
+## Full examples
+```kql
+SecurityEvent | order by TimeGenerated desc | take 100
+```
+```sql
+SELECT *
+FROM SecurityEvent
+ORDER BY TimeGenerated DESC
+LIMIT 100
+```
+
+## Edge cases
+- Direction keyword absent → defaults to ASC
+- `sort by` keyword accepted (grammar alias)
+- Numeric column expression: `order by count desc` after summarize works correctly
+
+## Known limits
+- `nulls first` / `nulls last` modifiers → not supported in v0.1
+- `top N by col desc` shorthand → not in v0.1 grammar; use `order by + take`
+
+## Routing rules
+- order_op / sort_op → SUPPORTED → SparkSQLGenerator._order()
+- ORDER_DIR named terminal → preserved in parse tree as Token

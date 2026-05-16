@@ -1,0 +1,92 @@
+---
+name: kql-operator-where
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL where operator — filter rows → SQL WHERE clause
+---
+
+# where → WHERE Translation
+
+## What it does in KQL
+
+`where` filters rows from the table. It is the most common KQL operator.
+It accepts any boolean expression: comparisons, string ops, null checks, logical ops.
+
+## Basic Translation
+
+```kql
+AppLogs | where Level == 'Error'
+```
+```sql
+SELECT * FROM AppLogs WHERE Level = 'Error'
+```
+
+## Operator Mapping
+
+| KQL | SQL | Notes |
+|---|---|---|
+| `==` | `=` | KQL uses == for equality |
+| `!=` | `<>` | |
+| `=~` | `=` | Case-insensitive in KQL — v0.1 maps to exact match. Warn user. |
+| `<`, `<=`, `>`, `>=` | same | |
+| `and` | `AND` | |
+| `or` | `OR` | |
+| `not` | `NOT (...)` | |
+
+## String Operations
+
+| KQL | SQL |
+|---|---|
+| `contains 'x'` | `LIKE '%x%'` |
+| `startswith 'x'` | `LIKE 'x%'` |
+| `endswith 'x'` | `LIKE '%x'` |
+| `has 'x'` | `LIKE '% x %'` (word boundary — approximate) |
+| `matches regex 'x'` | `regexp_like(col, 'x')` |
+
+## List Expressions
+
+```kql
+| where Level in ('Error', 'Warning', 'Critical')
+→ WHERE Level IN ('Error', 'Warning', 'Critical')
+
+| where Level !in ('Debug', 'Info')
+→ WHERE Level NOT IN ('Debug', 'Info')
+```
+
+## Null Checks
+
+```kql
+| where isnotnull(UserId)   → WHERE UserId IS NOT NULL
+| where isnull(Region)      → WHERE Region IS NULL
+```
+
+## Chained where (Multiple where Operators)
+
+KQL allows multiple `| where` operators in a pipeline.
+Each becomes an additional AND condition in the same WHERE clause:
+
+```kql
+AppLogs | where Level == 'Error' | where Duration > 500
+→ SELECT * FROM AppLogs WHERE Level = 'Error' AND Duration > 500
+```
+
+## Edge Cases
+
+- `=~` (case-insensitive equality): v0.1 maps to exact `=`. Add a warning comment
+  to the generated SQL. Full case-insensitive support requires LOWER() wrapping — v0.2.
+- Boolean literals: `where IsActive == true` → `WHERE IsActive = TRUE`
+- Nested parentheses are preserved in the boolean structure.
+
+## Known Limits
+
+- `has_any(['a', 'b'])` — NOT SUPPORTED in v0.1 (requires multi-LIKE or REGEXP)
+- `where * has 'error'` — wildcard column search — NOT SUPPORTED in v0.1
+
+## Routing Rules
+
+If `where` is the ONLY operator and uses only basic comparisons →
+engine selection is free (KQL or Spark SQL both work).
+
+If `where` contains unsupported operators (has_any, etc.) →
+flag to routing agent: keep in KQL engine.

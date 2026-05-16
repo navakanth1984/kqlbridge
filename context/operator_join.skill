@@ -1,0 +1,64 @@
+---
+name: kql-operator-join
+version: 0.1.0
+kqlbridge_version: ">=0.1.0"
+cdlc_phase: Generate
+description: KQL join operator → SQL INNER/LEFT/RIGHT/FULL JOIN
+jagged_risk: MEDIUM — ON clause key extraction from KQL 'by' requires care
+---
+
+# join → SQL JOIN Translation
+
+## KQL Join Syntax
+
+```kql
+T1 | join kind=inner (T2) on KeyColumn
+T1 | join kind=leftouter (T2) on Key1, Key2
+```
+
+## Join Kind Mapping
+
+| KQL kind | SQL |
+|---|---|
+| `inner` (default) | `INNER JOIN` |
+| `leftouter` | `LEFT OUTER JOIN` |
+| `rightouter` | `RIGHT OUTER JOIN` |
+| `fullouter` | `FULL OUTER JOIN` |
+
+## ON Clause
+
+KQL's `on` keyword specifies shared key columns.
+SQL requires explicit `table.column = table.column` references.
+
+```kql
+AppLogs | join (Users) on UserId
+→ SELECT * FROM AppLogs INNER JOIN Users ON AppLogs.UserId = Users.UserId
+```
+
+## Multiple Keys
+
+```kql
+Orders | join (Customers) on CustomerId, Region
+→ INNER JOIN Customers ON Orders.CustomerId = Customers.CustomerId
+  AND Orders.Region = Customers.Region
+```
+
+## KQL Join Flavors NOT in v0.1
+
+KQL has many join flavors (innerunique, leftanti, rightanti, leftsemi, etc.).
+v0.1 supports only: inner, leftouter, rightouter, fullouter.
+
+If any other flavor detected → keep in KQL engine.
+
+## Jagged Risk Note
+
+The `on` clause maps column names assuming the column exists with the same
+name in both tables. If a query uses column aliasing before the join,
+the generated ON clause may be wrong. Human review required when
+extend/project appears before a join.
+
+## Known Limits
+
+- join with complex subqueries in the right-hand side → partial support
+- innerunique, leftanti, rightanti, leftsemi → NOT SUPPORTED v0.1
+- Cross-join (no `on`) → NOT SUPPORTED
