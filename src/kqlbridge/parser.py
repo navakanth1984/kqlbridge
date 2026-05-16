@@ -19,7 +19,7 @@ from pathlib import Path
 from lark import Lark, Tree, Token
 
 from .ast_nodes import (
-    KQLQuery, LetBinding, PipeOp,
+    KQLQuery, LetBinding,
     # Operators
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
     DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp,
