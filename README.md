@@ -3,7 +3,7 @@
 **KQL → Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks**
 
 [![PyPI version](https://badge.fury.io/py/kqlbridge.svg)](https://badge.fury.io/py/kqlbridge)
-[![Eval Score](https://img.shields.io/badge/eval-85%25-brightgreen)](tests/eval/prepare.py)
+[![Eval Score](https://img.shields.io/badge/eval-100%25-brightgreen)](tests/eval/prepare.py)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 
