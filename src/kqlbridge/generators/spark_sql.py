@@ -18,7 +18,6 @@ Human review is REQUIRED on every aggregate operator before accepting it as pass
 """
 
 from __future__ import annotations
-from typing import Optional
 
 from ..ast_nodes import (
     KQLQuery, LetBinding,
@@ -28,7 +27,7 @@ from ..ast_nodes import (
     BinGroup, PlainGroup,
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
-    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
+    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr,
     DatetimeLit,
 )
 
@@ -103,7 +102,6 @@ class SparkSQLGenerator:
         order: str = ""
         limit: str = ""
         distinct: bool = False
-        is_union: Optional[str] = None
 
         for op in query.pipes:
 
@@ -111,7 +109,11 @@ class SparkSQLGenerator:
                 where_clauses.append(self._where(op))
 
             elif isinstance(op, ProjectOp):
-                select_cols = op.columns
+                aliases = op.aliases or {}
+                select_cols = [
+                    f"{col} AS {aliases[col]}" if col in aliases else col
+                    for col in op.columns
+                ]
 
             elif isinstance(op, SummarizeOp):
                 select_cols, group_by = self._summarize(op)
@@ -135,6 +137,22 @@ class SparkSQLGenerator:
                     select_cols = ["*"] + extend_parts
                 else:
                     select_cols = select_cols + extend_parts
+                # If a summarize follows, we must wrap the current state in a subquery
+                # so the extended columns are visible to GROUP BY / agg functions
+                future_ops = query.pipes[query.pipes.index(op) + 1:]
+                if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
+                    inner_sql = self._assemble(
+                        select_cols=select_cols,
+                        table=table,
+                        where_clauses=where_clauses,
+                        group_by=[],
+                        order="",
+                        limit="",
+                        distinct=False,
+                    )
+                    table = "(\n" + inner_sql + "\n) _extended"
+                    select_cols = ["*"]
+                    where_clauses = []
 
             elif isinstance(op, JoinOp):
                 # Inline join — handled in assembly
@@ -145,14 +163,18 @@ class SparkSQLGenerator:
                 select_cols = ["*"]
 
             elif isinstance(op, UnionOp):
-                is_union = self._union(table, op)
+                union_sql = self._union(table, op)
+                if union_sql != table:  # real union was built
+                    table = union_sql
+                    select_cols = ["*"]
+                    # Check if this is the last op — return union directly if no trailing ops
+                    remaining = query.pipes[query.pipes.index(op) + 1:]
+                    if not remaining:
+                        return union_sql
+                # if union_sql == table, op.tables was empty → unsupported subquery union
 
             elif isinstance(op, CountOp):
                 select_cols = ["COUNT(*) AS count_"]
-
-        # Handle union — short-circuit assembly
-        if is_union:
-            return is_union
 
         return self._assemble(
             select_cols=select_cols,
@@ -177,6 +199,13 @@ class SparkSQLGenerator:
         distinct: bool,
     ) -> str:
         distinct_kw = "DISTINCT " if distinct else ""
+
+        # If the table is already a UNION ALL block, wrap it as a subquery
+        # so ORDER BY and LIMIT can be applied to the combined result
+        # If table is a UNION ALL block, wrap in subquery only when trailing ops exist
+        if "UNION ALL" in table and (order or limit or where_clauses or group_by):
+            table = "(\n" + table + "\n) _union_result"
+
         parts = [
             f"SELECT {distinct_kw}{', '.join(select_cols)}",
             f"FROM {table}",
@@ -276,6 +305,12 @@ class SparkSQLGenerator:
 
     def _union(self, table: str, op: UnionOp) -> str:
         """KQL union T1, T2, T3 → SELECT * FROM T1 UNION ALL SELECT * FROM T2 ..."""
+        if not op.tables:
+            return table  # subquery union — return unchanged
+        if "UNION ALL" in table:
+            # table is already a union block (chained union) — append without re-wrapping
+            new_parts = ["UNION ALL\nSELECT * FROM " + t for t in op.tables]
+            return table + "\n" + "\n".join(new_parts)
         all_tables = [table] + list(op.tables)
         parts = [f"SELECT * FROM {t}" for t in all_tables]
         return "\nUNION ALL\n".join(parts)
@@ -346,6 +381,12 @@ class SparkSQLGenerator:
 
         if isinstance(expr, str):
             return expr
+
+        if isinstance(expr, IffExpr):
+            cond = self._bool_expr(expr.condition)
+            true_v = self._expr(expr.true_val)
+            false_v = self._expr(expr.false_val)
+            return f"CASE WHEN {cond} THEN {true_v} ELSE {false_v} END"
 
         raise NotImplementedError(f"Unknown expr type: {type(expr).__name__}")
 

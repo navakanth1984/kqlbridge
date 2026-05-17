@@ -19,12 +19,15 @@ import sys
 
 def _translate(args: argparse.Namespace) -> int:
     from kqlbridge import translate, is_supported
+
     kql = args.kql
     target = "tsql" if getattr(args, "tsql", False) else "spark"
+
     if not is_supported(kql):
-        print("[kqlbridge] Query contains unsupported operators.", file=sys.stderr)
+        print("[kqlbridge] ✗ Query contains unsupported operators.", file=sys.stderr)
         print("[kqlbridge] Run 'kqlbridge check' for details.", file=sys.stderr)
         return 1
+
     try:
         sql = translate(kql, target=target)
         print(sql)
@@ -36,22 +39,49 @@ def _translate(args: argparse.Namespace) -> int:
 
 def _check(args: argparse.Namespace) -> int:
     from kqlbridge import is_supported, detect_operators
+
     kql = args.kql
+
+    # Use is_supported() first — it catches parse errors gracefully
     if not is_supported(kql):
         ops = detect_operators(kql)
-        print("Unsupported")
+        print("✗ Unsupported")
         print(f"  Operators detected : {', '.join(ops) if ops else 'none'}")
         print("  Reason             : query uses unsupported operators or invalid syntax")
         return 1
+
     from kqlbridge import check
     result = check(kql)
     ops = detect_operators(kql)
-    print("Supported")
+
+    print("✓ Supported")
     print(f"  Operators detected: {', '.join(ops) if ops else 'none'}")
     if result.warnings:
         for w in result.warnings:
-            print(f"  WARNING: {w}")
+            print(f"  ⚠  {w}")
     return 0
+
+
+
+def _lint(args) -> int:
+    from kqlbridge.lint import lint
+    kql = args.kql
+    result = lint(kql)
+
+    if result.is_clean:
+        print("✓ CLEAN — no semantic drift detected")
+        return 0
+
+    print(f"⚠  SEMANTIC DRIFT DETECTED — {len(result.issues)} issue(s)  [risk: {result.risk}]")
+    print()
+    for i, issue in enumerate(result.issues, 1):
+        print(f"[{issue.rule_id}] {issue.severity} — {issue.operator}")
+        print(f"  KQL intent : {issue.kql_intent}")
+        print(f"  SQL does   : {issue.sql_behaviour}")
+        print(f"  Fix        : {issue.fix}")
+        print()
+
+    return 1
 
 
 def _operators(args: argparse.Namespace) -> int:
@@ -62,9 +92,9 @@ def _operators(args: argparse.Namespace) -> int:
         "and / or / not", "in", "has", "contains",
         "startswith", "endswith", "isnotnull", "isnull",
     ]
-    print("KQLBridge v0.1 - supported operators:")
+    print("KQLBridge v0.1 — supported operators:")
     for op in supported:
-        print(f"  {op}")
+        print(f"  ✓  {op}")
     return 0
 
 
@@ -81,29 +111,39 @@ def _version(args: argparse.Namespace) -> int:
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="kqlbridge",
-        description="KQL to Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks",
+        description="KQL → Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks",
     )
     sub = parser.add_subparsers(dest="command", metavar="<command>")
 
+    # translate
     p_translate = sub.add_parser("translate", help="Translate KQL to SQL")
     p_translate.add_argument("kql", help="KQL query string")
     p_translate.add_argument("--tsql", action="store_true", help="Output T-SQL instead of Spark SQL")
     p_translate.set_defaults(func=_translate)
 
+    # check
     p_check = sub.add_parser("check", help="Check if a KQL query is supported")
     p_check.add_argument("kql", help="KQL query string")
     p_check.set_defaults(func=_check)
 
+    # operators
+    p_lint = sub.add_parser("lint", help="Detect semantic drift in AI-generated KQL")
+    p_lint.add_argument("kql", help="KQL query string")
+    p_lint.set_defaults(func=_lint)
+
     p_ops = sub.add_parser("operators", help="List all supported KQL operators")
     p_ops.set_defaults(func=_operators)
 
+    # version
     p_ver = sub.add_parser("version", help="Show version")
     p_ver.set_defaults(func=_version)
 
     args = parser.parse_args()
+
     if args.command is None:
         parser.print_help()
         sys.exit(0)
+
     sys.exit(args.func(args))
 
 

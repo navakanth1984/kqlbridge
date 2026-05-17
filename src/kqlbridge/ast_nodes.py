@@ -49,6 +49,14 @@ class BoolLit:
 
 
 @dataclass
+class IffExpr:
+    """iff(condition, true_val, false_val) → CASE WHEN ... THEN ... ELSE ... END"""
+    condition: object
+    true_val: object
+    false_val: object
+
+
+@dataclass
 class DatetimeLit:
     """A KQL datetime literal: datetime(2024-01-01)"""
     raw: str
@@ -86,7 +94,7 @@ class BinaryOp:
 
 # Expr = any scalar expression type
 Expr = Union[
-    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, DatetimeLit,
+    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, DatetimeLit, IffExpr,
     AgoExpr, BinExpr, FuncCall, BinaryOp
 ]
 
@@ -232,8 +240,9 @@ class WhereOp:
 
 @dataclass
 class ProjectOp:
-    """| project Message, Level"""
+    """| project Message, Level  or  | project NewName=OldName, Level"""
     columns: list[str]
+    aliases: dict[str, str] = None  # {source_col: alias} for project col=alias syntax
 
 
 @dataclass

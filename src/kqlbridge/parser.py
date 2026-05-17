@@ -33,7 +33,7 @@ from .ast_nodes import (
     # Bool expressions
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
     # Order
-    OrderItem, DatetimeLit,
+    OrderItem, DatetimeLit, IffExpr,
 )
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
@@ -141,7 +141,6 @@ def _build_let(tree: Tree) -> LetBinding:
                  if isinstance(c, Tree) and c.data == "pipe_op"]
         sub_query = KQLQuery(table=table, pipes=pipes)
     else:
-        # let x = scalar_expr — treat as a CTE returning the literal
         sub_query = KQLQuery(table="__scalar__", pipes=[])
 
     return LetBinding(name=name, value=sub_query)
@@ -174,8 +173,23 @@ def _build_where(tree: Tree) -> WhereOp:
 
 
 def _build_project(tree: Tree) -> ProjectOp:
-    col_list = tree.children[0]
-    return ProjectOp(columns=[str(t) for t in col_list.children if isinstance(t, Token)])
+    project_list = tree.children[0]  # project_list Tree
+    columns = []
+    aliases = {}
+    for item in project_list.children:
+        if not isinstance(item, Tree):
+            continue
+        if item.data == "project_alias":
+            # project_alias: NAME "=" NAME  (alias = source)
+            alias = str(item.children[0])
+            source = str(item.children[1])
+            columns.append(source)
+            aliases[source] = alias
+        else:
+            # project_col: NAME
+            col = str(item.children[0])
+            columns.append(col)
+    return ProjectOp(columns=columns, aliases=aliases)
 
 
 def _build_summarize(tree: Tree) -> SummarizeOp:
@@ -207,7 +221,7 @@ def _build_agg_item(tree: Tree):
     if tree.data == "named_agg":
         alias = str(tree.children[0])
         agg_func_tree = tree.children[1]
-    else:  # anon_agg
+    else:
         alias = None
         agg_func_tree = tree.children[0]
 
@@ -225,7 +239,7 @@ def _build_agg_func(tree: Tree, alias):
         "agg_countif": lambda t, a: AggCountIf(
             condition=_build_bool_expr(t.children[0]), alias=a
         ),
-        "agg_bin": lambda t, a: AggCount(alias=a),  # bin in agg context → stub
+        "agg_bin": lambda t, a: AggCount(alias=a),
     }
     builder = dispatch.get(tree.data)
     if builder is None:
@@ -267,10 +281,8 @@ def _build_take(tree: Tree) -> TakeOp:
 
 
 def _build_distinct(tree: Tree) -> DistinctOp:
-    # distinct * — "*" is anonymous terminal, dropped from tree → no children
     if not tree.children:
         return DistinctOp(columns=[], star=True)
-    # explicit star token preserved (keep_all_tokens edge case)
     for child in tree.children:
         if isinstance(child, Token) and str(child) == "*":
             return DistinctOp(columns=[], star=True)
@@ -286,16 +298,14 @@ def _build_extend(tree: Tree) -> ExtendOp:
     for item in assign_list.children:
         if isinstance(item, Tree) and item.data == "assign_item":
             name = str(item.children[0])
-            val_node = item.children[1]  # assign_val Tree
+            val_node = item.children[1]
             if isinstance(val_node, Tree):
                 if val_node.data == "assign_comparison":
-                    # e.g. Amount > 1000  →  Comparison node
                     left = _build_expr(val_node.children[0])
-                    op = str(val_node.children[1])   # COMP_OP Token
+                    op = str(val_node.children[1])
                     right = _build_expr(val_node.children[2])
                     expr = Comparison(left=left, op=op, right=right)
                 else:
-                    # assign_expr — regular scalar expr
                     expr = _build_expr(val_node.children[0])
             else:
                 expr = _build_expr(val_node)
@@ -311,11 +321,10 @@ def _build_join(tree: Tree) -> JoinOp:
     for child in tree.children:
         if isinstance(child, Tree):
             if child.data == "join_kind":
-                kind = str(child.children[-1])  # last token is the kind name
+                kind = str(child.children[-1])
             elif child.data == "table_expr":
                 right_table = str(child.children[0])
-                right_pipes = []
-                right_query = KQLQuery(table=right_table, pipes=right_pipes)
+                right_query = KQLQuery(table=right_table, pipes=[])
             elif child.data == "join_keys":
                 keys = [str(t) for t in child.children if isinstance(t, Token)]
 
@@ -351,7 +360,6 @@ def _build_bool_expr(tree) -> object:
 
     if tree.data == "comparison":
         left = _build_expr(tree.children[0])
-        # comp_op is a Tree node — extract the first token
         comp_op_node = tree.children[1]
         if isinstance(comp_op_node, Tree):
             op = str(comp_op_node.children[0])
@@ -385,7 +393,6 @@ def _build_bool_expr(tree) -> object:
     if tree.data == "isnull_expr":
         return NullCheck(col=_build_expr(tree.children[0]), is_null=True)
 
-    # Fallthrough — treat single child as a comparison with true
     if len(tree.children) == 1:
         return _build_bool_expr(tree.children[0])
 
@@ -425,7 +432,6 @@ def _build_expr(tree) -> object:
     if tree.data == "paren_expr":
         return _build_expr(tree.children[0])
 
-    # Literal subtrees
     if tree.data == "string_lit":
         return StringLit(value=_strip_quotes(str(tree.children[0])))
     if tree.data == "int_lit":
@@ -437,7 +443,12 @@ def _build_expr(tree) -> object:
     if tree.data == "datetime_lit":
         return DatetimeLit(raw=str(tree.children[0]))
 
-    # Single-child passthrough
+    if tree.data == "iff_call":
+        condition = _build_bool_expr(tree.children[0])
+        true_val = _build_expr(tree.children[1])
+        false_val = _build_expr(tree.children[2])
+        return IffExpr(condition=condition, true_val=true_val, false_val=false_val)
+
     if len(tree.children) == 1:
         return _build_expr(tree.children[0])
 

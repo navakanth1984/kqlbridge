@@ -39,7 +39,7 @@ where_op: "where" bool_expr
 
 // ─── project ────────────────────────────────────────────────
 
-project_op: "project" col_list
+project_op: "project" project_list
 
 // ─── summarize ──────────────────────────────────────────────
 
@@ -144,7 +144,8 @@ term: term "*" factor -> mul
     | term "/" factor -> div
     | factor
 
-factor: ago_expr
+factor: iff_call
+      | ago_expr
       | bin_expr
       | func_call
       | NAME            -> column_ref
@@ -155,6 +156,9 @@ ago_expr  : "ago" "(" timespan ")"
 bin_expr  : "bin" "(" expr "," timespan ")"
 
 func_call : NAME "(" (expr ("," expr)*)? ")"
+
+// iff(condition, true_val, false_val) — condition is a bool_expr
+iff_call: "iff" "(" bool_expr "," expr "," expr ")"
 
 // ─── Literals ────────────────────────────────────────────────
 
@@ -176,6 +180,9 @@ TIMEUNIT: "d" | "h" | "m" | "s" | "ms" | "us" | "ns"
 // ─── Helpers ─────────────────────────────────────────────────
 
 col_list: NAME ("," NAME)*
+project_list: project_item ("," project_item)*
+project_item: NAME "=" NAME   -> project_alias
+            | NAME             -> project_col
 
 // ─── Terminals ───────────────────────────────────────────────
 

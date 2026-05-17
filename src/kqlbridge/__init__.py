@@ -13,7 +13,9 @@ from __future__ import annotations
 from typing import Literal
 
 from .parser import parse
+from lark.exceptions import UnexpectedInput as _LarkUnexpectedInput
 from .semantic import check as _semantic_check, SemanticResult
+from .lint import lint, LintResult  # noqa: F401 — public API
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 
@@ -43,7 +45,14 @@ def translate(
         NotImplementedError: if target generator is not implemented
         ValueError: if query contains unsupported operators (check first)
     """
-    query = parse(kql)
+    try:
+        query = parse(kql)
+    except _LarkUnexpectedInput as e:
+        raise ValueError(
+            "Unsupported KQL syntax — contains operators or constructs not supported "
+            "in this version. Use is_supported() to check before translating.\n"
+            f"Detail: {e}"
+        ) from None
     if target == "spark":
         return _SPARK_GEN.generate(query)
     if target == "tsql":
