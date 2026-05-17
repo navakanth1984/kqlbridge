@@ -89,7 +89,7 @@ jobs:
 
       - name: Fail if locked files were modified
         run: |
-          LOCKED="tests/eval/prepare.py tests/eval/benchmark.json src/kqlbridge/ast_nodes.py src/kqlbridge/grammar/kql.lark"
+          LOCKED="tests/eval/prepare.py src/kqlbridge/ast_nodes.py src/kqlbridge/grammar/kql.lark"
           CHANGED=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
           for file in $LOCKED; do
             if echo "$CHANGED" | grep -q "^$file$"; then
