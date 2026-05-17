@@ -1,10 +1,10 @@
 [build-system]
 requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "kqlbridge"
-version = "0.1.0"
+version = "0.2.0"
 description = "KQL → Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks"
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -34,9 +34,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/navakanth1984/kqlbridge"
-Repository = "https://github.com/navakanth1984/kqlbridge"
-Issues = "https://github.com/navakanth1984/kqlbridge/issues"
+Homepage = "https://github.com/navakanth/kqlbridge"
+Repository = "https://github.com/navakanth/kqlbridge"
+Issues = "https://github.com/navakanth/kqlbridge/issues"
 
 [project.scripts]
 kqlbridge = "kqlbridge.cli:main"

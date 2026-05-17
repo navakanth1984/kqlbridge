@@ -13,7 +13,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .ast_nodes import KQLQuery, PipeOp
+    from .ast_nodes import KQLQuery
 
 
 # Operators that have no SQL mapping — explicitly documented
@@ -97,7 +97,7 @@ def _check_summarize_rewrite(query: "KQLQuery", errors: list, warnings: list) ->
     This is the most likely source of silent semantic failures.
     Human review required on every aggregate operator output.
     """
-    from .ast_nodes import SummarizeOp, AggCount
+    from .ast_nodes import SummarizeOp
 
     for op in query.pipes:
         if isinstance(op, SummarizeOp):

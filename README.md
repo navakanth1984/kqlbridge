@@ -3,7 +3,7 @@
 **KQL → Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks**
 
 [![PyPI version](https://badge.fury.io/py/kqlbridge.svg)](https://badge.fury.io/py/kqlbridge)
-[![Eval Score](https://img.shields.io/badge/eval-100%25-brightgreen)](tests/eval/prepare.py)
+[![Eval Score](https://img.shields.io/badge/eval-85%25-brightgreen)](tests/eval/prepare.py)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
 
@@ -42,29 +42,53 @@ pip install kqlbridge
 
 ## Quick Start
 
+### Python API
+
 ```python
 from kqlbridge import translate, detect_operators, is_supported
 
-# Translate KQL to Spark SQL
+# Translate KQL → Spark SQL (Microsoft Fabric Lakehouse / Databricks)
 sql = translate(
     "AppLogs | where TimeGenerated > ago(24h) | project Message, Level",
     target="spark"
+)
+
+# Translate KQL → T-SQL (Microsoft Fabric SQL Warehouse / Synapse)
+sql = translate(
+    "AppLogs | where TimeGenerated > ago(24h) | project Message, Level",
+    target="tsql"
 )
 
 # Check which operators are used
 ops = detect_operators("AppLogs | where Level == 'Error' | summarize count() by Host")
 # → ['where', 'summarize']
 
-# Check if a query is fully translatable
-if is_supported("AppLogs | make-series count() on TimeGenerated"):
-    sql = translate(...)
+# Gate unsupported queries before translating
+if is_supported(kql):
+    sql = translate(kql)
 else:
     print("Unsupported operators — keep in KQL engine")
 ```
 
+### CLI
+
+```bash
+# Translate to Spark SQL (default)
+kqlbridge translate "AppLogs | where Level == 'Error' | summarize count() by Host"
+
+# Translate to T-SQL
+kqlbridge translate "Events | where ts > ago(7d) | take 100" --tsql
+
+# Check if a query is supported (exit 0 = yes, exit 1 = no — useful in CI)
+kqlbridge check "AppLogs | where Level == 'Error' | join (Users) on UserId"
+
+# List all supported operators
+kqlbridge operators
+```
+
 ---
 
-## Supported Operators (v0.1)
+## Supported Operators (v0.2)
 
 | KQL Operator | Spark SQL Output | Status |
 |---|---|---|
@@ -122,7 +146,7 @@ All contributions must include a corresponding test case in `tests/eval/benchmar
 PRs that do not include a new test case will not be merged.
 
 ```bash
-git clone https://github.com/navakanth1984/kqlbridge
+git clone https://github.com/navakanth/kqlbridge
 cd kqlbridge
 pip install -e ".[dev]"
 python tests/eval/prepare.py  # baseline score
