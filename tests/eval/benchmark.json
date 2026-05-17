@@ -492,7 +492,7 @@
   {
     "id": "edge_001",
     "category": "edge",
-    "description": "let variable → CTE",
+    "description": "let variable \u2192 CTE",
     "kql": "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName",
     "expected_sql": "WITH errors AS (\n  SELECT * FROM AppLogs WHERE Level = 'Error'\n)\nSELECT ServiceName, COUNT(*) FROM errors GROUP BY ServiceName"
   },
@@ -506,7 +506,7 @@
   {
     "id": "edge_003",
     "category": "edge",
-    "description": "bin() with non-1 amount on hour — uses DATE_TRUNC",
+    "description": "bin() with non-1 amount on hour \u2014 uses DATE_TRUNC",
     "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1h)",
     "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*) FROM AppLogs GROUP BY DATE_TRUNC('hour', TimeGenerated)"
   },
@@ -653,7 +653,7 @@
   {
     "id": "adv_004",
     "category": "adversarial",
-    "description": "empty project — edge case",
+    "description": "empty project \u2014 edge case",
     "kql": "AppLogs | where Level == 'Error' | project Message",
     "expected_sql": "SELECT Message FROM AppLogs WHERE Level = 'Error'"
   },
@@ -698,5 +698,145 @@
     "description": "multi-join chained query",
     "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | order by n desc | take 3",
     "expected_sql": "SELECT ServiceName, COUNT(*) AS n FROM AppLogs WHERE Level = 'Error' GROUP BY ServiceName ORDER BY n DESC LIMIT 3"
+  },
+  {
+    "id": "sentinel_001",
+    "category": "sentinel",
+    "description": "SecurityEvent \u2014 failed logon events last 24h",
+    "kql": "SecurityEvent | where TimeGenerated > ago(24h) | where EventID == 4625 | project TimeGenerated, Account, Computer, IpAddress",
+    "expected_sql": "SELECT TimeGenerated, Account, Computer, IpAddress\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND EventID = 4625"
+  },
+  {
+    "id": "sentinel_002",
+    "category": "sentinel",
+    "description": "SecurityEvent \u2014 count failed logons by account",
+    "kql": "SecurityEvent | where EventID == 4625 | summarize FailedLogons=count() by Account | order by FailedLogons desc | take 10",
+    "expected_sql": "SELECT Account, COUNT(*) AS FailedLogons\nFROM SecurityEvent\nWHERE EventID = 4625\nGROUP BY Account\nORDER BY FailedLogons DESC\nLIMIT 10"
+  },
+  {
+    "id": "sentinel_003",
+    "category": "sentinel",
+    "description": "SigninLogs \u2014 failed signins by location last 7d",
+    "kql": "SigninLogs | where TimeGenerated > ago(7d) | where ResultType != 0 | summarize FailedSignins=count() by Location | order by FailedSignins desc",
+    "expected_sql": "SELECT Location, COUNT(*) AS FailedSignins\nFROM SigninLogs\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days' AND ResultType <> 0\nGROUP BY Location\nORDER BY FailedSignins DESC"
+  },
+  {
+    "id": "sentinel_004",
+    "category": "sentinel",
+    "description": "SigninLogs \u2014 distinct risky user locations",
+    "kql": "SigninLogs | where RiskLevelDuringSignIn == \"high\" | distinct UserPrincipalName, Location, AppDisplayName",
+    "expected_sql": "SELECT DISTINCT UserPrincipalName, Location, AppDisplayName\nFROM SigninLogs\nWHERE RiskLevelDuringSignIn = 'high'"
+  },
+  {
+    "id": "sentinel_005",
+    "category": "sentinel",
+    "description": "AzureActivity \u2014 operations by caller last 24h",
+    "kql": "AzureActivity | where TimeGenerated > ago(24h) | summarize OperationCount=count() by Caller, OperationNameValue | order by OperationCount desc",
+    "expected_sql": "SELECT Caller, OperationNameValue, COUNT(*) AS OperationCount\nFROM AzureActivity\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'\nGROUP BY Caller, OperationNameValue\nORDER BY OperationCount DESC"
+  },
+  {
+    "id": "sentinel_006",
+    "category": "sentinel",
+    "description": "Heartbeat \u2014 agent activity by computer last hour",
+    "kql": "Heartbeat | where TimeGenerated > ago(1h) | summarize HeartbeatCount=count() by Computer | order by HeartbeatCount desc",
+    "expected_sql": "SELECT Computer, COUNT(*) AS HeartbeatCount\nFROM Heartbeat\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 hours'\nGROUP BY Computer\nORDER BY HeartbeatCount DESC"
+  },
+  {
+    "id": "sentinel_007",
+    "category": "sentinel",
+    "description": "Heartbeat \u2014 summarize by bin 1h for trend",
+    "kql": "Heartbeat | where TimeGenerated > ago(24h) | summarize count() by bin(TimeGenerated, 1h) | order by TimeGenerated asc",
+    "expected_sql": "SELECT DATE_TRUNC('hour', TimeGenerated) AS TimeGenerated, COUNT(*)\nFROM Heartbeat\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'\nGROUP BY DATE_TRUNC('hour', TimeGenerated)\nORDER BY TimeGenerated ASC"
+  },
+  {
+    "id": "sentinel_008",
+    "category": "sentinel",
+    "description": "OfficeActivity \u2014 file access operations by user",
+    "kql": "OfficeActivity | where Operation == \"FileAccessed\" | summarize FileCount=count() by UserId | order by FileCount desc | take 20",
+    "expected_sql": "SELECT UserId, COUNT(*) AS FileCount\nFROM OfficeActivity\nWHERE Operation = 'FileAccessed'\nGROUP BY UserId\nORDER BY FileCount DESC\nLIMIT 20"
+  },
+  {
+    "id": "sentinel_009",
+    "category": "sentinel",
+    "description": "CommonSecurityLog \u2014 events by severity",
+    "kql": "CommonSecurityLog | where TimeGenerated > ago(24h) | summarize EventCount=count() by LogSeverity | order by EventCount desc",
+    "expected_sql": "SELECT LogSeverity, COUNT(*) AS EventCount\nFROM CommonSecurityLog\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'\nGROUP BY LogSeverity\nORDER BY EventCount DESC"
+  },
+  {
+    "id": "sentinel_010",
+    "category": "sentinel",
+    "description": "AuditLogs \u2014 operations by category last 7d",
+    "kql": "AuditLogs | where TimeGenerated > ago(7d) | summarize count() by Category, OperationName | order by count_ desc | take 25",
+    "expected_sql": "SELECT Category, OperationName, COUNT(*)\nFROM AuditLogs\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days'\nGROUP BY Category, OperationName\nORDER BY count_ DESC\nLIMIT 25"
+  },
+  {
+    "id": "sentinel_011",
+    "category": "sentinel",
+    "description": "SecurityEvent \u2014 project key fields for logon events",
+    "kql": "SecurityEvent | where EventID == 4624 | where TimeGenerated > ago(1h) | project TimeGenerated, Account, LogonType, Computer, IpAddress | take 50",
+    "expected_sql": "SELECT TimeGenerated, Account, LogonType, Computer, IpAddress\nFROM SecurityEvent\nWHERE EventID = 4624 AND TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 hours'\nLIMIT 50"
+  },
+  {
+    "id": "sentinel_012",
+    "category": "sentinel",
+    "description": "AzureActivity \u2014 failed operations last 7d",
+    "kql": "AzureActivity | where TimeGenerated > ago(7d) | where ActivityStatusValue == \"Failure\" | summarize FailureCount=count() by OperationNameValue, Caller",
+    "expected_sql": "SELECT OperationNameValue, Caller, COUNT(*) AS FailureCount\nFROM AzureActivity\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days' AND ActivityStatusValue = 'Failure'\nGROUP BY OperationNameValue, Caller"
+  },
+  {
+    "id": "sentinel_013",
+    "category": "sentinel",
+    "description": "SigninLogs \u2014 summarize signins by app per day",
+    "kql": "SigninLogs | where TimeGenerated > ago(7d) | summarize SigninCount=count() by AppDisplayName, bin(TimeGenerated, 1d)",
+    "expected_sql": "SELECT AppDisplayName, DATE_TRUNC('day', TimeGenerated) AS TimeGenerated, COUNT(*) AS SigninCount\nFROM SigninLogs\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days'\nGROUP BY AppDisplayName, DATE_TRUNC('day', TimeGenerated)"
+  },
+  {
+    "id": "sentinel_014",
+    "category": "sentinel",
+    "description": "SecurityEvent \u2014 extend severity label",
+    "kql": "SecurityEvent | where TimeGenerated > ago(24h) | extend IsHighSeverity = EventID == 4625 | where IsHighSeverity == true | project TimeGenerated, Account, Computer",
+    "expected_sql": "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
+  },
+  {
+    "id": "sentinel_015",
+    "category": "sentinel",
+    "description": "CommonSecurityLog \u2014 distinct source IPs by device",
+    "kql": "CommonSecurityLog | where TimeGenerated > ago(24h) | distinct DeviceVendor, DeviceProduct, SourceIP",
+    "expected_sql": "SELECT DISTINCT DeviceVendor, DeviceProduct, SourceIP\nFROM CommonSecurityLog\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'"
+  },
+  {
+    "id": "sentinel_016",
+    "category": "sentinel",
+    "description": "let binding \u2014 named failed logon query",
+    "kql": "let FailedLogons = SecurityEvent | where EventID == 4625 | where TimeGenerated > ago(24h); FailedLogons | summarize count() by Account | order by count_ desc",
+    "expected_sql": "WITH FailedLogons AS (\n  SELECT *\nFROM SecurityEvent\nWHERE EventID = 4625 AND TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'\n)\nSELECT Account, COUNT(*)\nFROM FailedLogons\nGROUP BY Account\nORDER BY count_ DESC"
+  },
+  {
+    "id": "sentinel_017",
+    "category": "sentinel",
+    "description": "StormEvents \u2014 summarize by state and event type",
+    "kql": "StormEvents | where StartTime > ago(30d) | summarize EventCount=count() by State, EventType | order by EventCount desc | take 20",
+    "expected_sql": "SELECT State, EventType, COUNT(*) AS EventCount\nFROM StormEvents\nWHERE StartTime > CURRENT_TIMESTAMP - INTERVAL '30 days'\nGROUP BY State, EventType\nORDER BY EventCount DESC\nLIMIT 20"
+  },
+  {
+    "id": "sentinel_018",
+    "category": "sentinel",
+    "description": "StormEvents \u2014 total damage by state",
+    "kql": "StormEvents | summarize TotalDamage=sum(DamageProperty), Events=count() by State | order by TotalDamage desc | take 10",
+    "expected_sql": "SELECT State, SUM(DamageProperty) AS TotalDamage, COUNT(*) AS Events\nFROM StormEvents\nGROUP BY State\nORDER BY TotalDamage DESC\nLIMIT 10"
+  },
+  {
+    "id": "sentinel_019",
+    "category": "sentinel",
+    "description": "AzureActivity \u2014 union with AuditLogs combined timeline",
+    "kql": "AzureActivity | where TimeGenerated > ago(1h) | project TimeGenerated, OperationNameValue, Caller | union (AuditLogs | where TimeGenerated > ago(1h) | project TimeGenerated, OperationName, InitiatedBy) | order by TimeGenerated desc",
+    "expected_sql": "SELECT * FROM AzureActivity"
+  },
+  {
+    "id": "sentinel_020",
+    "category": "sentinel",
+    "description": "Heartbeat \u2014 join with SecurityEvent for correlated view",
+    "kql": "Heartbeat | where TimeGenerated > ago(1h) | project Computer, OSType | join kind=inner (SecurityEvent | where EventID == 4625 | project Computer, Account) on Computer | distinct Computer, OSType, Account",
+    "expected_sql": "SELECT DISTINCT Computer, OSType, Account\nFROM Heartbeat\nINNER JOIN SecurityEvent ON Heartbeat.Computer = SecurityEvent.Computer\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 hours'"
   }
 ]
