@@ -104,7 +104,9 @@ join_keys: NAME ("," NAME)*
 
 union_op: "union" union_tables
 
-union_tables: NAME ("," NAME)*
+union_tables: union_item ("," union_item)*
+union_item: NAME              -> union_table_name
+          | "(" table_ref_expr ")"  -> union_table_subquery
             | "(" table_expr ("|" pipe_op)* ")" ("," "(" table_expr ("|" pipe_op)* ")")*
 
 // ─── count ──────────────────────────────────────────────────
@@ -121,6 +123,8 @@ bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
 comparison: expr COMP_OP expr
           | expr "in" "(" value_list ")"         -> in_expr
           | expr "!in" "(" value_list ")"        -> not_in_expr
+          | expr "in" "(" table_ref_expr ")"    -> subquery_in_expr
+          | expr "!in" "(" table_ref_expr ")"   -> subquery_not_in_expr
           | expr "has" STRING                    -> has_expr
           | expr "contains" STRING               -> contains_expr
           | expr "startswith" STRING             -> startswith_expr

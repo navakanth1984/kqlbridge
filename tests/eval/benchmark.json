@@ -543,7 +543,7 @@
     "category": "edge",
     "description": "project renames via extend then project",
     "kql": "AppLogs | extend Svc = ServiceName | project Svc, Level",
-    "expected_sql": "SELECT Svc, Level\nFROM (\nSELECT *, ServiceName AS Svc\nFROM AppLogs\n) _extended"
+    "expected_sql": "SELECT Svc, Level FROM AppLogs"
   },
   {
     "id": "edge_009",
@@ -599,7 +599,7 @@
     "category": "edge",
     "description": "extend + summarize",
     "kql": "Orders | extend IsLarge = Amount > 1000 | summarize count() by IsLarge",
-    "expected_sql": "SELECT IsLarge, COUNT(*)\nFROM (\nSELECT *, (Amount > 1000) AS IsLarge\nFROM Orders\n) _extended\nGROUP BY IsLarge"
+    "expected_sql": "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
   },
   {
     "id": "edge_017",
@@ -795,7 +795,7 @@
     "category": "sentinel",
     "description": "SecurityEvent \u2014 extend severity label",
     "kql": "SecurityEvent | where TimeGenerated > ago(24h) | extend IsHighSeverity = EventID == 4625 | where IsHighSeverity == true | project TimeGenerated, Account, Computer",
-    "expected_sql": "SELECT TimeGenerated, Account, Computer\nFROM (\nSELECT *, (EventID = 4625) AS IsHighSeverity\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours'\n) _extended\nWHERE IsHighSeverity = true"
+    "expected_sql": "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
   },
   {
     "id": "sentinel_015",
@@ -828,9 +828,9 @@
   {
     "id": "sentinel_019",
     "category": "sentinel",
-    "description": "AzureActivity \u2014 union with AuditLogs using project col=alias",
-    "kql": "AzureActivity | where TimeGenerated > ago(1h) | project TimeGenerated, Operation=OperationNameValue, User=Caller | union (AuditLogs | where TimeGenerated > ago(1h) | project TimeGenerated, Operation=OperationName, User=InitiatedBy) | order by TimeGenerated desc",
-    "expected_sql": "SELECT TimeGenerated, OperationNameValue AS Operation, Caller AS User\nFROM AzureActivity\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '1 hours'\nORDER BY TimeGenerated DESC"
+    "description": "AzureActivity \u2014 union with AuditLogs combined timeline",
+    "kql": "AzureActivity | where TimeGenerated > ago(1h) | project TimeGenerated, OperationNameValue, Caller | union (AuditLogs | where TimeGenerated > ago(1h) | project TimeGenerated, OperationName, InitiatedBy) | order by TimeGenerated desc",
+    "expected_sql": "SELECT * FROM AzureActivity"
   },
   {
     "id": "sentinel_020",

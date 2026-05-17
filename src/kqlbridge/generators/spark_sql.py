@@ -27,7 +27,7 @@ from ..ast_nodes import (
     BinGroup, PlainGroup,
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
-    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr,
+    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr, SubqueryInExpr,
     DatetimeLit,
 )
 
@@ -304,16 +304,23 @@ class SparkSQLGenerator:
         return f"{left_table}\n{join_kw} {right_table} ON {on_clause}"
 
     def _union(self, table: str, op: UnionOp) -> str:
-        """KQL union T1, T2, T3 → SELECT * FROM T1 UNION ALL SELECT * FROM T2 ..."""
+        """KQL union T1, T2 or union (T1 | ...) → UNION ALL"""
         if not op.tables:
-            return table  # subquery union — return unchanged
+            return table
+        subqueries = op.subqueries or {}
+
+        def _item_sql(t: str) -> str:
+            if t in subqueries:
+                return self.generate(subqueries[t])
+            return f"SELECT * FROM {t}"
+
         if "UNION ALL" in table:
-            # table is already a union block (chained union) — append without re-wrapping
-            new_parts = ["UNION ALL\nSELECT * FROM " + t for t in op.tables]
+            new_parts = ["UNION ALL\n" + _item_sql(t) for t in op.tables]
             return table + "\n" + "\n".join(new_parts)
-        all_tables = [table] + list(op.tables)
-        parts = [f"SELECT * FROM {t}" for t in all_tables]
-        return "\nUNION ALL\n".join(parts)
+
+        first = f"SELECT * FROM {table}"
+        rest = ["UNION ALL\n" + _item_sql(t) for t in op.tables]
+        return first + "\n" + "\n".join(rest)
 
     # ─── Expression Renderers ────────────────────────────────────────────────
 
@@ -407,7 +414,12 @@ class SparkSQLGenerator:
             "strlen":      lambda a: f"LENGTH({a[0]})",
             "tolower":     lambda a: f"LOWER({a[0]})",
             "toupper":     lambda a: f"UPPER({a[0]})",
-            "trim":        lambda a: f"TRIM({a[0]})",
+            # KQL trim(chars, text) or trim(text)
+            # 2-arg form: trim(chars, target) → TRIM(BOTH chars FROM target)
+            # 1-arg form: trim(text) → TRIM(text)
+            "trim":        lambda a: (f"TRIM(BOTH {a[0]} FROM {a[1]})" if len(a) >= 2 else f"TRIM({a[0]})"),
+            "ltrim":       lambda a: (f"LTRIM({a[1]})" if len(a) >= 2 else f"LTRIM({a[0]})"),
+            "rtrim":       lambda a: (f"RTRIM({a[1]})" if len(a) >= 2 else f"RTRIM({a[0]})"),
             "replace":     lambda a: f"REPLACE({a[0]}, {a[1]}, {a[2]})",
             "substring":   lambda a: f"SUBSTRING({a[0]}, {a[1]}, {a[2]})",
             "strcat":      lambda a: " || ".join(a),
@@ -444,6 +456,13 @@ class SparkSQLGenerator:
             values = ", ".join(self._expr(v) for v in expr.values)
             not_kw = "NOT " if expr.negated else ""
             return f"{col} {not_kw}IN ({values})"
+
+        if isinstance(expr, SubqueryInExpr):
+            col = self._expr(expr.col)
+            not_kw = "NOT " if expr.negated else ""
+            # Translate the inner KQL query to SQL
+            inner_sql = self.generate(expr.subquery)
+            return f"{col} {not_kw}IN ({inner_sql})"
 
         if isinstance(expr, StringOp):
             col = self._expr(expr.col)

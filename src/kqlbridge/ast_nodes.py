@@ -49,6 +49,14 @@ class BoolLit:
 
 
 @dataclass
+class SubqueryInExpr:
+    """expr in (Table | project col) → col IN (SELECT col FROM Table)"""
+    col: object
+    subquery: object   # KQLQuery
+    negated: bool = False
+
+
+@dataclass
 class IffExpr:
     """iff(condition, true_val, false_val) → CASE WHEN ... THEN ... ELSE ... END"""
     condition: object
@@ -94,7 +102,7 @@ class BinaryOp:
 
 # Expr = any scalar expression type
 Expr = Union[
-    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, DatetimeLit, IffExpr,
+    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, DatetimeLit, IffExpr, SubqueryInExpr,
     AgoExpr, BinExpr, FuncCall, BinaryOp
 ]
 
@@ -287,8 +295,9 @@ class JoinOp:
 
 @dataclass
 class UnionOp:
-    """| union T2, T3"""
+    """| union T2, T3  or  | union (T2 | where ...), T3"""
     tables: list[str]
+    subqueries: dict = None  # {table_name: KQLQuery} for subquery union items
 
 
 @dataclass

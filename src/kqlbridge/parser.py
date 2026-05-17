@@ -33,7 +33,7 @@ from .ast_nodes import (
     # Bool expressions
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
     # Order
-    OrderItem, DatetimeLit, IffExpr,
+    OrderItem, DatetimeLit, IffExpr, SubqueryInExpr,
 )
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
@@ -335,9 +335,23 @@ def _build_join(tree: Tree) -> JoinOp:
 
 
 def _build_union(tree: Tree) -> UnionOp:
-    union_tables = tree.children[0]
-    tables = [str(t) for t in union_tables.children if isinstance(t, Token)]
-    return UnionOp(tables=tables)
+    union_tables = tree.children[0]  # union_tables Tree
+    tables = []       # simple table names
+    subqueries = {}   # {table_name: KQLQuery} for subquery items
+
+    for item in union_tables.children:
+        if not isinstance(item, Tree):
+            continue
+        if item.data == 'union_table_name':
+            tables.append(str(item.children[0]))
+        elif item.data == 'union_table_subquery':
+            ref = item.children[0]  # table_ref_expr
+            sub = _build_table_ref(ref)
+            # Use the subquery table name as key
+            tables.append(sub.table)
+            subqueries[sub.table] = sub
+
+    return UnionOp(tables=tables, subqueries=subqueries)
 
 
 # ─── BOOLEAN EXPRESSIONS ─────────────────────────────────────────────────────
@@ -379,6 +393,18 @@ def _build_bool_expr(tree) -> object:
         values = [_build_expr(v) for v in tree.children[1].children
                   if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True)
+
+    if tree.data == "subquery_in_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]  # table_ref_expr Tree
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=False)
+
+    if tree.data == "subquery_not_in_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=True)
 
     if tree.data in ("has_expr", "contains_expr", "startswith_expr",
                      "endswith_expr", "regex_expr"):
@@ -473,6 +499,13 @@ def _token_to_expr(token: Token) -> object:
 
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+def _build_table_ref(tree: Tree) -> object:
+    """Build a KQLQuery from a table_ref_expr tree (used in let and in-subquery)."""
+    table = str(tree.children[0])
+    pipes = [_build_pipe_op(c) for c in tree.children[1:]
+             if isinstance(c, Tree) and c.data == "pipe_op"]
+    return KQLQuery(table=table, pipes=pipes, let_bindings=[])
 
 def _build_timespan(tree: Tree) -> tuple[int, str]:
     """Returns (amount: int, kql_unit: str) e.g. (24, 'h')"""
