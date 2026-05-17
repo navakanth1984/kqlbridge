@@ -72,23 +72,16 @@ class TSQLGenerator(SparkSQLGenerator):
             parts.append("GROUP BY " + ", ".join(group_by))
         if order:
             parts.append(order)
-        # No LIMIT at end — TOP is already in SELECT
         return "\n".join(parts)
 
     # ─── Override 2: bin() → DATEADD/DATEDIFF truncation ────────────────
 
     def _render_bin(self, col: str, amount: int, unit: str) -> str:
-        """
-        T-SQL timestamp bucketing via DATEADD/DATEDIFF pattern.
-        Standard: DATEADD(unit, DATEDIFF(unit, 0, col), 0)
-        Multi-unit: integer division via DATEDIFF in seconds.
-        """
         tsql_unit = _TSQL_DATEADD_UNIT.get(unit, unit)
 
         if amount == 1:
             return f"DATEADD({tsql_unit}, DATEDIFF({tsql_unit}, 0, {col}), 0)"
 
-        # Multi-unit bins: floor via integer division
         if unit == "m":
             total_seconds = amount * 60
             return (
@@ -112,11 +105,6 @@ class TSQLGenerator(SparkSQLGenerator):
     # ─── Override 3+4: T-SQL-specific expr rendering ─────────────────────
 
     def _expr(self, expr) -> str:
-        """
-        T-SQL expression rendering.
-        Handles AgoExpr, DatetimeLit, BinExpr, BoolLit differently.
-        All other types delegate to SparkSQLGenerator._expr().
-        """
         if isinstance(expr, AgoExpr):
             unit = _TSQL_DATEADD_UNIT.get(expr.unit, expr.unit)
             return f"DATEADD({unit}, -{expr.amount}, GETDATE())"
@@ -130,7 +118,16 @@ class TSQLGenerator(SparkSQLGenerator):
             return self._render_bin(col, expr.amount, expr.unit)
 
         if isinstance(expr, BoolLit):
-            # T-SQL has no TRUE/FALSE literals
             return "1" if expr.value else "0"
 
+        from ..ast_nodes import ColumnRef
+        if isinstance(expr, ColumnRef) and expr.name.lower() in ("true", "false"):
+            return "1" if expr.name.lower() == "true" else "0"
+
         return super()._expr(expr)
+
+    def _func_call(self, expr) -> str:
+        if expr.name.lower() == "datetime":
+            arg_sql = self._expr(expr.args[0])
+            return f"CONVERT(datetime, {arg_sql})"
+        return super()._func_call(expr)
