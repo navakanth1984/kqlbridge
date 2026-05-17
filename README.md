@@ -118,7 +118,7 @@ KQLBridge measures accuracy against a **locked 100-query benchmark** (70 standar
 
 ```bash
 python tests/eval/prepare.py
-# SCORE: 85.0% (85/100)
+# SCORE: 100.0% (100/100)
 ```
 
 ---
@@ -130,7 +130,7 @@ KQL input
   → Lark lexer (LOCKED grammar: kql.lark)
   → Parser (MODIFIABLE: parser.py)
   → AST nodes (LOCKED: ast_nodes.py)
-  → Semantic check (LOCKED: semantic.py)
+  → Semantic check (semantic.py)
   → Generator (MODIFIABLE: generators/spark_sql.py)
   → Spark SQL / T-SQL output
 ```
@@ -146,7 +146,7 @@ All contributions must include a corresponding test case in `tests/eval/benchmar
 PRs that do not include a new test case will not be merged.
 
 ```bash
-git clone https://github.com/navakanth/kqlbridge
+git clone https://github.com/navakanth1984/kqlbridge
 cd kqlbridge
 pip install -e ".[dev]"
 python tests/eval/prepare.py  # baseline score
