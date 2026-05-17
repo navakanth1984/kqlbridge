@@ -133,4 +133,14 @@ class TSQLGenerator(SparkSQLGenerator):
             # T-SQL has no TRUE/FALSE literals
             return "1" if expr.value else "0"
 
+        from ..ast_nodes import ColumnRef
+        if isinstance(expr, ColumnRef) and expr.name.lower() in ("true", "false"):
+            return "1" if expr.name.lower() == "true" else "0"
+
         return super()._expr(expr)
+
+    def _func_call(self, expr) -> str:
+        if expr.name.lower() == "datetime":
+            arg_sql = self._expr(expr.args[0])
+            return f"CONVERT(datetime, {arg_sql})"
+        return super()._func_call(expr)
