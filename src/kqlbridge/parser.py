@@ -73,29 +73,22 @@ _KQL_KEYWORDS = {
     "sum", "avg", "min", "max", "dcount", "countif", "isnotnull", "isnull",
 }
 
+# Optimization: Pre-compile regex for matching string literals or identifiers.
+# This prevents recompiling the pattern on every query and leverages the fast C implementation of re.sub
+# instead of a slow character-by-character while loop in Python.
+_NORMALIZE_RE = _re.compile(r'(?:"[^"]*")|(?:\'[^\']*\')|(?:[A-Za-z_][A-Za-z0-9_.]*)')
 
 def _normalize_keywords(kql: str) -> str:
     """Lowercase KQL keywords while preserving quoted string content."""
-    result = []
-    i = 0
-    while i < len(kql):
-        if kql[i] in ('"', "'"):
-            q = kql[i]
-            j = i + 1
-            while j < len(kql) and kql[j] != q:
-                j += 1
-            result.append(kql[i:j + 1])
-            i = j + 1
-        else:
-            m = _re.match(r'[A-Za-z_][A-Za-z0-9_.]*', kql[i:])
-            if m:
-                word = m.group()
-                result.append(word.lower() if word.lower() in _KQL_KEYWORDS else word)
-                i += len(word)
-            else:
-                result.append(kql[i])
-                i += 1
-    return ''.join(result)
+    def repl(m):
+        word = m.group(0)
+        # If it starts with a quote, keep it as is
+        if word[0] in ('"', "'"):
+            return word
+        lower_word = word.lower()
+        return lower_word if lower_word in _KQL_KEYWORDS else word
+
+    return _NORMALIZE_RE.sub(repl, kql)
 
 
 def parse(kql: str) -> KQLQuery:
