@@ -21,7 +21,9 @@ from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 
 __version__ = "0.1.0"
-__all__ = ["translate", "detect_operators", "is_supported", "check", "__version__"]
+__all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__"]
+
+from .smart import smart_transpile
 
 _SPARK_GEN = SparkSQLGenerator()
 _TSQL_GEN = TSQLGenerator()
