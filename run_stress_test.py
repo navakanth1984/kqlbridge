@@ -1,9 +1,12 @@
 import sys
+import os
+sys.path.insert(0, os.path.abspath('src'))
 from kqlbridge.parser import parse
 from kqlbridge.generators.spark_sql import SparkSQLGenerator
 from kqlbridge.generators.tsql import TSQLGenerator
-from kqlbridge import translate, lint
-
+from kqlbridge import translate, lint, smart_transpile
+import traceback
+import os
 tests = {
     "Layer 2: Type Coercion & SQL Injection Literals": """
 SecurityEvents
@@ -121,16 +124,20 @@ def run():
                 print(f"    Fix:       {issue.fix}")
         
         try:
-            spark_sql = translate(kql.strip(), target="spark")
-            print("Spark SQL:")
-            print(spark_sql.strip())
+            engine, code = smart_transpile(kql.strip())
+            print(f"Smart Transpile (Routed to: {engine}):")
+            print(code.strip())
             print("")
-            tsql = translate(kql.strip(), target="tsql")
-            print("T-SQL:")
-            print(tsql.strip())
+            _, pyspark_code = smart_transpile(kql.strip(), force_engine="pyspark")
+            print(f"PySpark Generator (Forced):")
+            print(pyspark_code.strip())
+            print("")
         except Exception as e:
             print(f"FAILED: {type(e).__name__}: {e}")
-        print("\n")
+            os.makedirs(".jules", exist_ok=True)
+            log_name = name.replace(" ", "_").replace(":", "").replace("/", "")
+            with open(f".jules/stress_{log_name}.md", "w") as f:
+                f.write(f"# FAILURE: {name}\n\n**KQL:**\n```kusto\n{kql.strip()}\n```\n\n**Traceback:**\n```python\n{traceback.format_exc()}\n```\n")
 
 if __name__ == '__main__':
     run()

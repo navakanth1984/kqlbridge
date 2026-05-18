@@ -1,4 +1,4 @@
-from typing import Literal, Tuple
+from typing import Literal, Tuple, Optional
 from .parser import parse
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
@@ -18,7 +18,7 @@ def analyze_ast(query: KQLQuery) -> Literal["spark_sql", "pyspark", "tsql"]:
     # so we confidently route to the optimized Spark SQL Catalyst engine.
     return "spark_sql"
 
-def smart_transpile(kql: str) -> Tuple[Literal["spark_sql", "pyspark", "tsql"], str]:
+def smart_transpile(kql: str, force_engine: Optional[Literal["spark_sql", "pyspark", "tsql"]] = None) -> Tuple[Literal["spark_sql", "pyspark", "tsql"], str]:
     """
     Intelligent compiler endpoint that parses the query, analyzes the AST, 
     and selects the optimal backend engine for execution.
@@ -27,7 +27,7 @@ def smart_transpile(kql: str) -> Tuple[Literal["spark_sql", "pyspark", "tsql"], 
         A tuple of (execution_engine, generated_code).
     """
     query = parse(kql)
-    engine = analyze_ast(query)
+    engine = force_engine or analyze_ast(query)
     
     if engine == "spark_sql":
         gen = SparkSQLGenerator()

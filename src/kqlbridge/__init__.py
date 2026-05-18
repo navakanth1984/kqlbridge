@@ -20,7 +20,7 @@ from .explain import explain, ExplainResult  # noqa: F401 — public API
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 __all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__"]
 
 from .smart import smart_transpile
