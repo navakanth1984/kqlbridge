@@ -28,6 +28,21 @@ import re
 from pathlib import Path
 from typing import Optional
 
+# ─── WINDOWS UTF-8 COMPATIBILITY ─────────────────────────────────────────────
+# Fix UnicodeEncodeError on Windows terminals that default to cp1252
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
+
+# Progress bar chars — fall back to ASCII if terminal can't handle UTF-8
+try:
+    "█░".encode(sys.stdout.encoding or "utf-8")
+    _BAR_FULL, _BAR_EMPTY = "█", "░"
+except (UnicodeEncodeError, LookupError):
+    _BAR_FULL, _BAR_EMPTY = "#", "-"
+
 # ─── SETUP ───────────────────────────────────────────────────────────────────
 
 BENCHMARK_PATH = Path(__file__).parent / "benchmark.json"
@@ -175,7 +190,7 @@ def main() -> float:
     for cat, scores in sorted(by_category.items()):
         cat_passed = sum(scores)
         cat_total = len(scores)
-        bar = "█" * cat_passed + "░" * (cat_total - cat_passed)
+        bar = _BAR_FULL * cat_passed + _BAR_EMPTY * (cat_total - cat_passed)
         print(f"  {cat:12s} {bar} {cat_passed}/{cat_total}")
 
     print("=" * 60)
