@@ -71,6 +71,38 @@ SecurityEvents
 | order by total desc
 | take 10
 """,
+    "Complex Endswith & Startswith Pattern Match": """
+SecurityEvents
+| where Message startswith "login" or Message endswith "failed"
+| project Message
+""",
+    "Arithmetic Operator Precedence Stress": """
+Orders
+| extend cost = (UnitPrice * Quantity) * (1.0 - Discount) + ShippingFee
+| project OrderId, cost
+""",
+    "String Manipulation and Length functions": """
+SecurityEvents
+| extend normalized = tolower(trim(username)), len = strlen(username)
+| project normalized, len
+""",
+    "Logical Operators AND, OR, NOT combinatorics": """
+SecurityEvents
+| where not(Level == 'Info' or Level == 'Debug') and (EventID == 4624 or EventID == 4625)
+| project EventID, Level
+""",
+    "Let statements with nested expressions and variables": """
+let CriticalIPs = SecurityEvents | where Severity >= 4 | project source_ip;
+SecurityEvents
+| where source_ip in (CriticalIPs)
+| summarize count() by source_ip
+""",
+    "Chained extends referencing previous extends": """
+SecurityEvents
+| extend base_score = 50
+| extend final_score = base_score + 10
+| project final_score
+""",
     "Unsupported Window Function": """
 SecurityEvents
 | serialize 

@@ -10,7 +10,7 @@ SecurityEvents
 **Traceback:**
 ```python
 Traceback (most recent call last):
-  File "C:\Users\navka\navakanth001\kqlbridge\run_stress_test.py", line 127, in run
+  File "C:\Users\navka\navakanth001\kqlbridge\run_stress_test.py", line 159, in run
     engine, code = smart_transpile(kql.strip())
                    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
   File "C:\Users\navka\navakanth001\kqlbridge\src\kqlbridge\smart.py", line 29, in smart_transpile
@@ -37,18 +37,18 @@ lark.exceptions.UnexpectedCharacters: No terminal matches 's' in the current par
 | serialize 
   ^
 Expected one of: 
+	* WHERE
+	* ORDER
 	* JOIN
-	* SORT
+	* COUNT
+	* DISTINCT
 	* UNION
-	* TAKE
+	* EXTEND
+	* SORT
+	* LIMIT
 	* PROJECT
 	* SUMMARIZE
-	* EXTEND
-	* LIMIT
-	* ORDER
-	* COUNT
-	* WHERE
-	* DISTINCT
+	* TAKE
 
 
 ```
