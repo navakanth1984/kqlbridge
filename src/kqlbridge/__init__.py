@@ -16,6 +16,7 @@ from .parser import parse
 from lark.exceptions import UnexpectedInput as _LarkUnexpectedInput
 from .semantic import check as _semantic_check, SemanticResult
 from .lint import lint, LintResult  # noqa: F401 — public API
+from .explain import explain, ExplainResult  # noqa: F401 — public API
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 

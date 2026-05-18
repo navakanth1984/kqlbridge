@@ -84,6 +84,22 @@ def _lint(args) -> int:
     return 1
 
 
+
+def _explain(args) -> int:
+    from kqlbridge.explain import explain
+    import sys
+    target = "tsql" if getattr(args, "tsql", False) else "spark"
+    try:
+        result = explain(args.kql, target=target)
+        print(result.annotated_sql)
+        print()
+        print(result.summary)
+        return 0
+    except ValueError as e:
+        print(f"[kqlbridge] {e}", file=sys.stderr)
+        return 1
+
+
 def _operators(args: argparse.Namespace) -> int:
     supported = [
         "where", "project", "summarize", "order by", "sort by",
@@ -127,6 +143,13 @@ def main() -> None:
     p_check.set_defaults(func=_check)
 
     # operators
+    p_explain = sub.add_parser("explain",
+        help="Translate KQL with inline annotations explaining every decision")
+    p_explain.add_argument("kql", help="KQL query string")
+    p_explain.add_argument("--tsql", action="store_true",
+        help="Explain T-SQL output instead of Spark SQL")
+    p_explain.set_defaults(func=_explain)
+
     p_lint = sub.add_parser("lint", help="Detect semantic drift in AI-generated KQL")
     p_lint.add_argument("kql", help="KQL query string")
     p_lint.set_defaults(func=_lint)
