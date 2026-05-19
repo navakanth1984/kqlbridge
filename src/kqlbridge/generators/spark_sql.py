@@ -72,6 +72,7 @@ class SparkSQLGenerator:
     def generate(self, query: KQLQuery) -> str:
         """Entry point. Returns a Spark SQL string."""
         self._scalar_bindings = {}
+        self._mv_expand_col = None
         non_scalar_bindings = []
         for binding in query.let_bindings:
             if hasattr(binding.value, "scalar_expr"):
@@ -139,29 +140,39 @@ class SparkSQLGenerator:
                     select_cols = op.columns
 
             elif isinstance(op, ExtendOp):
-                # Extend: keep existing cols + add computed cols
-                extend_parts = [f"{self._expr(expr)} AS {alias}"
-                                for alias, expr in op.assignments]
-                if select_cols == ["*"]:
-                    select_cols = ["*"] + extend_parts
+                # Check for mv_expand special assignment
+                mv_expand_assignment = None
+                for alias, expr in op.assignments:
+                    if alias == "_mv_expand" and isinstance(expr, FuncCall) and expr.name == "mv_expand_fn":
+                        mv_expand_assignment = expr
+                        break
+                
+                if mv_expand_assignment:
+                    self._mv_expand_col = self._expr(mv_expand_assignment.args[0])
                 else:
-                    select_cols = select_cols + extend_parts
-                # If a summarize follows, we must wrap the current state in a subquery
-                # so the extended columns are visible to GROUP BY / agg functions
-                future_ops = query.pipes[query.pipes.index(op) + 1:]
-                if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
-                    inner_sql = self._assemble(
-                        select_cols=select_cols,
-                        table=table,
-                        where_clauses=where_clauses,
-                        group_by=[],
-                        order="",
-                        limit="",
-                        distinct=False,
-                    )
-                    table = "(\n" + inner_sql + "\n) _extended"
-                    select_cols = ["*"]
-                    where_clauses = []
+                    # Extend: keep existing cols + add computed cols
+                    extend_parts = [f"{self._expr(expr)} AS {alias}"
+                                    for alias, expr in op.assignments]
+                    if select_cols == ["*"]:
+                        select_cols = ["*"] + extend_parts
+                    else:
+                        select_cols = select_cols + extend_parts
+                    # If a summarize follows, we must wrap the current state in a subquery
+                    # so the extended columns are visible to GROUP BY / agg functions
+                    future_ops = query.pipes[query.pipes.index(op) + 1:]
+                    if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
+                        inner_sql = self._assemble(
+                            select_cols=select_cols,
+                            table=table,
+                            where_clauses=where_clauses,
+                            group_by=[],
+                            order="",
+                            limit="",
+                            distinct=False,
+                        )
+                        table = "(\n" + inner_sql + "\n) _extended"
+                        select_cols = ["*"]
+                        where_clauses = []
 
             elif isinstance(op, JoinOp):
                 # Inline join — handled in assembly
@@ -218,9 +229,13 @@ class SparkSQLGenerator:
         if "UNION ALL" in table and (order or limit or where_clauses or group_by or select_cols != ["*"]):
             table = "(\n" + table + "\n) _union_result"
 
+        from_clause = f"FROM {table}"
+        if getattr(self, "_mv_expand_col", None):
+            from_clause += f" LATERAL VIEW explode({self._mv_expand_col}) AS exploded_{self._mv_expand_col}"
+
         parts = [
             f"SELECT {distinct_kw}{', '.join(select_cols)}",
-            f"FROM {table}",
+            from_clause,
         ]
         if where_clauses:
             parts.append("WHERE " + " AND ".join(where_clauses))
@@ -433,10 +448,16 @@ class SparkSQLGenerator:
             return expr
 
         if isinstance(expr, IffExpr):
-            cond = self._bool_expr(expr.condition)
-            true_v = self._expr(expr.true_val)
-            false_v = self._expr(expr.false_val)
-            return f"CASE WHEN {cond} THEN {true_v} ELSE {false_v} END"
+            branches = []
+            curr = expr
+            while isinstance(curr, IffExpr):
+                cond = self._bool_expr(curr.condition)
+                true_v = self._expr(curr.true_val)
+                branches.append(f"WHEN {cond} THEN {true_v}")
+                curr = curr.false_val
+            
+            default_val = self._expr(curr)
+            return f"CASE {' '.join(branches)} ELSE {default_val} END"
 
         raise NotImplementedError(f"Unknown expr type: {type(expr).__name__}")
 
@@ -447,6 +468,9 @@ class SparkSQLGenerator:
         Add new mappings only when a benchmark case requires them.
         """
         name = expr.name.lower()
+        if name == "iff" and len(expr.args) == 3:
+            return self._render_iff_func(expr)
+
         args = [self._expr(a) for a in expr.args]
 
         kql_to_spark = {
@@ -481,6 +505,10 @@ class SparkSQLGenerator:
             "datetime_add": lambda a: self._render_datetime_add(a),
             "datetime_diff": lambda a: self._render_datetime_diff(a),
             "prev":          lambda a: f"LAG({', '.join(a)}) OVER (ORDER BY (SELECT NULL))",
+            "parse_json_path": lambda a: self._render_parse_json_path(a),
+            "ipv4_is_private": lambda a: self._render_ipv4_is_private(a),
+            "ipv4_is_in_range": lambda a: self._render_ipv4_is_in_range(a),
+            "case":          lambda a: self._render_case(a),
         }
 
         if name in kql_to_spark:
@@ -538,6 +566,13 @@ class SparkSQLGenerator:
         if isinstance(expr, Comparison):
             left = self._expr(expr.left)
             right = self._expr(expr.right)
+            # FuncCall left sides (e.g. ipv4_is_private) already return a full
+            # boolean SQL expression — strip the redundant == true wrapper.
+            if expr.op == "==" and (
+                (isinstance(expr.right, BoolLit) and expr.right.value is True) or
+                (isinstance(expr.right, ColumnRef) and expr.right.name.lower() == "true")
+            ) and isinstance(expr.left, FuncCall):
+                return left
             if expr.op == "=~":
                 return f"LOWER({left}) = LOWER({right})"
             op = _COMP_OP_MAP.get(expr.op, expr.op)
@@ -592,3 +627,75 @@ class SparkSQLGenerator:
             return f"({' OR '.join(parts)})"
 
         raise NotImplementedError(f"Unknown bool expr type: {type(expr).__name__}")
+
+    def _render_parse_json_path(self, args: list[str]) -> str:
+        col = args[0]
+        path = args[1].strip("'\"")
+        return f"get_json_object({col}, '$.{path}')"
+
+    def _render_ipv4_is_private(self, args: list[str]) -> str:
+        ip = args[0]
+        ip_int = (
+            f"(CAST(split({ip}, '\\\\.')[0] AS BIGINT) * 16777216 + "
+            f"CAST(split({ip}, '\\\\.')[1] AS BIGINT) * 65536 + "
+            f"CAST(split({ip}, '\\\\.')[2] AS BIGINT) * 256 + "
+            f"CAST(split({ip}, '\\\\.')[3] AS BIGINT))"
+        )
+        return (
+            f"(({ip_int} BETWEEN 167772160 AND 184549375) OR "
+            f"({ip_int} BETWEEN 2886729728 AND 2887778303) OR "
+            f"({ip_int} BETWEEN 3232235520 AND 3232301055) OR "
+            f"({ip_int} BETWEEN 2130706432 AND 2147483647))"
+        )
+
+    def _render_ipv4_is_in_range(self, args: list[str]) -> str:
+        ip = args[0]
+        cidr = args[1].strip("'\"")
+        try:
+            ip_part, mask_part = cidr.split('/')
+            mask = int(mask_part)
+            octets = [int(o) for o in ip_part.split('.')]
+            ip_val = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3]
+            network_mask = (0xFFFFFFFF << (32 - mask)) & 0xFFFFFFFF
+            start = ip_val & network_mask
+            end = start | (network_mask ^ 0xFFFFFFFF)
+        except Exception:
+            return f"ipv4_is_in_range({ip}, '{cidr}')"
+            
+        ip_int = (
+            f"(CAST(split({ip}, '\\\\.')[0] AS BIGINT) * 16777216 + "
+            f"CAST(split({ip}, '\\\\.')[1] AS BIGINT) * 65536 + "
+            f"CAST(split({ip}, '\\\\.')[2] AS BIGINT) * 256 + "
+            f"CAST(split({ip}, '\\\\.')[3] AS BIGINT))"
+        )
+        return f"({ip_int} BETWEEN {start} AND {end})"
+
+    def _render_case(self, args: list[str]) -> str:
+        if len(args) < 3:
+            return f"CASE WHEN {', '.join(args)} END"
+        branches = []
+        for i in range(0, len(args) - 1, 2):
+            branches.append(f"WHEN {args[i]} THEN {args[i+1]}")
+        default_val = args[-1]
+        return f"CASE {' '.join(branches)} ELSE {default_val} END"
+
+    def _render_iff_func(self, expr: FuncCall) -> str:
+        branches = []
+        curr = expr
+        while isinstance(curr, FuncCall) and curr.name.lower() == "iff" and len(curr.args) == 3:
+            cond = self._expr(curr.args[0])
+            true_v = self._expr(curr.args[1])
+            branches.append(f"WHEN {cond} THEN {true_v}")
+            curr = curr.args[2]
+            
+        if isinstance(curr, IffExpr):
+            while isinstance(curr, IffExpr):
+                cond = self._bool_expr(curr.condition)
+                true_v = self._expr(curr.true_val)
+                branches.append(f"WHEN {cond} THEN {true_v}")
+                curr = curr.false_val
+            default_val = self._expr(curr)
+        else:
+            default_val = self._expr(curr)
+            
+        return f"CASE {' '.join(branches)} ELSE {default_val} END"

@@ -104,15 +104,177 @@ def _normalize_keywords(kql: str) -> str:
     return ''.join(result)
 
 
+def _split_case_args(arg_str: str) -> list[str]:
+    args = []
+    current = []
+    paren_depth = 0
+    in_single_quote = False
+    in_double_quote = False
+    
+    i = 0
+    while i < len(arg_str):
+        c = arg_str[i]
+        if c == "'" and not in_double_quote:
+            in_single_quote = not in_single_quote
+            current.append(c)
+        elif c == '"' and not in_single_quote:
+            in_double_quote = not in_double_quote
+            current.append(c)
+        elif in_single_quote or in_double_quote:
+            current.append(c)
+        elif c == '(':
+            paren_depth += 1
+            current.append(c)
+        elif c == ')':
+            paren_depth -= 1
+            current.append(c)
+        elif c == ',' and paren_depth == 0:
+            args.append("".join(current).strip())
+            current = []
+        else:
+            current.append(c)
+        i += 1
+    if current:
+        args.append("".join(current).strip())
+    return args
+
+def _build_iff_chain(args: list[str]) -> str:
+    if len(args) == 0:
+        return ""
+    if len(args) == 1:
+        return args[0]
+    if len(args) == 2:
+        return f"iff({args[0]}, {args[1]}, null)"
+    cond = args[0]
+    val = args[1]
+    rest = args[2:]
+    return f"iff({cond}, {val}, {_build_iff_chain(rest)})"
+
+def _preprocess_case(kql: str) -> str:
+    pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
+    
+    while True:
+        match = pattern.search(kql)
+        if not match:
+            break
+        
+        start_idx = match.start()
+        open_paren_idx = match.end() - 1
+        
+        paren_depth = 1
+        in_single_quote = False
+        in_double_quote = False
+        close_paren_idx = -1
+        
+        for i in range(open_paren_idx + 1, len(kql)):
+            c = kql[i]
+            if c == "'" and not in_double_quote:
+                in_single_quote = not in_single_quote
+            elif c == '"' and not in_single_quote:
+                in_double_quote = not in_double_quote
+            elif in_single_quote or in_double_quote:
+                continue
+            elif c == '(':
+                paren_depth += 1
+            elif c == ')':
+                paren_depth -= 1
+                if paren_depth == 0:
+                    close_paren_idx = i
+                    break
+        
+        if close_paren_idx == -1:
+            break
+            
+        arg_str = kql[open_paren_idx + 1:close_paren_idx]
+        arg_str_rewritten = _preprocess_case(arg_str)
+        args = _split_case_args(arg_str_rewritten)
+        iff_chain = _build_iff_chain(args)
+        
+        kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        
+    return kql
+
+def _preprocess_json(kql: str) -> str:
+    return _re.sub(
+        r"(?i)\bparse_json\(\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\)\.([a-zA-Z0-9_.]+)",
+        r"parse_json_path(\1, '\2')",
+        kql
+    )
+
+def _preprocess_mv_expand(kql: str) -> str:
+    return _re.sub(
+        r"(?i)\|\s*mv-expand\s+([a-zA-Z_][a-zA-Z0-9_.]*)",
+        r"| extend _mv_expand = mv_expand_fn(\1)",
+        kql
+    )
+
+def _preprocess_bool_funcs(kql: str) -> str:
+    pattern = _re.compile(r"\b(ipv4_is_private|ipv4_is_in_range)\s*\(", _re.IGNORECASE)
+    i = 0
+    while i < len(kql):
+        match = pattern.search(kql, i)
+        if not match:
+            break
+        start_idx = match.start()
+        open_paren_idx = match.end() - 1
+        paren_depth = 1
+        in_single_quote = False
+        in_double_quote = False
+        close_paren_idx = -1
+        for j in range(open_paren_idx + 1, len(kql)):
+            c = kql[j]
+            if c == "'" and not in_double_quote:
+                in_single_quote = not in_single_quote
+            elif c == '"' and not in_single_quote:
+                in_double_quote = not in_double_quote
+            elif in_single_quote or in_double_quote:
+                continue
+            elif c == '(':
+                paren_depth += 1
+            elif c == ')':
+                paren_depth -= 1
+                if paren_depth == 0:
+                    close_paren_idx = j
+                    break
+        if close_paren_idx == -1:
+            i = open_paren_idx + 1
+            continue
+        following = kql[close_paren_idx + 1:].lstrip()
+        has_comparison = False
+        comp_operators = ["==", "!=", "<=", ">=", "<", ">", "=~"]
+        comp_keywords = ["in", "!in", "has", "contains", "startswith", "endswith"]
+        for op in comp_operators:
+            if following.startswith(op):
+                has_comparison = True
+                break
+        if not has_comparison:
+            for kw in comp_keywords:
+                if _re.match(rf"\b{kw}\b", following, _re.IGNORECASE):
+                    has_comparison = True
+                    break
+        if not has_comparison:
+            kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
+            i = close_paren_idx + 1 + len(" == true")
+        else:
+            i = close_paren_idx + 1
+    return kql
+
 def parse(kql: str) -> KQLQuery:
     """
     Parse a KQL query string into a KQLQuery AST.
     Keywords are normalized to lowercase (KQL is case-insensitive for keywords).
     Raises lark.exceptions.UnexpectedInput on syntax errors.
     """
+    # Apply custom preprocessors for SOC threat hunting capabilities
+    kql = _preprocess_case(kql)
+    kql = _preprocess_json(kql)
+    kql = _preprocess_mv_expand(kql)
+    kql = _preprocess_bool_funcs(kql)
+    
     normalized = _normalize_keywords(kql.strip())
     tree = get_parser().parse(normalized)
     return _build_query(tree)
+
 
 
 # ─── TOP-LEVEL BUILDER ───────────────────────────────────────────────────────

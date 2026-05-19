@@ -71,9 +71,13 @@ class TSQLGenerator(SparkSQLGenerator):
         if is_union and has_trailing:
             table = "(\n" + table + "\n) _union_result"
 
+        from_clause = f"FROM {table}"
+        if getattr(self, "_mv_expand_col", None):
+            from_clause += f" CROSS APPLY OPENJSON({self._mv_expand_col})"
+
         parts = [
             f"SELECT {top_clause}{distinct_kw}{', '.join(select_cols)}",
-            f"FROM {table}",
+            from_clause,
         ]
         if where_clauses:
             parts.append("WHERE " + " AND ".join(where_clauses))
@@ -170,6 +174,13 @@ class TSQLGenerator(SparkSQLGenerator):
             return f"DATEDIFF({tsql_unit}, {args[2]}, {args[1]})"
         if name == "strcat_delim":
             return f"CONCAT_WS({args[0]}, {', '.join(args[1:])})"
+        if name == "parse_json_path":
+            path = args[1].strip("'\"")
+            return f"JSON_VALUE({args[0]}, '$.{path}')"
+        if name == "ipv4_is_private":
+            return self._render_ipv4_is_private(args)
+        if name == "ipv4_is_in_range":
+            return self._render_ipv4_is_in_range(args)
         return super()._func_call(expr)
 
     def _bool_expr(self, expr) -> str:
@@ -200,3 +211,40 @@ class TSQLGenerator(SparkSQLGenerator):
             col_expr = self._expr(agg.col)
             return f"STRING_AGG({col_expr}, ','){alias_suffix}"
         return super()._agg(agg)
+
+    def _render_ipv4_is_private(self, args: list[str]) -> str:
+        ip = args[0]
+        ip_int = (
+            f"(CAST(PARSENAME({ip}, 4) AS BIGINT) * 16777216 + "
+            f"CAST(PARSENAME({ip}, 3) AS BIGINT) * 65536 + "
+            f"CAST(PARSENAME({ip}, 2) AS BIGINT) * 256 + "
+            f"CAST(PARSENAME({ip}, 1) AS BIGINT))"
+        )
+        return (
+            f"(({ip_int} BETWEEN 167772160 AND 184549375) OR "
+            f"({ip_int} BETWEEN 2886729728 AND 2887778303) OR "
+            f"({ip_int} BETWEEN 3232235520 AND 3232301055) OR "
+            f"({ip_int} BETWEEN 2130706432 AND 2147483647))"
+        )
+
+    def _render_ipv4_is_in_range(self, args: list[str]) -> str:
+        ip = args[0]
+        cidr = args[1].strip("'\"")
+        try:
+            ip_part, mask_part = cidr.split('/')
+            mask = int(mask_part)
+            octets = [int(o) for o in ip_part.split('.')]
+            ip_val = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3]
+            network_mask = (0xFFFFFFFF << (32 - mask)) & 0xFFFFFFFF
+            start = ip_val & network_mask
+            end = start | (network_mask ^ 0xFFFFFFFF)
+        except Exception:
+            return f"ipv4_is_in_range({ip}, '{cidr}')"
+            
+        ip_int = (
+            f"(CAST(PARSENAME({ip}, 4) AS BIGINT) * 16777216 + "
+            f"CAST(PARSENAME({ip}, 3) AS BIGINT) * 65536 + "
+            f"CAST(PARSENAME({ip}, 2) AS BIGINT) * 256 + "
+            f"CAST(PARSENAME({ip}, 1) AS BIGINT))"
+        )
+        return f"({ip_int} BETWEEN {start} AND {end})"

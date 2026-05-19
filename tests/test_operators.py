@@ -445,3 +445,61 @@ class TestV07Features:
         tsql_res = translate(kql, target="tsql")
         assert "collect_list(Level)" in spark_res
         assert "STRING_AGG(Level, ',')" in tsql_res
+
+    def test_soc_threat_hunting_functions(self):
+        # 1. parse_json_path
+        kql_json = "AppLogs | extend val = parse_json(col).field"
+        spark_json = translate(kql_json, target="spark")
+        tsql_json = translate(kql_json, target="tsql")
+        assert "get_json_object(col, '$.field')" in spark_json
+        assert "JSON_VALUE(col, '$.field')" in tsql_json
+
+        # 2. mv_expand
+        kql_mvexpand = "AppLogs | mv-expand col"
+        spark_mvexpand = translate(kql_mvexpand, target="spark")
+        tsql_mvexpand = translate(kql_mvexpand, target="tsql")
+        assert "LATERAL VIEW explode(col)" in spark_mvexpand
+        assert "CROSS APPLY OPENJSON(col)" in tsql_mvexpand
+
+        # 3. case
+        kql_case = "AppLogs | extend x = case(c1, v1, c2, v2, d)"
+        spark_case = translate(kql_case, target="spark")
+        tsql_case = translate(kql_case, target="tsql")
+        assert "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END" in spark_case
+        assert "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END" in tsql_case
+
+        # 4. ipv4_is_private
+        kql_private = "AppLogs | where ipv4_is_private(ip)"
+        spark_private = translate(kql_private, target="spark")
+        tsql_private = translate(kql_private, target="tsql")
+        assert "BETWEEN 167772160 AND 184549375" in spark_private
+        assert "BETWEEN 167772160 AND 184549375" in tsql_private
+
+        # 5. ipv4_is_in_range
+        kql_range = "AppLogs | where ipv4_is_in_range(ip, '192.168.1.0/24')"
+        spark_range = translate(kql_range, target="spark")
+        tsql_range = translate(kql_range, target="tsql")
+        assert "BETWEEN 3232235776 AND 3232236031" in spark_range
+        assert "BETWEEN 3232235776 AND 3232236031" in tsql_range
+
+    def test_soc_threat_hunting_pyspark(self):
+        from kqlbridge.generators.pyspark import PySparkGenerator
+        from kqlbridge.parser import parse
+
+        # 1. parse_json
+        kql_json = "AppLogs | extend val = parse_json(col).field"
+        res_json = PySparkGenerator().generate(parse(kql_json))
+        assert 'df = df.selectExpr("*", "get_json_object(col, \'$.field\') AS val")' in res_json
+
+        # 2. case
+        kql_case = "AppLogs | extend x = case(c1, v1, c2, v2, d)"
+        res_case = PySparkGenerator().generate(parse(kql_case))
+        assert 'df = df.selectExpr("*", "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END AS x")' in res_case
+
+        # 3. ipv4_is_private — verify BETWEEN ranges rendered without '= true' suffix
+        kql_private = "AppLogs | where ipv4_is_private(ip)"
+        res_private = PySparkGenerator().generate(parse(kql_private))
+        assert "BETWEEN 167772160 AND 184549375" in res_private  # 10.0.0.0/8
+        assert "BETWEEN 2886729728 AND 2887778303" in res_private  # 172.16.0.0/12
+        assert "= true" not in res_private  # no redundant bool suffix on FuncCall
+

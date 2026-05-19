@@ -7,7 +7,6 @@ def test_unsupported_operators():
         "AppLogs | make-series count() on TimeGenerated from ago(7d) to now() step 1d",
         "AppLogs | render timechart",
         "Events | evaluate bag_unpack(properties)",
-        "SecurityEvents | where ipv4_is_in_range(ClientIP, '192.168.0.0/16')",
     ]
     for q in unsupported_queries:
         assert is_supported(q) is False
