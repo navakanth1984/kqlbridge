@@ -62,6 +62,12 @@ class TSQLGenerator(SparkSQLGenerator):
             if m:
                 top_clause = f"TOP {m.group()} "
 
+        # If the table is already a UNION block, wrap it as a subquery
+        is_union = "union" in table.lower()
+        has_trailing = bool(order or limit or top_clause or where_clauses or group_by or distinct or select_cols != ["*"])
+        if is_union and has_trailing:
+            table = "(\n" + table + "\n) _union_result"
+
         parts = [
             f"SELECT {top_clause}{distinct_kw}{', '.join(select_cols)}",
             f"FROM {table}",
