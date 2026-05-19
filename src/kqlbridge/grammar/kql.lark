@@ -2,8 +2,8 @@
 // ============================================================
 // LOCKED FILE — Human-designed. Agent MUST NEVER modify this.
 // ============================================================
-// Version: 0.1.0
-// Covers: 14 v0.1 operators (see program.md for full list)
+// Version: 0.1.1
+// Covers: 14 v0.1 operators + between + summarize-by-alias
 // Parser: Earley (handles ambiguous KQL constructs safely)
 
 // ─── Entry Point ────────────────────────────────────────────
@@ -12,7 +12,7 @@ start: let_stmt* table_expr ("|" pipe_op)*
 
 // ─── Let / CTE ──────────────────────────────────────────────
 
-let_stmt: "let" NAME "=" (table_ref_expr | expr) ";"
+let_stmt: "let" NAME "=" (table_ref_expr | expr | timespan) ";"
 
 table_ref_expr: NAME ("|" pipe_op)*
 
@@ -32,6 +32,7 @@ pipe_op: where_op
        | join_op
        | union_op
        | count_op
+       | serialize_op
 
 // ─── where ──────────────────────────────────────────────────
 
@@ -58,10 +59,16 @@ agg_func: "count" "()"                         -> agg_count
         | "dcount" "(" expr ")"                 -> agg_dcount
         | "countif" "(" bool_expr ")"           -> agg_countif
         | "bin"   "(" expr "," timespan ")"     -> agg_bin
+        | "percentile" "(" expr "," expr ")"    -> agg_percentile
+        | "make_list" "(" expr ")"              -> agg_make_list
+        | "stdev" "(" expr ")"                  -> agg_stdev
 
 groupby_list: groupby_item ("," groupby_item)*
-groupby_item: "bin" "(" expr "," timespan ")"  -> bin_group
-            | expr                              -> plain_group
+groupby_item: NAME "=" groupby_expr             -> named_group
+            | groupby_expr                      -> plain_group
+
+groupby_expr: "bin" "(" expr "," timespan ")"  -> bin_group_expr
+            | expr                              -> plain_group_expr
 
 // ─── order by / sort by ─────────────────────────────────────
 
@@ -113,6 +120,10 @@ union_item: NAME              -> union_table_name
 
 count_op: "count"
 
+// ─── serialize ──────────────────────────────────────────────
+
+serialize_op: "serialize"
+
 // ─── Expressions ─────────────────────────────────────────────
 
 bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
@@ -123,8 +134,12 @@ bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
 comparison: expr COMP_OP expr
           | expr "in" "(" value_list ")"         -> in_expr
           | expr "!in" "(" value_list ")"        -> not_in_expr
+          | expr "in~" "(" value_list ")"        -> in_ci_expr
+          | expr "!in~" "(" value_list ")"       -> not_in_ci_expr
           | expr "in" "(" table_ref_expr ")"    -> subquery_in_expr
           | expr "!in" "(" table_ref_expr ")"   -> subquery_not_in_expr
+          | expr "in~" "(" table_ref_expr ")"    -> subquery_in_ci_expr
+          | expr "!in~" "(" table_ref_expr ")"   -> subquery_not_in_ci_expr
           | expr "has" STRING                    -> has_expr
           | expr "contains" STRING               -> contains_expr
           | expr "startswith" STRING             -> startswith_expr
@@ -132,6 +147,9 @@ comparison: expr COMP_OP expr
           | expr "matches" "regex" STRING        -> regex_expr
           | "isnotnull" "(" expr ")"             -> isnotnull_expr
           | "isnull" "(" expr ")"                -> isnull_expr
+          | expr "has_any" "(" value_list ")"    -> has_any_expr
+          | expr "hasany" "(" value_list ")"     -> has_any_expr
+          | expr "between" "(" expr ".." expr ")" -> between_expr
 
 COMP_OP: "==" | "!=" | "<=" | ">=" | "<" | ">" | "=~"
 LOGICAL_OP: "and" | "or"

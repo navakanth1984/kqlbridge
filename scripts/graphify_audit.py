@@ -61,13 +61,13 @@ def run_graphify_pipeline():
         run_manual_analysis()
         return
 
-    print(f"KQLBridge Graphify Audit — {SRC_PATH}")
+    print(f"KQLBridge Graphify Audit - {SRC_PATH}")
     print("=" * 60)
 
     # Step 1 — Detect
     print("Step 1: Detecting file types...")
     det = detect(SRC_PATH)
-    (OUT_DIR / ".graphify_detect.json").write_text(json.dumps(det, indent=2))
+    (OUT_DIR / ".graphify_detect.json").write_text(json.dumps(det, indent=2), encoding="utf-8")
     print(f"  Code files: {len(det.get('files', {}).get('code', []))}")
     print(f"  Config files: {len(det.get('files', {}).get('config', []))}")
 
@@ -83,7 +83,7 @@ def run_graphify_pipeline():
         code_files = list(SRC_PATH.rglob("*.py"))
 
     ast_result = extract(code_files, cache_root=REPO_ROOT)
-    (OUT_DIR / ".graphify_ast.json").write_text(json.dumps(ast_result, indent=2))
+    (OUT_DIR / ".graphify_ast.json").write_text(json.dumps(ast_result, indent=2), encoding="utf-8")
     print(f"  Nodes: {len(ast_result['nodes'])}")
     print(f"  Edges: {len(ast_result['edges'])}")
 
@@ -94,45 +94,56 @@ def run_graphify_pipeline():
     # Step 4 — Cluster & Score
     print("Step 4: Clustering modules...")
     clustered = cluster(graph)
-    scores = score_all(graph)
+    scores = score_all(graph, clustered)
     top_scored = sorted(scores.items(), key=lambda x: x[1], reverse=True)[:5]
     print(f"  Top-scored nodes (load-bearing): {[n for n, _ in top_scored]}")
 
     # Step 5 — Analyze
     print("Step 5: Analyzing architecture...")
     gods = god_nodes(graph)
-    surprises = surprising_connections(graph)
-    questions = suggest_questions(graph)
+    surprises = surprising_connections(graph, clustered)
+    questions = suggest_questions(graph, clustered, {cid: f"Community {cid}" for cid in clustered})
 
     # Print key findings immediately
     print(f"\n  God nodes detected: {len(gods)}")
     for g in gods[:3]:
-        print(f"    ⚠ {g.get('id', g)} — high in+out coupling")
+        print(f"    [WARN] {g.get('id', g)} - high in+out coupling")
 
     print(f"\n  Surprising connections: {len(surprises)}")
     for s in surprises[:3]:
-        print(f"    → {s.get('source')} imports from {s.get('target')}")
+        print(f"    -> {s.get('source')} imports from {s.get('target')}")
 
     # Step 6 — Report
     print("\nStep 6: Generating architecture report...")
-    report_text = generate(graph, gods, surprises, questions)
-    (OUT_DIR / "graphify_report.md").write_text(report_text)
+    report_text = generate(
+        G=graph,
+        communities=clustered,
+        cohesion_scores=scores,
+        community_labels={cid: f"Community {cid}" for cid in clustered},
+        god_node_list=gods,
+        surprise_list=surprises,
+        detection_result=det,
+        token_cost={"input": 0, "output": 0},
+        root="kqlbridge",
+        suggested_questions=questions,
+    )
+    (OUT_DIR / "graphify_report.md").write_text(report_text, encoding="utf-8")
     print(f"  Saved: {OUT_DIR / 'graphify_report.md'}")
 
     # Step 7 — Export
     print("Step 7: Exporting graph...")
-    (OUT_DIR / "graph.json").write_text(to_json(graph))
-    (OUT_DIR / "graph.html").write_text(to_html(graph))
+    to_json(graph, clustered, str(OUT_DIR / "graph.json"), force=True)
+    to_html(graph, clustered, str(OUT_DIR / "graph.html"), community_labels={cid: f"Community {cid}" for cid in clustered})
     print(f"  Saved: {OUT_DIR / 'graph.html'} (open in browser)")
 
     # ─── Agentic Engineering Health Check ────────────────────────────────
     print("\n" + "=" * 60)
-    print("BIT Tune Phase — Karpathy Bloat Audit")
+    print("BIT Tune Phase - Karpathy Bloat Audit")
     print("=" * 60)
     _run_bloat_audit()
     _check_architecture_rules(gods, surprises)
 
-    print(f"\n✅ Graphify audit complete. Open: {OUT_DIR / 'graph.html'}")
+    print(f"\n[OK] Graphify audit complete. Open: {OUT_DIR / 'graph.html'}")
 
 
 def run_manual_analysis():
@@ -153,7 +164,7 @@ def run_manual_analysis():
 
     for path in source_files:
         try:
-            tree = py_ast.parse(path.read_text())
+            tree = py_ast.parse(path.read_text(encoding="utf-8"))
             rel_path = path.relative_to(REPO_ROOT)
 
             for node in py_ast.walk(tree):
@@ -182,9 +193,9 @@ def run_manual_analysis():
     print(f"\nKarpathy Principle 2 — Functions > 30 lines:")
     if stats["long_functions"]:
         for fn in stats["long_functions"]:
-            print(f"  ⚠ {fn}")
+            print(f"  [WARN] {fn}")
     else:
-        print("  ✅ All functions within 30-line guideline")
+        print("  [OK] All functions within 30-line guideline")
 
     _run_bloat_audit()
 
@@ -201,7 +212,7 @@ def run_manual_analysis():
 
 ## Action: Install graphify for full dependency graph analysis
 """
-    (OUT_DIR / "graphify_report.md").write_text(report)
+    (OUT_DIR / "graphify_report.md").write_text(report, encoding="utf-8")
     print(f"\nBasic report saved: {OUT_DIR / 'graphify_report.md'}")
 
 
@@ -210,15 +221,15 @@ def _run_bloat_audit():
     print("\nKarpathy Bloat Audit Checklist:")
     checklist = [
         ("P2", "Can any 10+ line block become a named function?"),
-        ("P2", "Are there copy-pasted patterns → should be a loop?"),
+        ("P2", "Are there copy-pasted patterns -> should be a loop?"),
         ("P2", "Are there abstractions for only one operator?"),
         ("P2", "Are there unreachable branches?"),
         ("P4", "Does the code optimize for the score but miss real cases?"),
         ("P6", "Would a senior engineer understand this in 5 minutes?"),
     ]
     for principle, question in checklist:
-        print(f"  [{principle}] □ {question}")
-    print("\n  → Run this checklist manually after each BIT Tune phase.")
+        print(f"  [{principle}] [ ] {question}")
+    print("\n  -> Run this checklist manually after each BIT Tune phase.")
 
 
 def _check_architecture_rules(gods: list, surprises: list):
@@ -234,27 +245,27 @@ def _check_architecture_rules(gods: list, surprises: list):
         src = str(edge.get("source", ""))
         tgt = str(edge.get("target", ""))
         if "generator" in src and "semantic" in tgt:
-            violations.append(f"generators → semantic (generators should be pure AST → SQL)")
+            violations.append(f"generators -> semantic (generators should be pure AST -> SQL)")
         if "semantic" in src and "parser" in tgt:
-            violations.append(f"semantic → parser (semantic is downstream, not upstream)")
+            violations.append(f"semantic -> parser (semantic is downstream, not upstream)")
 
     if violations:
-        print("  ❌ Architecture violations found:")
+        print("  [FAIL] Architecture violations found:")
         for v in violations:
             print(f"     {v}")
     else:
-        print("  ✅ No cross-layer dependency violations")
+        print("  [OK] No cross-layer dependency violations")
 
     # Rule 2: God nodes should not appear in locked files
     locked_files = ["ast_nodes", "semantic", "kql_lark", "prepare"]
     god_names = [str(g.get("id", "")) for g in gods]
     for gn in god_names:
         if any(locked in gn for locked in locked_files):
-            print(f"  ⚠ God node in locked file: {gn}")
-            print("    → Locked files should be stable. This is unexpected coupling.")
+            print(f"  [WARN] God node in locked file: {gn}")
+            print("    -> Locked files should be stable. This is unexpected coupling.")
 
     # Rule 3: No circular imports
-    print("  ✅ Circular import check: use 'python -m py_compile src/kqlbridge/*.py' to verify")
+    print("  [OK] Circular import check: use 'python -m py_compile src/kqlbridge/*.py' to verify")
 
 
 if __name__ == "__main__":

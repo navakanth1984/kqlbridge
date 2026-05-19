@@ -56,6 +56,14 @@ class TestWhere:
         result = sql("AppLogs | where Message contains 'timeout'")
         assert "LIKE '%timeout%'" in result
 
+    def test_has(self):
+        result = sql("AppLogs | where Message has 'timeout'")
+        assert "RLIKE '(?i)\\\\btimeout\\\\b'" in result
+
+    def test_case_insensitive_equality(self):
+        result = sql("AppLogs | where Level =~ 'Error'")
+        assert "LOWER(Level) = LOWER('Error')" in result
+
     def test_startswith(self):
         result = sql("AppLogs | where Host startswith 'web'")
         assert "LIKE 'web%'" in result
@@ -268,6 +276,16 @@ class TestJoin:
         assert "CustomerId" in result
         assert "Region" in result
 
+    def test_chained_joins(self):
+        result = sql("Table1 | join kind=inner (Table2) on x | join kind=leftouter (Table3) on y")
+        assert "INNER JOIN Table2 ON Table1.x = Table2.x" in result
+        assert "LEFT OUTER JOIN Table3 ON Table1.y = Table3.y" in result
+
+    def test_union_join_pipeline(self):
+        result = sql("Table1 | union Table2 | join (Table3) on x")
+        assert "FROM (\nSELECT * FROM Table1\nUNION ALL\nSELECT * FROM Table2\n) _union_result" in result
+        assert "INNER JOIN Table3 ON _union_result.x = Table3.x" in result
+
 
 # ─── 12 union ────────────────────────────────────────────────────────────────
 
@@ -296,6 +314,28 @@ class TestLet:
         kql = "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName"
         result = sql(kql)
         assert "FROM errors" in result
+
+    def test_scalar_let_binding_spark(self):
+        from kqlbridge import translate
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = translate(kql, target="spark")
+        assert "WHERE Time > CURRENT_TIMESTAMP - INTERVAL '1 days'" in res
+        assert "WITH" not in res
+
+    def test_scalar_let_binding_tsql(self):
+        from kqlbridge import translate
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = translate(kql, target="tsql")
+        assert "WHERE Time > DATEADD(day, -1, GETDATE())" in res
+        assert "WITH" not in res
+
+    def test_scalar_let_binding_pyspark(self):
+        from kqlbridge.generators.pyspark import PySparkGenerator
+        from kqlbridge.parser import parse
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = PySparkGenerator().generate(parse(kql))
+        assert 'df = df.filter("Time > CURRENT_TIMESTAMP - INTERVAL \'1 days\'")' in res
+        assert "WITH" not in res
 
 
 # ─── 14 count ────────────────────────────────────────────────────────────────
@@ -326,3 +366,214 @@ class TestPublicAPI:
         result = translate("AppLogs", target="spark")
         assert isinstance(result, str)
         assert len(result) > 0
+
+
+# ─── Community Functions ─────────────────────────────────────────────────────
+
+class TestCommunityFunctions:
+    def test_datetime_quotes(self):
+        spark_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="spark")
+        tsql_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="tsql")
+        assert "TIMESTAMP '2024-01-01'" in spark_res
+        assert "CONVERT(datetime, '2024-01-01')" in tsql_res
+
+        spark_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="spark")
+        tsql_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="tsql")
+        assert "TIMESTAMP '2024-01-01'" in spark_res_double
+        assert "CONVERT(datetime, '2024-01-01')" in tsql_res_double
+
+    def test_coalesce(self):
+        spark_res = translate("AppLogs | extend x = coalesce(A, B, C)", target="spark")
+        tsql_res = translate("AppLogs | extend x = coalesce(A, B, C)", target="tsql")
+        assert "COALESCE(A, B, C)" in spark_res
+        assert "COALESCE(A, B, C)" in tsql_res
+
+    def test_split(self):
+        spark_res = translate("AppLogs | extend parts = split(Message, ',')", target="spark")
+        tsql_res = translate("AppLogs | extend parts = split(Message, ',')", target="tsql")
+        assert "split(Message, ',')" in spark_res
+        assert "STRING_SPLIT(Message, ',')" in tsql_res
+
+    def test_datetime_add(self):
+        spark_res = translate("AppLogs | extend next_day = datetime_add('day', 1, TimeGenerated)", target="spark")
+        tsql_res = translate("AppLogs | extend next_day = datetime_add('day', 1, TimeGenerated)", target="tsql")
+        assert "(TimeGenerated + (1 * INTERVAL '1' DAY))" in spark_res
+        assert "DATEADD(day, 1, TimeGenerated)" in tsql_res
+
+    def test_datetime_diff(self):
+        spark_res = translate("AppLogs | extend diff = datetime_diff('day', dt1, dt2)", target="spark")
+        tsql_res = translate("AppLogs | extend diff = datetime_diff('day', dt1, dt2)", target="tsql")
+        assert "datediff(dt1, dt2)" in spark_res
+        assert "DATEDIFF(day, dt2, dt1)" in tsql_res
+
+    def test_strcat_delim(self):
+        spark_res = translate("AppLogs | extend full = strcat_delim('-', A, B)", target="spark")
+        tsql_res = translate("AppLogs | extend full = strcat_delim('-', A, B)", target="tsql")
+        assert "concat_ws('-', A, B)" in spark_res
+        assert "CONCAT_WS('-', A, B)" in tsql_res
+
+
+class TestV07Features:
+    def test_serialize_and_prev(self):
+        # Test serialize operator and prev() function
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "LAG(Level) OVER (ORDER BY (SELECT NULL))" in spark_res
+        assert "LAG(Level) OVER (ORDER BY (SELECT NULL))" in tsql_res
+
+    def test_has_any(self):
+        # Test has_any operator
+        kql = "AppLogs | where Message has_any ('timeout', 'error')"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "(Message RLIKE '(?i)\\\\btimeout\\\\b' OR Message RLIKE '(?i)\\\\berror\\\\b')" in spark_res
+        assert "(Message LIKE '%timeout%' OR Message LIKE '%error%')" in tsql_res
+
+    def test_percentile(self):
+        # Test percentile aggregate function
+        kql = "AppLogs | summarize percentile(Duration, 95) by Host"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "approx_percentile(Duration, 0.95)" in spark_res
+        assert "PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY Duration)" in tsql_res
+
+    def test_make_list(self):
+        # Test make_list aggregate function
+        kql = "AppLogs | summarize make_list(Level) by Host"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "collect_list(Level)" in spark_res
+        assert "STRING_AGG(Level, ',')" in tsql_res
+
+    def test_soc_threat_hunting_functions(self):
+        # 1. parse_json_path
+        kql_json = "AppLogs | extend val = parse_json(col).field"
+        spark_json = translate(kql_json, target="spark")
+        tsql_json = translate(kql_json, target="tsql")
+        assert "get_json_object(col, '$.field')" in spark_json
+        assert "JSON_VALUE(col, '$.field')" in tsql_json
+
+        # 2. mv_expand
+        kql_mvexpand = "AppLogs | mv-expand col"
+        spark_mvexpand = translate(kql_mvexpand, target="spark")
+        tsql_mvexpand = translate(kql_mvexpand, target="tsql")
+        assert "LATERAL VIEW explode(col)" in spark_mvexpand
+        assert "CROSS APPLY OPENJSON(col)" in tsql_mvexpand
+
+        # 3. case
+        kql_case = "AppLogs | extend x = case(c1, v1, c2, v2, d)"
+        spark_case = translate(kql_case, target="spark")
+        tsql_case = translate(kql_case, target="tsql")
+        assert "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END" in spark_case
+        assert "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END" in tsql_case
+
+        # 4. ipv4_is_private
+        kql_private = "AppLogs | where ipv4_is_private(ip)"
+        spark_private = translate(kql_private, target="spark")
+        tsql_private = translate(kql_private, target="tsql")
+        assert "BETWEEN 167772160 AND 184549375" in spark_private
+        assert "BETWEEN 167772160 AND 184549375" in tsql_private
+
+        # 5. ipv4_is_in_range
+        kql_range = "AppLogs | where ipv4_is_in_range(ip, '192.168.1.0/24')"
+        spark_range = translate(kql_range, target="spark")
+        tsql_range = translate(kql_range, target="tsql")
+        assert "BETWEEN 3232235776 AND 3232236031" in spark_range
+        assert "BETWEEN 3232235776 AND 3232236031" in tsql_range
+
+    def test_soc_threat_hunting_pyspark(self):
+        from kqlbridge.generators.pyspark import PySparkGenerator
+        from kqlbridge.parser import parse
+
+        # 1. parse_json
+        kql_json = "AppLogs | extend val = parse_json(col).field"
+        res_json = PySparkGenerator().generate(parse(kql_json))
+        assert 'df = df.selectExpr("*", "get_json_object(col, \'$.field\') AS val")' in res_json
+
+        # 2. case
+        kql_case = "AppLogs | extend x = case(c1, v1, c2, v2, d)"
+        res_case = PySparkGenerator().generate(parse(kql_case))
+        assert 'df = df.selectExpr("*", "CASE WHEN c1 THEN v1 WHEN c2 THEN v2 ELSE d END AS x")' in res_case
+
+        # 3. ipv4_is_private — verify BETWEEN ranges rendered without '= true' suffix
+        kql_private = "AppLogs | where ipv4_is_private(ip)"
+        res_private = PySparkGenerator().generate(parse(kql_private))
+        assert "BETWEEN 167772160 AND 184549375" in res_private  # 10.0.0.0/8
+        assert "BETWEEN 2886729728 AND 2887778303" in res_private  # 172.16.0.0/12
+        assert "= true" not in res_private  # no redundant bool suffix on FuncCall
+
+
+class TestV08Features:
+    def test_casting_functions(self):
+        # Test tostring, toint, tolong, todouble across targets
+        kql = "AppLogs | extend s = tostring(c1), i = toint(c2), l = tolong(c3), d = todouble(c4)"
+
+        # 1. Spark SQL
+        spark = translate(kql, target="spark")
+        assert "CAST(c1 AS STRING)" in spark
+        assert "CAST(c2 AS INT)" in spark
+        assert "CAST(c3 AS BIGINT)" in spark
+        assert "CAST(c4 AS DOUBLE)" in spark
+
+        # 2. T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "CAST(c1 AS NVARCHAR(MAX))" in tsql
+        assert "CAST(c2 AS INT)" in tsql
+        assert "CAST(c3 AS BIGINT)" in tsql
+        assert "CAST(c4 AS FLOAT)" in tsql
+
+    def test_format_datetime(self):
+        kql = "AppLogs | extend formatted = format_datetime(timestamp, 'yyyy-MM-dd')"
+
+        # 1. Spark SQL
+        spark = translate(kql, target="spark")
+        assert "DATE_FORMAT(timestamp, 'yyyy-MM-dd')" in spark
+
+        # 2. T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "FORMAT(timestamp, 'yyyy-MM-dd')" in tsql
+
+    def test_array_functions(self):
+        # Test array_length and array_index_of
+        kql_len = "AppLogs | extend len = array_length(arr)"
+        kql_idx = "AppLogs | extend idx = array_index_of(arr, 'target')"
+
+        # 1. Spark SQL
+        spark_len = translate(kql_len, target="spark")
+        spark_idx = translate(kql_idx, target="spark")
+        assert "size(arr)" in spark_len
+        assert "array_position(arr, 'target')" in spark_idx
+
+        # 2. T-SQL
+        tsql_len = translate(kql_len, target="tsql")
+        tsql_idx = translate(kql_idx, target="tsql")
+        assert "COALESCE((SELECT COUNT(*) FROM OPENJSON(arr)), 0)" in tsql_len
+        assert "COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON(arr) WHERE [value] = 'target'), -1)" in tsql_idx
+
+    def test_case_insensitive_list_membership(self):
+        # 1. Literal set membership
+        kql_lit = "AppLogs | where Message in~ ('Error', 'Warning') and Message !in~ ('info')"
+
+        spark_lit = translate(kql_lit, target="spark")
+        assert "LOWER(Message) IN (LOWER('Error'), LOWER('Warning'))" in spark_lit
+        assert "LOWER(Message) NOT IN (LOWER('info'))" in spark_lit
+
+        tsql_lit = translate(kql_lit, target="tsql")
+        assert "LOWER(Message) IN (LOWER('Error'), LOWER('Warning'))" in tsql_lit
+        assert "LOWER(Message) NOT IN (LOWER('info'))" in tsql_lit
+
+        # 2. Subquery membership
+        kql_sub = "AppLogs | where Message in~ (OtherTable | project Name) and Message !in~ (OtherTable | project Name)"
+
+        spark_sub = translate(kql_sub, target="spark").replace("\n", " ")
+        while "  " in spark_sub:
+            spark_sub = spark_sub.replace("  ", " ")
+        assert "LOWER(Message) IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in spark_sub
+        assert "LOWER(Message) NOT IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in spark_sub
+
+        tsql_sub = translate(kql_sub, target="tsql").replace("\n", " ")
+        while "  " in tsql_sub:
+            tsql_sub = tsql_sub.replace("  ", " ")
+        assert "LOWER(Message) IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in tsql_sub
+        assert "LOWER(Message) NOT IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in tsql_sub
