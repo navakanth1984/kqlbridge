@@ -386,6 +386,7 @@ class SparkSQLGenerator:
         if isinstance(expr, DatetimeLit):
             # datetime(2024-01-01) → TIMESTAMP '2024-01-01'
             inner = expr.raw.replace("datetime(", "").rstrip(")")
+            inner = inner.strip("'\"")
             return f"TIMESTAMP '{inner}'"
 
         if isinstance(expr, str):
@@ -433,6 +434,12 @@ class SparkSQLGenerator:
             "format_datetime": lambda a: f"DATE_FORMAT({a[0]}, {a[1]})",
             "dayofweek":   lambda a: f"DAYOFWEEK({a[0]})",
             "hourofday":   lambda a: f"HOUR({a[0]})",
+            "coalesce":    lambda a: f"COALESCE({', '.join(a)})",
+            "split":       lambda a: f"split({a[0]}, {a[1]})",
+            "strcat_delim": lambda a: f"concat_ws({a[0]}, {', '.join(a[1:])})",
+            "datetime":     lambda a: f"TIMESTAMP '{a[0].strip('\'\"')}'",
+            "datetime_add": lambda a: self._render_datetime_add(a),
+            "datetime_diff": lambda a: self._render_datetime_diff(a),
         }
 
         if name in kql_to_spark:
@@ -441,6 +448,46 @@ class SparkSQLGenerator:
         # Unknown function — pass through as-is with a comment
         args_str = ", ".join(args)
         return f"{name}({args_str}) /* KQL function — verify Spark equivalent */"
+
+    def _render_datetime_add(self, args: list[str]) -> str:
+        if len(args) < 3:
+            return f"datetime_add({', '.join(args)})"
+        period = args[0].strip("'\"").lower()
+        amount = args[1]
+        dt = args[2]
+        unit_map = {
+            "year": "YEAR",
+            "month": "MONTH",
+            "day": "DAY",
+            "hour": "HOUR",
+            "minute": "MINUTE",
+            "second": "SECOND",
+        }
+        spark_unit = unit_map.get(period, period.upper())
+        return f"({dt} + ({amount} * INTERVAL '1' {spark_unit}))"
+
+    def _render_datetime_diff(self, args: list[str]) -> str:
+        if len(args) < 3:
+            return f"datetime_diff({', '.join(args)})"
+        period = args[0].strip("'\"").lower()
+        dt1 = args[1]
+        dt2 = args[2]
+        if period == "day":
+            return f"datediff({dt1}, {dt2})"
+        if period == "month":
+            return f"CAST(months_between({dt1}, {dt2}) AS INT)"
+        if period == "year":
+            return f"CAST(months_between({dt1}, {dt2}) / 12 AS INT)"
+        
+        seconds_map = {
+            "hour": 3600,
+            "minute": 60,
+            "second": 1,
+        }
+        sec = seconds_map.get(period, 1)
+        if sec == 1:
+            return f"(unix_timestamp({dt1}) - unix_timestamp({dt2}))"
+        return f"CAST((unix_timestamp({dt1}) - unix_timestamp({dt2})) / {sec} AS INT)"
 
     # ─── Boolean Expression Renderers ────────────────────────────────────────
 

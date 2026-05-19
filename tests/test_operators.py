@@ -334,3 +334,48 @@ class TestPublicAPI:
         result = translate("AppLogs", target="spark")
         assert isinstance(result, str)
         assert len(result) > 0
+
+
+# ─── Community Functions ─────────────────────────────────────────────────────
+
+class TestCommunityFunctions:
+    def test_datetime_quotes(self):
+        spark_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="spark")
+        tsql_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="tsql")
+        assert "TIMESTAMP '2024-01-01'" in spark_res
+        assert "CONVERT(datetime, '2024-01-01')" in tsql_res
+
+        spark_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="spark")
+        tsql_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="tsql")
+        assert "TIMESTAMP '2024-01-01'" in spark_res_double
+        assert "CONVERT(datetime, '2024-01-01')" in tsql_res_double
+
+    def test_coalesce(self):
+        spark_res = translate("AppLogs | extend x = coalesce(A, B, C)", target="spark")
+        tsql_res = translate("AppLogs | extend x = coalesce(A, B, C)", target="tsql")
+        assert "COALESCE(A, B, C)" in spark_res
+        assert "COALESCE(A, B, C)" in tsql_res
+
+    def test_split(self):
+        spark_res = translate("AppLogs | extend parts = split(Message, ',')", target="spark")
+        tsql_res = translate("AppLogs | extend parts = split(Message, ',')", target="tsql")
+        assert "split(Message, ',')" in spark_res
+        assert "STRING_SPLIT(Message, ',')" in tsql_res
+
+    def test_datetime_add(self):
+        spark_res = translate("AppLogs | extend next_day = datetime_add('day', 1, TimeGenerated)", target="spark")
+        tsql_res = translate("AppLogs | extend next_day = datetime_add('day', 1, TimeGenerated)", target="tsql")
+        assert "(TimeGenerated + (1 * INTERVAL '1' DAY))" in spark_res
+        assert "DATEADD(day, 1, TimeGenerated)" in tsql_res
+
+    def test_datetime_diff(self):
+        spark_res = translate("AppLogs | extend diff = datetime_diff('day', dt1, dt2)", target="spark")
+        tsql_res = translate("AppLogs | extend diff = datetime_diff('day', dt1, dt2)", target="tsql")
+        assert "datediff(dt1, dt2)" in spark_res
+        assert "DATEDIFF(day, dt2, dt1)" in tsql_res
+
+    def test_strcat_delim(self):
+        spark_res = translate("AppLogs | extend full = strcat_delim('-', A, B)", target="spark")
+        tsql_res = translate("AppLogs | extend full = strcat_delim('-', A, B)", target="tsql")
+        assert "concat_ws('-', A, B)" in spark_res
+        assert "CONCAT_WS('-', A, B)" in tsql_res

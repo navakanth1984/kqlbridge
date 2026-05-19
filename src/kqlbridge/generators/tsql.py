@@ -117,6 +117,7 @@ class TSQLGenerator(SparkSQLGenerator):
 
         if isinstance(expr, DatetimeLit):
             inner = expr.raw.replace("datetime(", "").rstrip(")")
+            inner = inner.strip("'\"")
             return f"CONVERT(datetime, '{inner}')"
 
         if isinstance(expr, BinExpr):
@@ -133,7 +134,37 @@ class TSQLGenerator(SparkSQLGenerator):
         return super()._expr(expr)
 
     def _func_call(self, expr) -> str:
-        if expr.name.lower() == "datetime":
+        name = expr.name.lower()
+        args = [self._expr(a) for a in expr.args]
+        if name == "datetime":
             arg_sql = self._expr(expr.args[0])
             return f"CONVERT(datetime, {arg_sql})"
+        if name == "split":
+            return f"STRING_SPLIT({args[0]}, {args[1]})"
+        if name == "datetime_add":
+            period = args[0].strip("'\"").lower()
+            unit_map = {
+                "year": "year",
+                "month": "month",
+                "day": "day",
+                "hour": "hour",
+                "minute": "minute",
+                "second": "second",
+            }
+            tsql_unit = unit_map.get(period, period)
+            return f"DATEADD({tsql_unit}, {args[1]}, {args[2]})"
+        if name == "datetime_diff":
+            period = args[0].strip("'\"").lower()
+            unit_map = {
+                "year": "year",
+                "month": "month",
+                "day": "day",
+                "hour": "hour",
+                "minute": "minute",
+                "second": "second",
+            }
+            tsql_unit = unit_map.get(period, period)
+            return f"DATEDIFF({tsql_unit}, {args[2]}, {args[1]})"
+        if name == "strcat_delim":
+            return f"CONCAT_WS({args[0]}, {', '.join(args[1:])})"
         return super()._func_call(expr)

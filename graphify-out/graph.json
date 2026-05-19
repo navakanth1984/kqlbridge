@@ -9,7 +9,7 @@
       "source_file": "run_stress_test.py",
       "source_location": "L1",
       "id": "run_stress_test_py",
-      "community": 7,
+      "community": 18,
       "norm_label": "run_stress_test.py"
     },
     {
@@ -18,7 +18,7 @@
       "source_file": "run_stress_test.py",
       "source_location": "L131",
       "id": "kqlbridge_run_stress_test_run",
-      "community": 7,
+      "community": 18,
       "norm_label": "run()"
     },
     {
@@ -27,7 +27,7 @@
       "source_file": "examples/fabric_migration/01_simple_filter.py",
       "source_location": "L1",
       "id": "examples_fabric_migration_01_simple_filter_py",
-      "community": 7,
+      "community": 20,
       "norm_label": "01_simple_filter.py"
     },
     {
@@ -36,7 +36,7 @@
       "source_file": "examples/fabric_migration/01_simple_filter.py",
       "source_location": "L75",
       "id": "fabric_migration_01_simple_filter_route_query",
-      "community": 7,
+      "community": 20,
       "norm_label": "route_query()"
     },
     {
@@ -45,7 +45,7 @@
       "source_file": "examples/fabric_migration/01_simple_filter.py",
       "source_location": "L1",
       "id": "fabric_migration_01_simple_filter_rationale_1",
-      "community": 7,
+      "community": 20,
       "norm_label": "examples/fabric_migration/01_simple_filter.py =================================="
     },
     {
@@ -54,7 +54,7 @@
       "source_file": "examples/fabric_migration/01_simple_filter.py",
       "source_location": "L76",
       "id": "fabric_migration_01_simple_filter_rationale_76",
-      "community": 7,
+      "community": 20,
       "norm_label": "the routing agent pattern from de-context kit.     routes each query to the most"
     },
     {
@@ -63,7 +63,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L1",
       "id": "scripts_graphify_audit_py",
-      "community": 15,
+      "community": 16,
       "norm_label": "graphify_audit.py"
     },
     {
@@ -72,7 +72,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L58",
       "id": "scripts_graphify_audit_run_graphify_pipeline",
-      "community": 15,
+      "community": 16,
       "norm_label": "run_graphify_pipeline()"
     },
     {
@@ -81,7 +81,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L138",
       "id": "scripts_graphify_audit_run_manual_analysis",
-      "community": 15,
+      "community": 16,
       "norm_label": "run_manual_analysis()"
     },
     {
@@ -90,7 +90,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L208",
       "id": "scripts_graphify_audit_run_bloat_audit",
-      "community": 15,
+      "community": 16,
       "norm_label": "_run_bloat_audit()"
     },
     {
@@ -99,7 +99,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L224",
       "id": "scripts_graphify_audit_check_architecture_rules",
-      "community": 15,
+      "community": 16,
       "norm_label": "_check_architecture_rules()"
     },
     {
@@ -108,7 +108,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L1",
       "id": "scripts_graphify_audit_rationale_1",
-      "community": 15,
+      "community": 16,
       "norm_label": "scripts/graphify_audit.py \u2014 kqlbridge codebase intelligence via graphify ======="
     },
     {
@@ -117,7 +117,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L59",
       "id": "scripts_graphify_audit_rationale_59",
-      "community": 15,
+      "community": 16,
       "norm_label": "full 7-step graphify pipeline on the kqlbridge source."
     },
     {
@@ -126,7 +126,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L139",
       "id": "scripts_graphify_audit_rationale_139",
-      "community": 15,
+      "community": 16,
       "norm_label": "fallback analysis without graphify \u2014 uses python's ast module."
     },
     {
@@ -135,7 +135,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L209",
       "id": "scripts_graphify_audit_rationale_209",
-      "community": 15,
+      "community": 16,
       "norm_label": "karpathy principle 6 bloat audit checklist \u2014 run after every tune phase."
     },
     {
@@ -144,7 +144,7 @@
       "source_file": "scripts/graphify_audit.py",
       "source_location": "L225",
       "id": "scripts_graphify_audit_rationale_225",
-      "community": 15,
+      "community": 16,
       "norm_label": "check architectural invariants for the kqlbridge codebase.     these rules shoul"
     },
     {
@@ -153,7 +153,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L1",
       "id": "src_kqlbridge_ast_nodes_py",
-      "community": 0,
+      "community": 1,
       "norm_label": "ast_nodes.py"
     },
     {
@@ -162,7 +162,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L22",
       "id": "kqlbridge_ast_nodes_columnref",
-      "community": 0,
+      "community": 1,
       "norm_label": "columnref"
     },
     {
@@ -171,7 +171,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L28",
       "id": "kqlbridge_ast_nodes_stringlit",
-      "community": 0,
+      "community": 1,
       "norm_label": "stringlit"
     },
     {
@@ -180,7 +180,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L34",
       "id": "kqlbridge_ast_nodes_intlit",
-      "community": 0,
+      "community": 1,
       "norm_label": "intlit"
     },
     {
@@ -189,7 +189,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L40",
       "id": "kqlbridge_ast_nodes_floatlit",
-      "community": 0,
+      "community": 1,
       "norm_label": "floatlit"
     },
     {
@@ -198,7 +198,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L46",
       "id": "kqlbridge_ast_nodes_boollit",
-      "community": 0,
+      "community": 1,
       "norm_label": "boollit"
     },
     {
@@ -207,7 +207,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L52",
       "id": "kqlbridge_ast_nodes_subqueryinexpr",
-      "community": 0,
+      "community": 1,
       "norm_label": "subqueryinexpr"
     },
     {
@@ -216,7 +216,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L60",
       "id": "kqlbridge_ast_nodes_iffexpr",
-      "community": 0,
+      "community": 1,
       "norm_label": "iffexpr"
     },
     {
@@ -225,7 +225,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L68",
       "id": "kqlbridge_ast_nodes_datetimelit",
-      "community": 0,
+      "community": 1,
       "norm_label": "datetimelit"
     },
     {
@@ -234,7 +234,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L74",
       "id": "kqlbridge_ast_nodes_agoexpr",
-      "community": 0,
+      "community": 6,
       "norm_label": "agoexpr"
     },
     {
@@ -243,7 +243,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L81",
       "id": "kqlbridge_ast_nodes_binexpr",
-      "community": 0,
+      "community": 6,
       "norm_label": "binexpr"
     },
     {
@@ -252,7 +252,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L89",
       "id": "kqlbridge_ast_nodes_funccall",
-      "community": 0,
+      "community": 1,
       "norm_label": "funccall"
     },
     {
@@ -261,7 +261,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L96",
       "id": "kqlbridge_ast_nodes_binaryop",
-      "community": 0,
+      "community": 1,
       "norm_label": "binaryop"
     },
     {
@@ -270,7 +270,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L113",
       "id": "kqlbridge_ast_nodes_comparison",
-      "community": 0,
+      "community": 1,
       "norm_label": "comparison"
     },
     {
@@ -279,7 +279,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L121",
       "id": "kqlbridge_ast_nodes_inexpr",
-      "community": 0,
+      "community": 1,
       "norm_label": "inexpr"
     },
     {
@@ -288,7 +288,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L129",
       "id": "kqlbridge_ast_nodes_stringop",
-      "community": 0,
+      "community": 1,
       "norm_label": "stringop"
     },
     {
@@ -297,7 +297,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L137",
       "id": "kqlbridge_ast_nodes_nullcheck",
-      "community": 0,
+      "community": 1,
       "norm_label": "nullcheck"
     },
     {
@@ -306,7 +306,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L144",
       "id": "kqlbridge_ast_nodes_logicalop",
-      "community": 0,
+      "community": 2,
       "norm_label": "logicalop"
     },
     {
@@ -315,7 +315,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L152",
       "id": "kqlbridge_ast_nodes_negation",
-      "community": 0,
+      "community": 2,
       "norm_label": "negation"
     },
     {
@@ -324,7 +324,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L163",
       "id": "kqlbridge_ast_nodes_aggcount",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggcount"
     },
     {
@@ -333,7 +333,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L169",
       "id": "kqlbridge_ast_nodes_aggsum",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggsum"
     },
     {
@@ -342,7 +342,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L176",
       "id": "kqlbridge_ast_nodes_aggavg",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggavg"
     },
     {
@@ -351,7 +351,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L183",
       "id": "kqlbridge_ast_nodes_aggmin",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggmin"
     },
     {
@@ -360,7 +360,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L190",
       "id": "kqlbridge_ast_nodes_aggmax",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggmax"
     },
     {
@@ -369,7 +369,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L197",
       "id": "kqlbridge_ast_nodes_aggdcount",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggdcount"
     },
     {
@@ -378,7 +378,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L204",
       "id": "kqlbridge_ast_nodes_aggcountif",
-      "community": 0,
+      "community": 1,
       "norm_label": "aggcountif"
     },
     {
@@ -396,7 +396,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L224",
       "id": "kqlbridge_ast_nodes_plaingroup",
-      "community": 0,
+      "community": 1,
       "norm_label": "plaingroup"
     },
     {
@@ -405,7 +405,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L235",
       "id": "kqlbridge_ast_nodes_orderitem",
-      "community": 0,
+      "community": 1,
       "norm_label": "orderitem"
     },
     {
@@ -414,7 +414,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L244",
       "id": "kqlbridge_ast_nodes_whereop",
-      "community": 2,
+      "community": 1,
       "norm_label": "whereop"
     },
     {
@@ -441,7 +441,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L264",
       "id": "kqlbridge_ast_nodes_orderop",
-      "community": 0,
+      "community": 1,
       "norm_label": "orderop"
     },
     {
@@ -450,7 +450,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L270",
       "id": "kqlbridge_ast_nodes_takeop",
-      "community": 0,
+      "community": 1,
       "norm_label": "takeop"
     },
     {
@@ -468,7 +468,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L283",
       "id": "kqlbridge_ast_nodes_extendop",
-      "community": 0,
+      "community": 2,
       "norm_label": "extendop"
     },
     {
@@ -495,7 +495,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L304",
       "id": "kqlbridge_ast_nodes_countop",
-      "community": 0,
+      "community": 5,
       "norm_label": "countop"
     },
     {
@@ -522,7 +522,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L1",
       "id": "kqlbridge_ast_nodes_rationale_1",
-      "community": 0,
+      "community": 1,
       "norm_label": "ast_nodes.py \u2014 kqlbridge typed ast node definitions ============================"
     },
     {
@@ -531,7 +531,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L23",
       "id": "kqlbridge_ast_nodes_rationale_23",
-      "community": 0,
+      "community": 1,
       "norm_label": "a reference to a column: e.g. servicename"
     },
     {
@@ -540,7 +540,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L29",
       "id": "kqlbridge_ast_nodes_rationale_29",
-      "community": 0,
+      "community": 1,
       "norm_label": "a string literal: 'error' or \"error\""
     },
     {
@@ -549,7 +549,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L35",
       "id": "kqlbridge_ast_nodes_rationale_35",
-      "community": 0,
+      "community": 1,
       "norm_label": "an integer literal: 100"
     },
     {
@@ -558,7 +558,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L41",
       "id": "kqlbridge_ast_nodes_rationale_41",
-      "community": 0,
+      "community": 1,
       "norm_label": "a float literal: 3.14"
     },
     {
@@ -567,7 +567,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L47",
       "id": "kqlbridge_ast_nodes_rationale_47",
-      "community": 0,
+      "community": 1,
       "norm_label": "a boolean literal: true / false"
     },
     {
@@ -576,7 +576,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L53",
       "id": "kqlbridge_ast_nodes_rationale_53",
-      "community": 0,
+      "community": 1,
       "norm_label": "expr in (table | project col) \u2192 col in (select col from table)"
     },
     {
@@ -585,7 +585,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L61",
       "id": "kqlbridge_ast_nodes_rationale_61",
-      "community": 0,
+      "community": 1,
       "norm_label": "iff(condition, true_val, false_val) \u2192 case when ... then ... else ... end"
     },
     {
@@ -594,7 +594,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L69",
       "id": "kqlbridge_ast_nodes_rationale_69",
-      "community": 0,
+      "community": 1,
       "norm_label": "a kql datetime literal: datetime(2024-01-01)"
     },
     {
@@ -603,7 +603,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L75",
       "id": "kqlbridge_ast_nodes_rationale_75",
-      "community": 0,
+      "community": 6,
       "norm_label": "kql ago(1h) \u2192 current_timestamp - interval '1 hours"
     },
     {
@@ -612,7 +612,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L82",
       "id": "kqlbridge_ast_nodes_rationale_82",
-      "community": 0,
+      "community": 6,
       "norm_label": "kql bin(col, 1h) \u2192 date_trunc('hour', col)"
     },
     {
@@ -621,7 +621,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L90",
       "id": "kqlbridge_ast_nodes_rationale_90",
-      "community": 0,
+      "community": 1,
       "norm_label": "a generic function call: tostring(x), strlen(x)"
     },
     {
@@ -630,7 +630,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L97",
       "id": "kqlbridge_ast_nodes_rationale_97",
-      "community": 0,
+      "community": 1,
       "norm_label": "arithmetic: a + b, a - b, a * b, a / b"
     },
     {
@@ -639,7 +639,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L114",
       "id": "kqlbridge_ast_nodes_rationale_114",
-      "community": 0,
+      "community": 1,
       "norm_label": "col == 'error', timegenerated > ago(1h)"
     },
     {
@@ -648,7 +648,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L122",
       "id": "kqlbridge_ast_nodes_rationale_122",
-      "community": 0,
+      "community": 1,
       "norm_label": "col in ('a', 'b', 'c')"
     },
     {
@@ -657,7 +657,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L130",
       "id": "kqlbridge_ast_nodes_rationale_130",
-      "community": 0,
+      "community": 1,
       "norm_label": "has, contains, startswith, endswith, matches regex"
     },
     {
@@ -666,7 +666,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L138",
       "id": "kqlbridge_ast_nodes_rationale_138",
-      "community": 0,
+      "community": 1,
       "norm_label": "isnotnull(col) / isnull(col)"
     },
     {
@@ -675,7 +675,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L145",
       "id": "kqlbridge_ast_nodes_rationale_145",
-      "community": 0,
+      "community": 2,
       "norm_label": "cond1 and cond2 / cond1 or cond2"
     },
     {
@@ -684,7 +684,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L198",
       "id": "kqlbridge_ast_nodes_rationale_198",
-      "community": 0,
+      "community": 1,
       "norm_label": "dcount(col) \u2192 count(distinct col)"
     },
     {
@@ -693,7 +693,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L205",
       "id": "kqlbridge_ast_nodes_rationale_205",
-      "community": 0,
+      "community": 1,
       "norm_label": "countif(cond) \u2192 count(case when cond then 1 end)"
     },
     {
@@ -711,7 +711,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L245",
       "id": "kqlbridge_ast_nodes_rationale_245",
-      "community": 2,
+      "community": 1,
       "norm_label": "| where level == 'error"
     },
     {
@@ -747,7 +747,7 @@
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L284",
       "id": "kqlbridge_ast_nodes_rationale_284",
-      "community": 0,
+      "community": 2,
       "norm_label": "| extend alias = expr"
     },
     {
@@ -792,7 +792,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L1",
       "id": "src_kqlbridge_cli_py",
-      "community": 7,
+      "community": 17,
       "norm_label": "cli.py"
     },
     {
@@ -801,7 +801,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L20",
       "id": "kqlbridge_cli_translate",
-      "community": 7,
+      "community": 17,
       "norm_label": "_translate()"
     },
     {
@@ -810,7 +810,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L40",
       "id": "kqlbridge_cli_check",
-      "community": 7,
+      "community": 15,
       "norm_label": "_check()"
     },
     {
@@ -819,7 +819,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L66",
       "id": "kqlbridge_cli_lint",
-      "community": 7,
+      "community": 17,
       "norm_label": "_lint()"
     },
     {
@@ -828,7 +828,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L88",
       "id": "kqlbridge_cli_explain",
-      "community": 11,
+      "community": 17,
       "norm_label": "_explain()"
     },
     {
@@ -837,7 +837,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L103",
       "id": "kqlbridge_cli_operators",
-      "community": 7,
+      "community": 17,
       "norm_label": "_operators()"
     },
     {
@@ -846,7 +846,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L117",
       "id": "kqlbridge_cli_version",
-      "community": 7,
+      "community": 17,
       "norm_label": "_version()"
     },
     {
@@ -855,7 +855,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L127",
       "id": "kqlbridge_cli_main",
-      "community": 7,
+      "community": 17,
       "norm_label": "main()"
     },
     {
@@ -864,7 +864,7 @@
       "source_file": "src/kqlbridge/cli.py",
       "source_location": "L1",
       "id": "kqlbridge_cli_rationale_1",
-      "community": 7,
+      "community": 17,
       "norm_label": "cli.py \u2014 kqlbridge command-line interface ======================================"
     },
     {
@@ -873,7 +873,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L1",
       "id": "src_kqlbridge_explain_py",
-      "community": 11,
+      "community": 6,
       "norm_label": "explain.py"
     },
     {
@@ -882,7 +882,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L34",
       "id": "kqlbridge_explain_explainresult",
-      "community": 0,
+      "community": 6,
       "norm_label": "explainresult"
     },
     {
@@ -891,7 +891,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L42",
       "id": "kqlbridge_explain_summary",
-      "community": 11,
+      "community": 6,
       "norm_label": "summary()"
     },
     {
@@ -900,7 +900,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L61",
       "id": "kqlbridge_explain_annotate_query",
-      "community": 11,
+      "community": 6,
       "norm_label": "_annotate_query()"
     },
     {
@@ -909,7 +909,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L80",
       "id": "kqlbridge_explain_annotate_op",
-      "community": 11,
+      "community": 6,
       "norm_label": "_annotate_op()"
     },
     {
@@ -918,7 +918,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L172",
       "id": "kqlbridge_explain_annotate_where",
-      "community": 11,
+      "community": 6,
       "norm_label": "_annotate_where()"
     },
     {
@@ -927,7 +927,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L176",
       "id": "kqlbridge_explain_walk_condition",
-      "community": 11,
+      "community": 6,
       "norm_label": "_walk_condition()"
     },
     {
@@ -936,7 +936,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L221",
       "id": "kqlbridge_explain_annotate_bin",
-      "community": 11,
+      "community": 6,
       "norm_label": "_annotate_bin()"
     },
     {
@@ -945,7 +945,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L237",
       "id": "kqlbridge_explain_expr_note",
-      "community": 11,
+      "community": 6,
       "norm_label": "_expr_note()"
     },
     {
@@ -954,7 +954,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L251",
       "id": "kqlbridge_explain_build_annotated_sql",
-      "community": 11,
+      "community": 6,
       "norm_label": "_build_annotated_sql()"
     },
     {
@@ -963,7 +963,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L281",
       "id": "kqlbridge_explain_explain",
-      "community": 11,
+      "community": 6,
       "norm_label": "explain()"
     },
     {
@@ -972,7 +972,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L1",
       "id": "kqlbridge_explain_rationale_1",
-      "community": 11,
+      "community": 6,
       "norm_label": "explain.py \u2014 kqlbridge translation annotator ==================================="
     },
     {
@@ -981,7 +981,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L62",
       "id": "kqlbridge_explain_rationale_62",
-      "community": 11,
+      "community": 6,
       "norm_label": "walk the ast and collect annotations + semantic warnings."
     },
     {
@@ -990,7 +990,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L252",
       "id": "kqlbridge_explain_rationale_252",
-      "community": 11,
+      "community": 6,
       "norm_label": "prepend a header comment block to the sql with all annotations."
     },
     {
@@ -999,7 +999,7 @@
       "source_file": "src/kqlbridge/explain.py",
       "source_location": "L282",
       "id": "kqlbridge_explain_rationale_282",
-      "community": 11,
+      "community": 6,
       "norm_label": "translate kql and return annotated sql with inline explanations.      args:"
     },
     {
@@ -1206,7 +1206,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L1",
       "id": "src_kqlbridge_parser_py",
-      "community": 5,
+      "community": 1,
       "norm_label": "parser.py"
     },
     {
@@ -1215,7 +1215,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L45",
       "id": "kqlbridge_parser_get_parser",
-      "community": 5,
+      "community": 18,
       "norm_label": "get_parser()"
     },
     {
@@ -1224,7 +1224,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L77",
       "id": "kqlbridge_parser_normalize_keywords",
-      "community": 5,
+      "community": 18,
       "norm_label": "_normalize_keywords()"
     },
     {
@@ -1233,7 +1233,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L101",
       "id": "kqlbridge_parser_parse",
-      "community": 5,
+      "community": 18,
       "norm_label": "parse()"
     },
     {
@@ -1269,7 +1269,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L171",
       "id": "kqlbridge_parser_build_where",
-      "community": 2,
+      "community": 1,
       "norm_label": "_build_where()"
     },
     {
@@ -1287,7 +1287,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L195",
       "id": "kqlbridge_parser_build_summarize",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_summarize()"
     },
     {
@@ -1296,7 +1296,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L212",
       "id": "kqlbridge_parser_build_agg_list",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_agg_list()"
     },
     {
@@ -1305,7 +1305,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L220",
       "id": "kqlbridge_parser_build_agg_item",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_agg_item()"
     },
     {
@@ -1314,7 +1314,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L231",
       "id": "kqlbridge_parser_build_agg_func",
-      "community": 0,
+      "community": 1,
       "norm_label": "_build_agg_func()"
     },
     {
@@ -1323,7 +1323,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L250",
       "id": "kqlbridge_parser_build_groupby_list",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_groupby_list()"
     },
     {
@@ -1332,7 +1332,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L264",
       "id": "kqlbridge_parser_build_order",
-      "community": 0,
+      "community": 1,
       "norm_label": "_build_order()"
     },
     {
@@ -1341,7 +1341,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L278",
       "id": "kqlbridge_parser_build_take",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_take()"
     },
     {
@@ -1359,7 +1359,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L295",
       "id": "kqlbridge_parser_build_extend",
-      "community": 0,
+      "community": 1,
       "norm_label": "_build_extend()"
     },
     {
@@ -1386,7 +1386,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L359",
       "id": "kqlbridge_parser_build_bool_expr",
-      "community": 0,
+      "community": 1,
       "norm_label": "_build_bool_expr()"
     },
     {
@@ -1395,7 +1395,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L430",
       "id": "kqlbridge_parser_build_expr",
-      "community": 0,
+      "community": 1,
       "norm_label": "_build_expr()"
     },
     {
@@ -1404,7 +1404,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L484",
       "id": "kqlbridge_parser_token_to_expr",
-      "community": 0,
+      "community": 1,
       "norm_label": "_token_to_expr()"
     },
     {
@@ -1422,7 +1422,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L510",
       "id": "kqlbridge_parser_build_timespan",
-      "community": 5,
+      "community": 1,
       "norm_label": "_build_timespan()"
     },
     {
@@ -1431,7 +1431,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L517",
       "id": "kqlbridge_parser_strip_quotes",
-      "community": 0,
+      "community": 1,
       "norm_label": "_strip_quotes()"
     },
     {
@@ -1440,7 +1440,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L1",
       "id": "kqlbridge_parser_rationale_1",
-      "community": 5,
+      "community": 1,
       "norm_label": "parser.py \u2014 kqlbridge lark parse tree \u2192 kql ast ================================"
     },
     {
@@ -1449,7 +1449,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L78",
       "id": "kqlbridge_parser_rationale_78",
-      "community": 5,
+      "community": 18,
       "norm_label": "lowercase kql keywords while preserving quoted string content."
     },
     {
@@ -1458,7 +1458,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L102",
       "id": "kqlbridge_parser_rationale_102",
-      "community": 5,
+      "community": 18,
       "norm_label": "parse a kql query string into a kqlquery ast.     keywords are normalized to low"
     },
     {
@@ -1476,7 +1476,7 @@
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L511",
       "id": "kqlbridge_parser_rationale_511",
-      "community": 5,
+      "community": 1,
       "norm_label": "returns (amount: int, kql_unit: str) e.g. (24, 'h')"
     },
     {
@@ -1485,7 +1485,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L1",
       "id": "src_kqlbridge_semantic_py",
-      "community": 14,
+      "community": 5,
       "norm_label": "semantic.py"
     },
     {
@@ -1494,7 +1494,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L31",
       "id": "kqlbridge_semantic_semanticresult",
-      "community": 14,
+      "community": 5,
       "norm_label": "semanticresult"
     },
     {
@@ -1503,7 +1503,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L37",
       "id": "kqlbridge_semantic_is_supported",
-      "community": 14,
+      "community": 5,
       "norm_label": "is_supported()"
     },
     {
@@ -1512,7 +1512,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L42",
       "id": "kqlbridge_semantic_check",
-      "community": 14,
+      "community": 5,
       "norm_label": "check()"
     },
     {
@@ -1521,7 +1521,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L65",
       "id": "kqlbridge_semantic_check_pipes",
-      "community": 14,
+      "community": 5,
       "norm_label": "_check_pipes()"
     },
     {
@@ -1530,7 +1530,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L92",
       "id": "kqlbridge_semantic_check_summarize_rewrite",
-      "community": 14,
+      "community": 5,
       "norm_label": "_check_summarize_rewrite()"
     },
     {
@@ -1539,7 +1539,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L125",
       "id": "kqlbridge_semantic_check_let_bindings",
-      "community": 14,
+      "community": 5,
       "norm_label": "_check_let_bindings()"
     },
     {
@@ -1548,7 +1548,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L1",
       "id": "kqlbridge_semantic_rationale_1",
-      "community": 14,
+      "community": 5,
       "norm_label": "semantic.py \u2014 kqlbridge semantic validator ====================================="
     },
     {
@@ -1557,7 +1557,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L38",
       "id": "kqlbridge_semantic_rationale_38",
-      "community": 17,
+      "community": 21,
       "norm_label": "true if the query can be fully translated (no blocking errors)."
     },
     {
@@ -1566,7 +1566,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L43",
       "id": "kqlbridge_semantic_rationale_43",
-      "community": 14,
+      "community": 5,
       "norm_label": "run semantic validation on a parsed kqlquery.      returns a semanticresult with"
     },
     {
@@ -1575,7 +1575,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L93",
       "id": "kqlbridge_semantic_rationale_93",
-      "community": 14,
+      "community": 5,
       "norm_label": "karpathy principle 5 \u2014 jagged intelligence warning site.      kql summarize is l"
     },
     {
@@ -1584,7 +1584,7 @@
       "source_file": "src/kqlbridge/semantic.py",
       "source_location": "L126",
       "id": "kqlbridge_semantic_rationale_126",
-      "community": 14,
+      "community": 5,
       "norm_label": "let bindings become ctes. circular references are not supported."
     },
     {
@@ -1593,7 +1593,7 @@
       "source_file": "src/kqlbridge/smart.py",
       "source_location": "L1",
       "id": "src_kqlbridge_smart_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "smart.py"
     },
     {
@@ -1602,7 +1602,7 @@
       "source_file": "src/kqlbridge/smart.py",
       "source_location": "L7",
       "id": "kqlbridge_smart_analyze_ast",
-      "community": 3,
+      "community": 10,
       "norm_label": "analyze_ast()"
     },
     {
@@ -1611,7 +1611,7 @@
       "source_file": "src/kqlbridge/smart.py",
       "source_location": "L21",
       "id": "kqlbridge_smart_smart_transpile",
-      "community": 3,
+      "community": 10,
       "norm_label": "smart_transpile()"
     },
     {
@@ -1620,7 +1620,7 @@
       "source_file": "src/kqlbridge/smart.py",
       "source_location": "L8",
       "id": "kqlbridge_smart_rationale_8",
-      "community": 3,
+      "community": 10,
       "norm_label": "ast analyzer that scores complexity and structural intent to route     to the op"
     },
     {
@@ -1629,7 +1629,7 @@
       "source_file": "src/kqlbridge/smart.py",
       "source_location": "L22",
       "id": "kqlbridge_smart_rationale_22",
-      "community": 3,
+      "community": 10,
       "norm_label": "intelligent compiler endpoint that parses the query, analyzes the ast,      and"
     },
     {
@@ -1638,7 +1638,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L1",
       "id": "src_kqlbridge_init_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -1647,7 +1647,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L32",
       "id": "kqlbridge_init_translate",
-      "community": 7,
+      "community": 13,
       "norm_label": "translate()"
     },
     {
@@ -1656,7 +1656,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L79",
       "id": "kqlbridge_init_detect_operators",
-      "community": 7,
+      "community": 15,
       "norm_label": "detect_operators()"
     },
     {
@@ -1665,7 +1665,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L114",
       "id": "kqlbridge_init_is_supported",
-      "community": 3,
+      "community": 14,
       "norm_label": "is_supported()"
     },
     {
@@ -1674,7 +1674,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L129",
       "id": "kqlbridge_init_check",
-      "community": 3,
+      "community": 14,
       "norm_label": "check()"
     },
     {
@@ -1683,7 +1683,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L1",
       "id": "kqlbridge_init_rationale_1",
-      "community": 3,
+      "community": 10,
       "norm_label": "kqlbridge \u2014 kql to spark sql / t-sql transpiler ================================"
     },
     {
@@ -1692,7 +1692,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L36",
       "id": "kqlbridge_init_rationale_36",
-      "community": 7,
+      "community": 13,
       "norm_label": "translate a kql query string to the target sql dialect.      args:         kql:"
     },
     {
@@ -1701,7 +1701,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L80",
       "id": "kqlbridge_init_rationale_80",
-      "community": 7,
+      "community": 15,
       "norm_label": "return the list of kql operators used in a query string.      useful for routing"
     },
     {
@@ -1710,7 +1710,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L115",
       "id": "kqlbridge_init_rationale_115",
-      "community": 3,
+      "community": 14,
       "norm_label": "return true if the query can be fully translated to spark sql.      queries with"
     },
     {
@@ -1719,7 +1719,7 @@
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L130",
       "id": "kqlbridge_init_rationale_130",
-      "community": 3,
+      "community": 14,
       "norm_label": "parse and semantically validate a kql query.      returns a semanticresult with:"
     },
     {
@@ -1728,52 +1728,79 @@
       "source_file": "src/kqlbridge/generators/pyspark.py",
       "source_location": "L1",
       "id": "src_kqlbridge_generators_pyspark_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "pyspark.py"
     },
     {
       "label": "PySparkGenerator",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L4",
+      "source_location": "L8",
       "id": "generators_pyspark_pysparkgenerator",
-      "community": 3,
+      "community": 2,
       "norm_label": "pysparkgenerator"
     },
     {
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L9",
+      "source_location": "L13",
       "id": "generators_pyspark_pysparkgenerator_init",
-      "community": 3,
+      "community": 2,
       "norm_label": ".__init__()"
     },
     {
       "label": ".generate()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L12",
+      "source_location": "L16",
       "id": "generators_pyspark_pysparkgenerator_generate",
-      "community": 3,
+      "community": 2,
       "norm_label": ".generate()"
+    },
+    {
+      "label": "._extract_subqueries()",
+      "file_type": "code",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L31",
+      "id": "generators_pyspark_pysparkgenerator_extract_subqueries",
+      "community": 2,
+      "norm_label": "._extract_subqueries()"
+    },
+    {
+      "label": "._remove_subqueries()",
+      "file_type": "code",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L44",
+      "id": "generators_pyspark_pysparkgenerator_remove_subqueries",
+      "community": 2,
+      "norm_label": "._remove_subqueries()"
+    },
+    {
+      "label": "._generate_query()",
+      "file_type": "code",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L64",
+      "id": "generators_pyspark_pysparkgenerator_generate_query",
+      "community": 2,
+      "norm_label": "._generate_query()"
     },
     {
       "label": "Experimental PySpark Generator.     Routes KQL AST nodes to executable PySpark D",
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L5",
-      "id": "generators_pyspark_rationale_5",
-      "community": 3,
+      "source_location": "L9",
+      "id": "generators_pyspark_rationale_9",
+      "community": 2,
       "norm_label": "experimental pyspark generator.     routes kql ast nodes to executable pyspark d"
     },
     {
       "label": "Main entry point for PySpark generation.",
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L13",
-      "id": "generators_pyspark_rationale_13",
-      "community": 3,
+      "source_location": "L17",
+      "id": "generators_pyspark_rationale_17",
+      "community": 2,
       "norm_label": "main entry point for pyspark generation."
     },
     {
@@ -1782,7 +1809,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L1",
       "id": "src_kqlbridge_generators_spark_sql_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "spark_sql.py"
     },
     {
@@ -1791,7 +1818,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L63",
       "id": "generators_spark_sql_sparksqlgenerator",
-      "community": 0,
+      "community": 3,
       "norm_label": "sparksqlgenerator"
     },
     {
@@ -1800,7 +1827,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L72",
       "id": "generators_spark_sql_sparksqlgenerator_generate",
-      "community": 4,
+      "community": 3,
       "norm_label": ".generate()"
     },
     {
@@ -1809,7 +1836,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L83",
       "id": "generators_spark_sql_sparksqlgenerator_build_ctes",
-      "community": 4,
+      "community": 3,
       "norm_label": "._build_ctes()"
     },
     {
@@ -1818,7 +1845,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L93",
       "id": "generators_spark_sql_sparksqlgenerator_build_body",
-      "community": 4,
+      "community": 3,
       "norm_label": "._build_body()"
     },
     {
@@ -1827,7 +1854,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L191",
       "id": "generators_spark_sql_sparksqlgenerator_assemble",
-      "community": 4,
+      "community": 3,
       "norm_label": "._assemble()"
     },
     {
@@ -1836,7 +1863,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L223",
       "id": "generators_spark_sql_sparksqlgenerator_where",
-      "community": 4,
+      "community": 3,
       "norm_label": "._where()"
     },
     {
@@ -1845,7 +1872,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L226",
       "id": "generators_spark_sql_sparksqlgenerator_summarize",
-      "community": 4,
+      "community": 3,
       "norm_label": "._summarize()"
     },
     {
@@ -1854,7 +1881,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L260",
       "id": "generators_spark_sql_sparksqlgenerator_agg",
-      "community": 4,
+      "community": 3,
       "norm_label": "._agg()"
     },
     {
@@ -1863,7 +1890,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L282",
       "id": "generators_spark_sql_sparksqlgenerator_order",
-      "community": 4,
+      "community": 3,
       "norm_label": "._order()"
     },
     {
@@ -1872,7 +1899,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L287",
       "id": "generators_spark_sql_sparksqlgenerator_join",
-      "community": 4,
+      "community": 3,
       "norm_label": "._join()"
     },
     {
@@ -1881,7 +1908,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L306",
       "id": "generators_spark_sql_sparksqlgenerator_union",
-      "community": 4,
+      "community": 3,
       "norm_label": "._union()"
     },
     {
@@ -1890,7 +1917,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L327",
       "id": "generators_spark_sql_sparksqlgenerator_render_bin",
-      "community": 4,
+      "community": 3,
       "norm_label": "._render_bin()"
     },
     {
@@ -1899,25 +1926,43 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L344",
       "id": "generators_spark_sql_sparksqlgenerator_expr",
-      "community": 4,
+      "community": 3,
       "norm_label": "._expr()"
     },
     {
       "label": "._func_call()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
-      "source_location": "L402",
+      "source_location": "L403",
       "id": "generators_spark_sql_sparksqlgenerator_func_call",
-      "community": 4,
+      "community": 3,
       "norm_label": "._func_call()"
+    },
+    {
+      "label": "._render_datetime_add()",
+      "file_type": "code",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L452",
+      "id": "generators_spark_sql_sparksqlgenerator_render_datetime_add",
+      "community": 3,
+      "norm_label": "._render_datetime_add()"
+    },
+    {
+      "label": "._render_datetime_diff()",
+      "file_type": "code",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L469",
+      "id": "generators_spark_sql_sparksqlgenerator_render_datetime_diff",
+      "community": 3,
+      "norm_label": "._render_datetime_diff()"
     },
     {
       "label": "._bool_expr()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
-      "source_location": "L447",
+      "source_location": "L494",
       "id": "generators_spark_sql_sparksqlgenerator_bool_expr",
-      "community": 4,
+      "community": 3,
       "norm_label": "._bool_expr()"
     },
     {
@@ -1926,7 +1971,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L1",
       "id": "generators_spark_sql_rationale_1",
-      "community": 3,
+      "community": 10,
       "norm_label": "generators/spark_sql.py \u2014 kql ast \u2192 spark sql =================================="
     },
     {
@@ -1935,7 +1980,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L64",
       "id": "generators_spark_sql_rationale_64",
-      "community": 0,
+      "community": 3,
       "norm_label": "generates spark sql from a kqlquery ast.      usage:         gen = sparksqlgener"
     },
     {
@@ -1944,7 +1989,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L73",
       "id": "generators_spark_sql_rationale_73",
-      "community": 4,
+      "community": 3,
       "norm_label": "entry point. returns a spark sql string."
     },
     {
@@ -1953,7 +1998,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L84",
       "id": "generators_spark_sql_rationale_84",
-      "community": 4,
+      "community": 3,
       "norm_label": "convert let bindings \u2192 with ... as (...) ctes."
     },
     {
@@ -1962,7 +2007,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L94",
       "id": "generators_spark_sql_rationale_94",
-      "community": 4,
+      "community": 3,
       "norm_label": "walk the pipe operators and accumulate sql clause fragments.         the assembl"
     },
     {
@@ -1971,7 +2016,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L227",
       "id": "generators_spark_sql_rationale_227",
-      "community": 4,
+      "community": 3,
       "norm_label": "returns (select_cols, group_by_cols).          karpathy p5 \u2014 jagged intelligence"
     },
     {
@@ -1980,7 +2025,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L261",
       "id": "generators_spark_sql_rationale_261",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a single aggregation expression."
     },
     {
@@ -1989,7 +2034,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L288",
       "id": "generators_spark_sql_rationale_288",
-      "community": 4,
+      "community": 3,
       "norm_label": "kql join \u2192 sql inner/left/right/full join.         returns a 'table expression'"
     },
     {
@@ -1998,7 +2043,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L307",
       "id": "generators_spark_sql_rationale_307",
-      "community": 4,
+      "community": 3,
       "norm_label": "kql union t1, t2 or union (t1 | ...) \u2192 union all"
     },
     {
@@ -2007,7 +2052,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L328",
       "id": "generators_spark_sql_rationale_328",
-      "community": 4,
+      "community": 3,
       "norm_label": "render bin(col, n<unit>) \u2192 spark sql timestamp bucketing.         - hourly or co"
     },
     {
@@ -2016,25 +2061,25 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L345",
       "id": "generators_spark_sql_rationale_345",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a scalar expression to sql."
     },
     {
       "label": "Map KQL built-in functions to Spark SQL equivalents.         Only functions need",
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
-      "source_location": "L403",
-      "id": "generators_spark_sql_rationale_403",
-      "community": 4,
+      "source_location": "L404",
+      "id": "generators_spark_sql_rationale_404",
+      "community": 3,
       "norm_label": "map kql built-in functions to spark sql equivalents.         only functions need"
     },
     {
       "label": "Render a boolean expression to a SQL WHERE fragment.",
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
-      "source_location": "L448",
-      "id": "generators_spark_sql_rationale_448",
-      "community": 4,
+      "source_location": "L495",
+      "id": "generators_spark_sql_rationale_495",
+      "community": 3,
       "norm_label": "render a boolean expression to a sql where fragment."
     },
     {
@@ -2043,7 +2088,7 @@
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L160",
       "id": "generators_spark_sql_rationale_160",
-      "community": 3,
+      "community": 10,
       "norm_label": "# note: do not clear where_clauses \u2014 where filters from before"
     },
     {
@@ -2052,7 +2097,7 @@
       "source_file": "src/kqlbridge/generators/tsql.py",
       "source_location": "L1",
       "id": "src_kqlbridge_generators_tsql_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "tsql.py"
     },
     {
@@ -2061,7 +2106,7 @@
       "source_file": "src/kqlbridge/generators/tsql.py",
       "source_location": "L31",
       "id": "generators_tsql_tsqlgenerator",
-      "community": 3,
+      "community": 6,
       "norm_label": "tsqlgenerator"
     },
     {
@@ -2070,7 +2115,7 @@
       "source_file": "",
       "source_location": "",
       "id": "sparksqlgenerator",
-      "community": 3,
+      "community": 6,
       "norm_label": "sparksqlgenerator"
     },
     {
@@ -2079,34 +2124,34 @@
       "source_file": "src/kqlbridge/generators/tsql.py",
       "source_location": "L46",
       "id": "generators_tsql_tsqlgenerator_assemble",
-      "community": 3,
+      "community": 6,
       "norm_label": "._assemble()"
     },
     {
       "label": "._render_bin()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/tsql.py",
-      "source_location": "L79",
+      "source_location": "L85",
       "id": "generators_tsql_tsqlgenerator_render_bin",
-      "community": 3,
+      "community": 6,
       "norm_label": "._render_bin()"
     },
     {
       "label": "._expr()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/tsql.py",
-      "source_location": "L107",
+      "source_location": "L113",
       "id": "generators_tsql_tsqlgenerator_expr",
-      "community": 3,
+      "community": 6,
       "norm_label": "._expr()"
     },
     {
       "label": "._func_call()",
       "file_type": "code",
       "source_file": "src/kqlbridge/generators/tsql.py",
-      "source_location": "L129",
+      "source_location": "L136",
       "id": "generators_tsql_tsqlgenerator_func_call",
-      "community": 3,
+      "community": 6,
       "norm_label": "._func_call()"
     },
     {
@@ -2115,7 +2160,7 @@
       "source_file": "src/kqlbridge/generators/tsql.py",
       "source_location": "L1",
       "id": "generators_tsql_rationale_1",
-      "community": 3,
+      "community": 10,
       "norm_label": "generators/tsql.py \u2014 kql ast \u2192 t-sql ===================================== agent"
     },
     {
@@ -2124,7 +2169,7 @@
       "source_file": "src/kqlbridge/generators/tsql.py",
       "source_location": "L32",
       "id": "generators_tsql_rationale_32",
-      "community": 3,
+      "community": 6,
       "norm_label": "generates t-sql from a kqlquery ast.     inherits from sparksqlgenerator \u2014 overr"
     },
     {
@@ -2133,7 +2178,7 @@
       "source_file": "src/kqlbridge/generators/__init__.py",
       "source_location": "L1",
       "id": "src_kqlbridge_generators_init_py",
-      "community": 3,
+      "community": 10,
       "norm_label": "__init__.py"
     },
     {
@@ -2142,7 +2187,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L1",
       "id": "tests_test_operators_py",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_operators.py"
     },
     {
@@ -2151,7 +2196,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L21",
       "id": "tests_test_operators_sql",
-      "community": 1,
+      "community": 0,
       "norm_label": "sql()"
     },
     {
@@ -2160,7 +2205,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L26",
       "id": "tests_test_operators_lines",
-      "community": 1,
+      "community": 0,
       "norm_label": "lines()"
     },
     {
@@ -2169,7 +2214,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L33",
       "id": "tests_test_operators_testwhere",
-      "community": 1,
+      "community": 0,
       "norm_label": "testwhere"
     },
     {
@@ -2178,7 +2223,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L34",
       "id": "tests_test_operators_testwhere_test_basic_equality",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_basic_equality()"
     },
     {
@@ -2187,7 +2232,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L38",
       "id": "tests_test_operators_testwhere_test_not_equal",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_not_equal()"
     },
     {
@@ -2196,7 +2241,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L42",
       "id": "tests_test_operators_testwhere_test_greater_than",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_greater_than()"
     },
     {
@@ -2205,7 +2250,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L46",
       "id": "tests_test_operators_testwhere_test_and_condition",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_and_condition()"
     },
     {
@@ -2214,7 +2259,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L51",
       "id": "tests_test_operators_testwhere_test_or_condition",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_or_condition()"
     },
     {
@@ -2223,7 +2268,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L55",
       "id": "tests_test_operators_testwhere_test_contains",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_contains()"
     },
     {
@@ -2232,7 +2277,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L59",
       "id": "tests_test_operators_testwhere_test_has",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_has()"
     },
     {
@@ -2241,7 +2286,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L63",
       "id": "tests_test_operators_testwhere_test_case_insensitive_equality",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_case_insensitive_equality()"
     },
     {
@@ -2250,7 +2295,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L67",
       "id": "tests_test_operators_testwhere_test_startswith",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_startswith()"
     },
     {
@@ -2259,7 +2304,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L71",
       "id": "tests_test_operators_testwhere_test_in_list",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_in_list()"
     },
     {
@@ -2268,7 +2313,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L75",
       "id": "tests_test_operators_testwhere_test_not_in_list",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_not_in_list()"
     },
     {
@@ -2277,7 +2322,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L79",
       "id": "tests_test_operators_testwhere_test_isnotnull",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_isnotnull()"
     },
     {
@@ -2286,7 +2331,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L83",
       "id": "tests_test_operators_testwhere_test_isnull",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_isnull()"
     },
     {
@@ -2295,7 +2340,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L87",
       "id": "tests_test_operators_testwhere_test_chained_where",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_chained_where()"
     },
     {
@@ -2304,7 +2349,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L96",
       "id": "tests_test_operators_testproject",
-      "community": 1,
+      "community": 0,
       "norm_label": "testproject"
     },
     {
@@ -2313,7 +2358,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L97",
       "id": "tests_test_operators_testproject_test_single_column",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_single_column()"
     },
     {
@@ -2322,7 +2367,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L101",
       "id": "tests_test_operators_testproject_test_multiple_columns",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_multiple_columns()"
     },
     {
@@ -2331,7 +2376,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L105",
       "id": "tests_test_operators_testproject_test_from_clause_preserved",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_from_clause_preserved()"
     },
     {
@@ -2340,7 +2385,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L112",
       "id": "tests_test_operators_testsummarize",
-      "community": 1,
+      "community": 0,
       "norm_label": "testsummarize"
     },
     {
@@ -2349,7 +2394,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L113",
       "id": "tests_test_operators_testsummarize_test_count_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_count_by()"
     },
     {
@@ -2358,7 +2403,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L119",
       "id": "tests_test_operators_testsummarize_test_sum_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_sum_by()"
     },
     {
@@ -2367,7 +2412,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L124",
       "id": "tests_test_operators_testsummarize_test_avg_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_avg_by()"
     },
     {
@@ -2376,7 +2421,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L128",
       "id": "tests_test_operators_testsummarize_test_min_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_min_by()"
     },
     {
@@ -2385,7 +2430,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L132",
       "id": "tests_test_operators_testsummarize_test_max_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_max_by()"
     },
     {
@@ -2394,7 +2439,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L136",
       "id": "tests_test_operators_testsummarize_test_no_group_by",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_no_group_by()"
     },
     {
@@ -2403,7 +2448,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L141",
       "id": "tests_test_operators_testsummarize_test_multiple_aggregations",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_multiple_aggregations()"
     },
     {
@@ -2412,7 +2457,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L146",
       "id": "tests_test_operators_testsummarize_test_multiple_group_by_cols",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_multiple_group_by_cols()"
     },
     {
@@ -2421,7 +2466,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L150",
       "id": "tests_test_operators_testsummarize_test_dcount",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_dcount()"
     },
     {
@@ -2430,7 +2475,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L157",
       "id": "tests_test_operators_testbin",
-      "community": 1,
+      "community": 0,
       "norm_label": "testbin"
     },
     {
@@ -2439,7 +2484,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L158",
       "id": "tests_test_operators_testbin_test_bin_hour",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_bin_hour()"
     },
     {
@@ -2448,7 +2493,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L162",
       "id": "tests_test_operators_testbin_test_bin_day",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_bin_day()"
     },
     {
@@ -2457,7 +2502,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L166",
       "id": "tests_test_operators_testbin_test_bin_minute_single",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_bin_minute_single()"
     },
     {
@@ -2466,7 +2511,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L170",
       "id": "tests_test_operators_testbin_test_bin_5m_floor_logic",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_bin_5m_floor_logic()"
     },
     {
@@ -2475,7 +2520,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L178",
       "id": "tests_test_operators_testago",
-      "community": 1,
+      "community": 0,
       "norm_label": "testago"
     },
     {
@@ -2484,7 +2529,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L179",
       "id": "tests_test_operators_testago_test_ago_hours",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_ago_hours()"
     },
     {
@@ -2493,7 +2538,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L184",
       "id": "tests_test_operators_testago_test_ago_days",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_ago_days()"
     },
     {
@@ -2502,7 +2547,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L188",
       "id": "tests_test_operators_testago_test_ago_minutes",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_ago_minutes()"
     },
     {
@@ -2511,7 +2556,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L195",
       "id": "tests_test_operators_testextend",
-      "community": 1,
+      "community": 0,
       "norm_label": "testextend"
     },
     {
@@ -2520,7 +2565,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L196",
       "id": "tests_test_operators_testextend_test_extend_literal",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_extend_literal()"
     },
     {
@@ -2529,7 +2574,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L200",
       "id": "tests_test_operators_testextend_test_extend_function",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_extend_function()"
     },
     {
@@ -2538,7 +2583,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L204",
       "id": "tests_test_operators_testextend_test_extend_preserves_star",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_extend_preserves_star()"
     },
     {
@@ -2547,7 +2592,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L208",
       "id": "tests_test_operators_testextend_test_extend_two_columns",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_extend_two_columns()"
     },
     {
@@ -2556,7 +2601,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L216",
       "id": "tests_test_operators_testorder",
-      "community": 1,
+      "community": 0,
       "norm_label": "testorder"
     },
     {
@@ -2565,7 +2610,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L217",
       "id": "tests_test_operators_testorder_test_order_by_desc",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_order_by_desc()"
     },
     {
@@ -2574,7 +2619,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L221",
       "id": "tests_test_operators_testorder_test_sort_by_alias",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_sort_by_alias()"
     },
     {
@@ -2583,7 +2628,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L225",
       "id": "tests_test_operators_testorder_test_multiple_order_cols",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_multiple_order_cols()"
     },
     {
@@ -2592,7 +2637,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L229",
       "id": "tests_test_operators_testorder_test_default_direction_is_asc",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_default_direction_is_asc()"
     },
     {
@@ -2601,7 +2646,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L236",
       "id": "tests_test_operators_testtake",
-      "community": 1,
+      "community": 0,
       "norm_label": "testtake"
     },
     {
@@ -2610,7 +2655,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L237",
       "id": "tests_test_operators_testtake_test_take_keyword",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_take_keyword()"
     },
     {
@@ -2619,7 +2664,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L241",
       "id": "tests_test_operators_testtake_test_limit_keyword",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_limit_keyword()"
     },
     {
@@ -2628,7 +2673,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L248",
       "id": "tests_test_operators_testdistinct",
-      "community": 1,
+      "community": 0,
       "norm_label": "testdistinct"
     },
     {
@@ -2637,7 +2682,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L249",
       "id": "tests_test_operators_testdistinct_test_distinct_single",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_distinct_single()"
     },
     {
@@ -2646,7 +2691,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L253",
       "id": "tests_test_operators_testdistinct_test_distinct_multiple",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_distinct_multiple()"
     },
     {
@@ -2655,7 +2700,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L257",
       "id": "tests_test_operators_testdistinct_test_distinct_star",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_distinct_star()"
     },
     {
@@ -2664,7 +2709,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L264",
       "id": "tests_test_operators_testjoin",
-      "community": 1,
+      "community": 0,
       "norm_label": "testjoin"
     },
     {
@@ -2673,7 +2718,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L265",
       "id": "tests_test_operators_testjoin_test_inner_join_default",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_inner_join_default()"
     },
     {
@@ -2682,7 +2727,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L270",
       "id": "tests_test_operators_testjoin_test_leftouter_join",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_leftouter_join()"
     },
     {
@@ -2691,7 +2736,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L274",
       "id": "tests_test_operators_testjoin_test_join_multiple_keys",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_join_multiple_keys()"
     },
     {
@@ -2700,7 +2745,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L282",
       "id": "tests_test_operators_testunion",
-      "community": 1,
+      "community": 0,
       "norm_label": "testunion"
     },
     {
@@ -2709,7 +2754,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L283",
       "id": "tests_test_operators_testunion_test_union_two_tables",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_union_two_tables()"
     },
     {
@@ -2718,7 +2763,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L289",
       "id": "tests_test_operators_testunion_test_union_three_tables",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_union_three_tables()"
     },
     {
@@ -2727,7 +2772,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L296",
       "id": "tests_test_operators_testlet",
-      "community": 1,
+      "community": 0,
       "norm_label": "testlet"
     },
     {
@@ -2736,7 +2781,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L297",
       "id": "tests_test_operators_testlet_test_single_let",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_single_let()"
     },
     {
@@ -2745,7 +2790,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L303",
       "id": "tests_test_operators_testlet_test_let_used_as_table",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_let_used_as_table()"
     },
     {
@@ -2754,7 +2799,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L311",
       "id": "tests_test_operators_testcount",
-      "community": 1,
+      "community": 0,
       "norm_label": "testcount"
     },
     {
@@ -2763,7 +2808,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L312",
       "id": "tests_test_operators_testcount_test_count_only",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_count_only()"
     },
     {
@@ -2772,7 +2817,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L316",
       "id": "tests_test_operators_testcount_test_where_then_count",
-      "community": 1,
+      "community": 0,
       "norm_label": ".test_where_then_count()"
     },
     {
@@ -2781,7 +2826,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L324",
       "id": "tests_test_operators_testpublicapi",
-      "community": 7,
+      "community": 15,
       "norm_label": "testpublicapi"
     },
     {
@@ -2790,7 +2835,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L325",
       "id": "tests_test_operators_testpublicapi_test_detect_operators",
-      "community": 7,
+      "community": 15,
       "norm_label": ".test_detect_operators()"
     },
     {
@@ -2799,7 +2844,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L330",
       "id": "tests_test_operators_testpublicapi_test_is_supported_basic",
-      "community": 7,
+      "community": 15,
       "norm_label": ".test_is_supported_basic()"
     },
     {
@@ -2808,8 +2853,71 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L333",
       "id": "tests_test_operators_testpublicapi_test_translate_returns_string",
-      "community": 7,
+      "community": 15,
       "norm_label": ".test_translate_returns_string()"
+    },
+    {
+      "label": "TestCommunityFunctions",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L341",
+      "id": "tests_test_operators_testcommunityfunctions",
+      "community": 13,
+      "norm_label": "testcommunityfunctions"
+    },
+    {
+      "label": ".test_datetime_quotes()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L342",
+      "id": "tests_test_operators_testcommunityfunctions_test_datetime_quotes",
+      "community": 13,
+      "norm_label": ".test_datetime_quotes()"
+    },
+    {
+      "label": ".test_coalesce()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L353",
+      "id": "tests_test_operators_testcommunityfunctions_test_coalesce",
+      "community": 13,
+      "norm_label": ".test_coalesce()"
+    },
+    {
+      "label": ".test_split()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L359",
+      "id": "tests_test_operators_testcommunityfunctions_test_split",
+      "community": 13,
+      "norm_label": ".test_split()"
+    },
+    {
+      "label": ".test_datetime_add()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L365",
+      "id": "tests_test_operators_testcommunityfunctions_test_datetime_add",
+      "community": 13,
+      "norm_label": ".test_datetime_add()"
+    },
+    {
+      "label": ".test_datetime_diff()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L371",
+      "id": "tests_test_operators_testcommunityfunctions_test_datetime_diff",
+      "community": 13,
+      "norm_label": ".test_datetime_diff()"
+    },
+    {
+      "label": ".test_strcat_delim()",
+      "file_type": "code",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L377",
+      "id": "tests_test_operators_testcommunityfunctions_test_strcat_delim",
+      "community": 13,
+      "norm_label": ".test_strcat_delim()"
     },
     {
       "label": "test_operators.py \u2014 Per-Operator Unit Tests ====================================",
@@ -2817,7 +2925,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L1",
       "id": "tests_test_operators_rationale_1",
-      "community": 1,
+      "community": 0,
       "norm_label": "test_operators.py \u2014 per-operator unit tests ===================================="
     },
     {
@@ -2826,7 +2934,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L22",
       "id": "tests_test_operators_rationale_22",
-      "community": 1,
+      "community": 0,
       "norm_label": "shorthand: translate kql \u2192 spark sql."
     },
     {
@@ -2835,7 +2943,7 @@
       "source_file": "tests/test_operators.py",
       "source_location": "L27",
       "id": "tests_test_operators_rationale_27",
-      "community": 1,
+      "community": 0,
       "norm_label": "split result into non-empty lines for structural checks."
     },
     {
@@ -2844,7 +2952,7 @@
       "source_file": "tests/__init__.py",
       "source_location": "L1",
       "id": "tests_init_py",
-      "community": 18,
+      "community": 22,
       "norm_label": "__init__.py"
     },
     {
@@ -2853,7 +2961,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L1",
       "id": "tests_eval_prepare_py",
-      "community": 9,
+      "community": 8,
       "norm_label": "prepare.py"
     },
     {
@@ -2862,7 +2970,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L52",
       "id": "eval_prepare_timeout_handler",
-      "community": 9,
+      "community": 8,
       "norm_label": "_timeout_handler()"
     },
     {
@@ -2871,7 +2979,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L75",
       "id": "eval_prepare_canonicalize",
-      "community": 9,
+      "community": 8,
       "norm_label": "_canonicalize()"
     },
     {
@@ -2880,7 +2988,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L99",
       "id": "eval_prepare_canonical_match",
-      "community": 9,
+      "community": 8,
       "norm_label": "_canonical_match()"
     },
     {
@@ -2889,7 +2997,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L106",
       "id": "eval_prepare_is_syntactically_valid",
-      "community": 9,
+      "community": 8,
       "norm_label": "_is_syntactically_valid()"
     },
     {
@@ -2898,7 +3006,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L119",
       "id": "eval_prepare_score_one",
-      "community": 9,
+      "community": 8,
       "norm_label": "score_one()"
     },
     {
@@ -2907,7 +3015,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L164",
       "id": "eval_prepare_main",
-      "community": 9,
+      "community": 8,
       "norm_label": "main()"
     },
     {
@@ -2916,7 +3024,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L1",
       "id": "eval_prepare_rationale_1",
-      "community": 9,
+      "community": 8,
       "norm_label": "prepare.py \u2014 kqlbridge eval oracle =================================== locked fi"
     },
     {
@@ -2925,7 +3033,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L76",
       "id": "eval_prepare_rationale_76",
-      "community": 9,
+      "community": 8,
       "norm_label": "normalize a sql string for structural comparison.      operations:     - lowerca"
     },
     {
@@ -2934,7 +3042,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L100",
       "id": "eval_prepare_rationale_100",
-      "community": 9,
+      "community": 8,
       "norm_label": "check structural equivalence via canonical form."
     },
     {
@@ -2943,7 +3051,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L107",
       "id": "eval_prepare_rationale_107",
-      "community": 9,
+      "community": 8,
       "norm_label": "check that the generated sql is parseable by sqlglot as spark sql."
     },
     {
@@ -2952,7 +3060,7 @@
       "source_file": "tests/eval/prepare.py",
       "source_location": "L120",
       "id": "eval_prepare_rationale_120",
-      "community": 9,
+      "community": 8,
       "norm_label": "score a single benchmark case.      returns (score: int, failure_reason: optiona"
     },
     {
@@ -2961,7 +3069,7 @@
       "source_file": "tests/eval/__init__.py",
       "source_location": "L1",
       "id": "tests_eval_init_py",
-      "community": 19,
+      "community": 23,
       "norm_label": "__init__.py"
     },
     {
@@ -2970,7 +3078,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L1",
       "id": "contributing_md",
-      "community": 13,
+      "community": 12,
       "norm_label": "contributing.md"
     },
     {
@@ -2979,7 +3087,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L1",
       "id": "kqlbridge_contributing_contributing_to_kqlbridge",
-      "community": 13,
+      "community": 12,
       "norm_label": "contributing to kqlbridge"
     },
     {
@@ -2988,7 +3096,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L7",
       "id": "kqlbridge_contributing_the_one_non_negotiable_rule",
-      "community": 13,
+      "community": 12,
       "norm_label": "the one non-negotiable rule"
     },
     {
@@ -2997,7 +3105,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L19",
       "id": "kqlbridge_contributing_locked_files",
-      "community": 13,
+      "community": 12,
       "norm_label": "locked files"
     },
     {
@@ -3006,7 +3114,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L23",
       "id": "kqlbridge_contributing_codeblock_1",
-      "community": 13,
+      "community": 12,
       "norm_label": "code:block1 (tests/eval/prepare.py       # eval oracle \u2014 locked)"
     },
     {
@@ -3015,7 +3123,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L35",
       "id": "kqlbridge_contributing_what_you_can_contribute",
-      "community": 13,
+      "community": 12,
       "norm_label": "what you can contribute"
     },
     {
@@ -3024,7 +3132,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L47",
       "id": "kqlbridge_contributing_how_to_contribute",
-      "community": 13,
+      "community": 12,
       "norm_label": "how to contribute"
     },
     {
@@ -3033,7 +3141,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L49",
       "id": "kqlbridge_contributing_codeblock_2",
-      "community": 13,
+      "community": 12,
       "norm_label": "code:bash (# 1. fork and clone)"
     },
     {
@@ -3042,7 +3150,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L83",
       "id": "kqlbridge_contributing_bug_reports",
-      "community": 13,
+      "community": 12,
       "norm_label": "bug reports"
     },
     {
@@ -3051,7 +3159,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L88",
       "id": "kqlbridge_contributing_codeblock_3",
-      "community": 13,
+      "community": 12,
       "norm_label": "code:block3 (**kql input:** `applogs | where ...`)"
     },
     {
@@ -3060,7 +3168,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L101",
       "id": "kqlbridge_contributing_code_style",
-      "community": 13,
+      "community": 12,
       "norm_label": "code style"
     },
     {
@@ -3069,7 +3177,7 @@
       "source_file": "CONTRIBUTING.md",
       "source_location": "L110",
       "id": "kqlbridge_contributing_license",
-      "community": 13,
+      "community": 12,
       "norm_label": "license"
     },
     {
@@ -3078,7 +3186,7 @@
       "source_file": "operator_status.md",
       "source_location": "L1",
       "id": "operator_status_md",
-      "community": 16,
+      "community": 19,
       "norm_label": "operator_status.md"
     },
     {
@@ -3087,7 +3195,7 @@
       "source_file": "operator_status.md",
       "source_location": "L1",
       "id": "kqlbridge_operator_status_operator_status_kqlbridge_v0_1",
-      "community": 16,
+      "community": 19,
       "norm_label": "operator status \u2014 kqlbridge v0.1"
     },
     {
@@ -3096,7 +3204,7 @@
       "source_file": "operator_status.md",
       "source_location": "L8",
       "id": "kqlbridge_operator_status_current_eval_score",
-      "community": 16,
+      "community": 19,
       "norm_label": "current eval score"
     },
     {
@@ -3105,7 +3213,7 @@
       "source_file": "operator_status.md",
       "source_location": "L16",
       "id": "kqlbridge_operator_status_operator_coverage",
-      "community": 16,
+      "community": 19,
       "norm_label": "operator coverage"
     },
     {
@@ -3114,7 +3222,7 @@
       "source_file": "operator_status.md",
       "source_location": "L39",
       "id": "kqlbridge_operator_status_session_log",
-      "community": 16,
+      "community": 19,
       "norm_label": "session log"
     },
     {
@@ -3123,7 +3231,7 @@
       "source_file": "operator_status.md",
       "source_location": "L41",
       "id": "kqlbridge_operator_status_2026_05_16_session_0_repo_scaffold",
-      "community": 16,
+      "community": 19,
       "norm_label": "2026-05-16 \u2014 session 0: repo scaffold"
     },
     {
@@ -3132,7 +3240,7 @@
       "source_file": "operator_status.md",
       "source_location": "L49",
       "id": "kqlbridge_operator_status_bloat_audit_history",
-      "community": 16,
+      "community": 19,
       "norm_label": "bloat audit history"
     },
     {
@@ -3141,7 +3249,7 @@
       "source_file": "program.md",
       "source_location": "L1",
       "id": "program_md",
-      "community": 10,
+      "community": 9,
       "norm_label": "program.md"
     },
     {
@@ -3150,7 +3258,7 @@
       "source_file": "program.md",
       "source_location": "L1",
       "id": "kqlbridge_program_program_md_kqlbridge_build_contract",
-      "community": 10,
+      "community": 9,
       "norm_label": "program.md \u2014 kqlbridge build contract"
     },
     {
@@ -3159,7 +3267,7 @@
       "source_file": "program.md",
       "source_location": "L9",
       "id": "kqlbridge_program_goal",
-      "community": 10,
+      "community": 9,
       "norm_label": "goal"
     },
     {
@@ -3168,7 +3276,7 @@
       "source_file": "program.md",
       "source_location": "L16",
       "id": "kqlbridge_program_codeblock_1",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block1 (prepare.py \u2192 score: {pct:.1f}% ({pass}/{total}))"
     },
     {
@@ -3177,7 +3285,7 @@
       "source_file": "program.md",
       "source_location": "L24",
       "id": "kqlbridge_program_files_you_may_modify",
-      "community": 10,
+      "community": 9,
       "norm_label": "files you may modify"
     },
     {
@@ -3186,7 +3294,7 @@
       "source_file": "program.md",
       "source_location": "L26",
       "id": "kqlbridge_program_codeblock_2",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block2 (src/kqlbridge/parser.py)"
     },
     {
@@ -3195,7 +3303,7 @@
       "source_file": "program.md",
       "source_location": "L35",
       "id": "kqlbridge_program_files_you_must_never_modify",
-      "community": 10,
+      "community": 9,
       "norm_label": "files you must never modify"
     },
     {
@@ -3204,7 +3312,7 @@
       "source_file": "program.md",
       "source_location": "L37",
       "id": "kqlbridge_program_codeblock_3",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block3 (tests/eval/prepare.py       # \ud83d\udd12 locked oracle \u2014 the eval scr)"
     },
     {
@@ -3213,7 +3321,7 @@
       "source_file": "program.md",
       "source_location": "L52",
       "id": "kqlbridge_program_rules",
-      "community": 10,
+      "community": 9,
       "norm_label": "rules"
     },
     {
@@ -3222,7 +3330,7 @@
       "source_file": "program.md",
       "source_location": "L80",
       "id": "kqlbridge_program_success_criterion_scalar",
-      "community": 10,
+      "community": 9,
       "norm_label": "success criterion (scalar)"
     },
     {
@@ -3231,7 +3339,7 @@
       "source_file": "program.md",
       "source_location": "L82",
       "id": "kqlbridge_program_codeblock_4",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block4 (tests/eval/prepare.py returns score \u2265 85.0%)"
     },
     {
@@ -3240,7 +3348,7 @@
       "source_file": "program.md",
       "source_location": "L91",
       "id": "kqlbridge_program_bit_loop_cadence",
-      "community": 10,
+      "community": 9,
       "norm_label": "bit loop cadence"
     },
     {
@@ -3249,7 +3357,7 @@
       "source_file": "program.md",
       "source_location": "L101",
       "id": "kqlbridge_program_bloat_audit_checklist_run_after_every_successful_build",
-      "community": 10,
+      "community": 9,
       "norm_label": "bloat audit checklist (run after every successful build)"
     },
     {
@@ -3258,7 +3366,7 @@
       "source_file": "program.md",
       "source_location": "L103",
       "id": "kqlbridge_program_codeblock_5",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block5 (\u25a1 can any 10+ line block become a named function?)"
     },
     {
@@ -3267,7 +3375,7 @@
       "source_file": "program.md",
       "source_location": "L116",
       "id": "kqlbridge_program_autoresearch_mapping",
-      "community": 10,
+      "community": 9,
       "norm_label": "autoresearch mapping"
     },
     {
@@ -3276,7 +3384,7 @@
       "source_file": "program.md",
       "source_location": "L118",
       "id": "kqlbridge_program_codeblock_6",
-      "community": 10,
+      "community": 9,
       "norm_label": "code:block6 (program.md       \u2192 this file (goals, rules, constraints) \u2014 l)"
     },
     {
@@ -3285,7 +3393,7 @@
       "source_file": "README.md",
       "source_location": "L1",
       "id": "readme_md",
-      "community": 8,
+      "community": 7,
       "norm_label": "readme.md"
     },
     {
@@ -3294,7 +3402,7 @@
       "source_file": "README.md",
       "source_location": "L1",
       "id": "kqlbridge_readme_kqlbridge",
-      "community": 8,
+      "community": 7,
       "norm_label": "kqlbridge"
     },
     {
@@ -3303,7 +3411,7 @@
       "source_file": "README.md",
       "source_location": "L12",
       "id": "kqlbridge_readme_codeblock_1",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:python (from kqlbridge import translate)"
     },
     {
@@ -3312,7 +3420,7 @@
       "source_file": "README.md",
       "source_location": "L22",
       "id": "kqlbridge_readme_why_kqlbridge",
-      "community": 8,
+      "community": 7,
       "norm_label": "why kqlbridge?"
     },
     {
@@ -3321,7 +3429,7 @@
       "source_file": "README.md",
       "source_location": "L33",
       "id": "kqlbridge_readme_installation",
-      "community": 8,
+      "community": 7,
       "norm_label": "installation"
     },
     {
@@ -3330,7 +3438,7 @@
       "source_file": "README.md",
       "source_location": "L35",
       "id": "kqlbridge_readme_codeblock_2",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:bash (pip install kqlbridge)"
     },
     {
@@ -3339,7 +3447,7 @@
       "source_file": "README.md",
       "source_location": "L43",
       "id": "kqlbridge_readme_quick_start",
-      "community": 8,
+      "community": 7,
       "norm_label": "quick start"
     },
     {
@@ -3348,7 +3456,7 @@
       "source_file": "README.md",
       "source_location": "L45",
       "id": "kqlbridge_readme_python_api",
-      "community": 8,
+      "community": 7,
       "norm_label": "python api"
     },
     {
@@ -3357,7 +3465,7 @@
       "source_file": "README.md",
       "source_location": "L47",
       "id": "kqlbridge_readme_codeblock_3",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:python (from kqlbridge import translate, detect_operators, is_suppor)"
     },
     {
@@ -3366,7 +3474,7 @@
       "source_file": "README.md",
       "source_location": "L73",
       "id": "kqlbridge_readme_cli",
-      "community": 8,
+      "community": 7,
       "norm_label": "cli"
     },
     {
@@ -3375,7 +3483,7 @@
       "source_file": "README.md",
       "source_location": "L75",
       "id": "kqlbridge_readme_codeblock_4",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:bash (# translate to spark sql (default))"
     },
     {
@@ -3384,7 +3492,7 @@
       "source_file": "README.md",
       "source_location": "L91",
       "id": "kqlbridge_readme_supported_operators_v0_2",
-      "community": 8,
+      "community": 7,
       "norm_label": "supported operators (v0.2)"
     },
     {
@@ -3393,7 +3501,7 @@
       "source_file": "README.md",
       "source_location": "L115",
       "id": "kqlbridge_readme_eval_score",
-      "community": 8,
+      "community": 7,
       "norm_label": "eval score"
     },
     {
@@ -3402,7 +3510,7 @@
       "source_file": "README.md",
       "source_location": "L119",
       "id": "kqlbridge_readme_codeblock_5",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:bash (python tests/eval/prepare.py)"
     },
     {
@@ -3411,7 +3519,7 @@
       "source_file": "README.md",
       "source_location": "L126",
       "id": "kqlbridge_readme_architecture",
-      "community": 8,
+      "community": 7,
       "norm_label": "architecture"
     },
     {
@@ -3420,7 +3528,7 @@
       "source_file": "README.md",
       "source_location": "L128",
       "id": "kqlbridge_readme_codeblock_6",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:block6 (kql input)"
     },
     {
@@ -3429,7 +3537,7 @@
       "source_file": "README.md",
       "source_location": "L143",
       "id": "kqlbridge_readme_contributing",
-      "community": 8,
+      "community": 7,
       "norm_label": "contributing"
     },
     {
@@ -3438,7 +3546,7 @@
       "source_file": "README.md",
       "source_location": "L148",
       "id": "kqlbridge_readme_codeblock_7",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:bash (git clone https://github.com/navakanth/kqlbridge)"
     },
     {
@@ -3447,7 +3555,7 @@
       "source_file": "README.md",
       "source_location": "L160",
       "id": "kqlbridge_readme_companion_projects",
-      "community": 8,
+      "community": 7,
       "norm_label": "companion projects"
     },
     {
@@ -3456,7 +3564,7 @@
       "source_file": "README.md",
       "source_location": "L167",
       "id": "kqlbridge_readme_license",
-      "community": 8,
+      "community": 7,
       "norm_label": "license"
     },
     {
@@ -3465,7 +3573,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L1",
       "id": "docs_supported_operators_md",
-      "community": 6,
+      "community": 4,
       "norm_label": "supported_operators.md"
     },
     {
@@ -3474,7 +3582,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L1",
       "id": "docs_supported_operators_supported_kql_operators_kqlbridge_v0_1",
-      "community": 6,
+      "community": 4,
       "norm_label": "supported kql operators \u2014 kqlbridge v0.1"
     },
     {
@@ -3483,7 +3591,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L8",
       "id": "docs_supported_operators_v0_1_scope_14_operators",
-      "community": 6,
+      "community": 4,
       "norm_label": "v0.1 scope \u2014 14 operators"
     },
     {
@@ -3492,7 +3600,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L10",
       "id": "docs_supported_operators_01_where_where_clause",
-      "community": 6,
+      "community": 4,
       "norm_label": "01 \u00b7 `where` \u2192 `where clause`"
     },
     {
@@ -3501,7 +3609,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L12",
       "id": "docs_supported_operators_codeblock_1",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | where level == 'error' and duration > 500)"
     },
     {
@@ -3510,7 +3618,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L22",
       "id": "docs_supported_operators_02_project_select_columns",
-      "community": 6,
+      "community": 4,
       "norm_label": "02 \u00b7 `project` \u2192 `select columns`"
     },
     {
@@ -3519,7 +3627,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L24",
       "id": "docs_supported_operators_codeblock_2",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | project message, level, servicename)"
     },
     {
@@ -3528,7 +3636,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L31",
       "id": "docs_supported_operators_03_04_summarize_group_by_aggregations",
-      "community": 6,
+      "community": 4,
       "norm_label": "03 + 04 \u00b7 `summarize` \u2192 `group by + aggregations`"
     },
     {
@@ -3537,7 +3645,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L33",
       "id": "docs_supported_operators_codeblock_3",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | summarize count() by servicename)"
     },
     {
@@ -3546,7 +3654,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L45",
       "id": "docs_supported_operators_05_bin_date_trunc_floor",
-      "community": 6,
+      "community": 4,
       "norm_label": "05 \u00b7 `bin()` \u2192 `date_trunc / floor`"
     },
     {
@@ -3555,7 +3663,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L47",
       "id": "docs_supported_operators_codeblock_4",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (| summarize count() by bin(timegenerated, 1h))"
     },
     {
@@ -3564,7 +3672,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L56",
       "id": "docs_supported_operators_06_ago_current_timestamp_interval",
-      "community": 6,
+      "community": 4,
       "norm_label": "06 \u00b7 `ago()` \u2192 `current_timestamp - interval`"
     },
     {
@@ -3573,7 +3681,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L58",
       "id": "docs_supported_operators_codeblock_5",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (| where timegenerated > ago(24h))"
     },
     {
@@ -3582,7 +3690,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L65",
       "id": "docs_supported_operators_07_extend_select_computed_col_as_expr",
-      "community": 6,
+      "community": 4,
       "norm_label": "07 \u00b7 `extend` \u2192 `select *, computed_col as expr`"
     },
     {
@@ -3591,7 +3699,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L67",
       "id": "docs_supported_operators_codeblock_6",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | extend msgupper = toupper(message))"
     },
     {
@@ -3600,7 +3708,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L74",
       "id": "docs_supported_operators_08_order_by_sort_by_order_by",
-      "community": 6,
+      "community": 4,
       "norm_label": "08 \u00b7 `order by` / `sort by` \u2192 `order by`"
     },
     {
@@ -3609,7 +3717,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L76",
       "id": "docs_supported_operators_codeblock_7",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | order by timegenerated desc)"
     },
     {
@@ -3618,7 +3726,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L85",
       "id": "docs_supported_operators_09_take_limit_limit_n",
-      "community": 6,
+      "community": 4,
       "norm_label": "09 \u00b7 `take` / `limit` \u2192 `limit n`"
     },
     {
@@ -3627,7 +3735,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L87",
       "id": "docs_supported_operators_codeblock_8",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | take 100  \u2192  select * from applogs limit 100)"
     },
     {
@@ -3636,7 +3744,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L94",
       "id": "docs_supported_operators_10_distinct_select_distinct",
-      "community": 6,
+      "community": 4,
       "norm_label": "10 \u00b7 `distinct` \u2192 `select distinct`"
     },
     {
@@ -3645,7 +3753,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L96",
       "id": "docs_supported_operators_codeblock_9",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | distinct level, servicename)"
     },
     {
@@ -3654,7 +3762,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L103",
       "id": "docs_supported_operators_11_join_inner_inner_join",
-      "community": 6,
+      "community": 4,
       "norm_label": "11 \u00b7 `join` (inner) \u2192 `inner join`"
     },
     {
@@ -3663,7 +3771,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L105",
       "id": "docs_supported_operators_codeblock_10",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | join (users) on userid)"
     },
     {
@@ -3672,7 +3780,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L114",
       "id": "docs_supported_operators_12_union_union_all",
-      "community": 6,
+      "community": 4,
       "norm_label": "12 \u00b7 `union` \u2192 `union all`"
     },
     {
@@ -3681,7 +3789,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L116",
       "id": "docs_supported_operators_codeblock_11",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | union errorlogs)"
     },
     {
@@ -3690,7 +3798,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L123",
       "id": "docs_supported_operators_13_let_variables_ctes_with_as",
-      "community": 6,
+      "community": 4,
       "norm_label": "13 \u00b7 `let` variables \u2192 ctes (`with ... as`)"
     },
     {
@@ -3699,7 +3807,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L125",
       "id": "docs_supported_operators_codeblock_12",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (let errors = applogs | where level == 'error';)"
     },
     {
@@ -3708,7 +3816,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L129",
       "id": "docs_supported_operators_codeblock_13",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:sql (with errors as (select * from applogs where level = 'error'))"
     },
     {
@@ -3717,7 +3825,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L136",
       "id": "docs_supported_operators_14_count_count",
-      "community": 6,
+      "community": 4,
       "norm_label": "14 \u00b7 `count()` \u2192 `count(*)`"
     },
     {
@@ -3726,7 +3834,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L138",
       "id": "docs_supported_operators_codeblock_14",
-      "community": 6,
+      "community": 4,
       "norm_label": "code:kql (applogs | count)"
     },
     {
@@ -3735,7 +3843,7 @@
       "source_file": "docs/supported_operators.md",
       "source_location": "L145",
       "id": "docs_supported_operators_string_function_support_via_extend",
-      "community": 6,
+      "community": 4,
       "norm_label": "string function support (via `extend`)"
     },
     {
@@ -3744,7 +3852,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L1",
       "id": "docs_unsupported_operators_md",
-      "community": 12,
+      "community": 11,
       "norm_label": "unsupported_operators.md"
     },
     {
@@ -3753,7 +3861,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L1",
       "id": "docs_unsupported_operators_unsupported_kql_operators_kqlbridge_v0_1",
-      "community": 12,
+      "community": 11,
       "norm_label": "unsupported kql operators \u2014 kqlbridge v0.1"
     },
     {
@@ -3762,7 +3870,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L11",
       "id": "docs_unsupported_operators_permanently_out_of_scope",
-      "community": 12,
+      "community": 11,
       "norm_label": "permanently out of scope"
     },
     {
@@ -3771,7 +3879,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L15",
       "id": "docs_unsupported_operators_make_series",
-      "community": 12,
+      "community": 11,
       "norm_label": "`make-series`"
     },
     {
@@ -3780,7 +3888,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L19",
       "id": "docs_unsupported_operators_codeblock_1",
-      "community": 12,
+      "community": 11,
       "norm_label": "code:kql (// no sql equivalent \u2014 keep in kql engine)"
     },
     {
@@ -3789,7 +3897,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L24",
       "id": "docs_unsupported_operators_series_decompose_anomalies",
-      "community": 12,
+      "community": 11,
       "norm_label": "`series_decompose_anomalies()`"
     },
     {
@@ -3798,7 +3906,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L28",
       "id": "docs_unsupported_operators_bag_unpack",
-      "community": 12,
+      "community": 11,
       "norm_label": "`bag_unpack()`"
     },
     {
@@ -3807,7 +3915,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L32",
       "id": "docs_unsupported_operators_render",
-      "community": 12,
+      "community": 11,
       "norm_label": "`render`"
     },
     {
@@ -3816,7 +3924,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L36",
       "id": "docs_unsupported_operators_ipv4_is_in_range_ipv4_compare",
-      "community": 12,
+      "community": 11,
       "norm_label": "`ipv4_is_in_range()` / `ipv4_compare()`"
     },
     {
@@ -3825,7 +3933,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L40",
       "id": "docs_unsupported_operators_user_defined_functions_adx_registered_udfs",
-      "community": 12,
+      "community": 11,
       "norm_label": "user-defined functions (adx-registered udfs)"
     },
     {
@@ -3834,7 +3942,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L46",
       "id": "docs_unsupported_operators_deferred_to_v0_2",
-      "community": 12,
+      "community": 11,
       "norm_label": "deferred to v0.2"
     },
     {
@@ -3843,7 +3951,7 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L62",
       "id": "docs_unsupported_operators_how_to_handle_unsupported_operators",
-      "community": 12,
+      "community": 11,
       "norm_label": "how to handle unsupported operators"
     },
     {
@@ -3852,15 +3960,51 @@
       "source_file": "docs/unsupported_operators.md",
       "source_location": "L64",
       "id": "docs_unsupported_operators_codeblock_2",
-      "community": 12,
+      "community": 11,
       "norm_label": "code:python (from kqlbridge import is_supported, check)"
+    },
+    {
+      "label": "Experimental PySpark Generator.     Routes KQL AST nodes to executable PySpark D",
+      "file_type": "rationale",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L5",
+      "community": 2,
+      "norm_label": "experimental pyspark generator.     routes kql ast nodes to executable pyspark d",
+      "id": "generators_pyspark_rationale_5"
+    },
+    {
+      "label": "Main entry point for PySpark generation.",
+      "file_type": "rationale",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L13",
+      "community": 2,
+      "norm_label": "main entry point for pyspark generation.",
+      "id": "generators_pyspark_rationale_13"
+    },
+    {
+      "label": "Map KQL built-in functions to Spark SQL equivalents.         Only functions need",
+      "file_type": "rationale",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L403",
+      "community": 3,
+      "norm_label": "map kql built-in functions to spark sql equivalents.         only functions need",
+      "id": "generators_spark_sql_rationale_403"
+    },
+    {
+      "label": "Render a boolean expression to a SQL WHERE fragment.",
+      "file_type": "rationale",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L448",
+      "community": 3,
+      "norm_label": "render a boolean expression to a sql where fragment.",
+      "id": "generators_spark_sql_rationale_448"
     },
     {
       "label": "Return the list of KQL operators used in a query string.      Useful for routing",
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L78",
-      "community": 7,
+      "community": 15,
       "norm_label": "return the list of kql operators used in a query string.      useful for routing",
       "id": "kqlbridge_init_rationale_78"
     },
@@ -3869,7 +4013,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L113",
-      "community": 3,
+      "community": 14,
       "norm_label": "return true if the query can be fully translated to spark sql.      queries with",
       "id": "kqlbridge_init_rationale_113"
     },
@@ -3878,7 +4022,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L128",
-      "community": 3,
+      "community": 14,
       "norm_label": "parse and semantically validate a kql query.      returns a semanticresult with:",
       "id": "kqlbridge_init_rationale_128"
     },
@@ -3887,7 +4031,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L401",
-      "community": 4,
+      "community": 3,
       "norm_label": "map kql built-in functions to spark sql equivalents.         only functions need",
       "id": "generators_spark_sql_rationale_401"
     },
@@ -3896,7 +4040,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L446",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a boolean expression to a sql where fragment.",
       "id": "generators_spark_sql_rationale_446"
     },
@@ -3905,7 +4049,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L91",
-      "community": 8,
+      "community": 7,
       "norm_label": "security",
       "id": "kqlbridge_readme_security"
     },
@@ -3914,7 +4058,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L93",
-      "community": 8,
+      "community": 7,
       "norm_label": "sql injection awareness",
       "id": "kqlbridge_readme_sql_injection_awareness"
     },
@@ -3923,7 +4067,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L113",
-      "community": 8,
+      "community": 7,
       "norm_label": "access control",
       "id": "kqlbridge_readme_access_control"
     },
@@ -3932,7 +4076,7 @@
       "file_type": "document",
       "source_file": "README.md",
       "source_location": "L178",
-      "community": 8,
+      "community": 7,
       "norm_label": "code:bash (git clone https://github.com/navakanth/kqlbridge)",
       "id": "kqlbridge_readme_codeblock_8"
     },
@@ -3941,7 +4085,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L67",
-      "community": 7,
+      "community": 15,
       "norm_label": "return the list of kql operators used in a query string.      useful for routing",
       "id": "kqlbridge_init_rationale_67"
     },
@@ -3950,7 +4094,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L102",
-      "community": 3,
+      "community": 14,
       "norm_label": "return true if the query can be fully translated to spark sql.      queries with",
       "id": "kqlbridge_init_rationale_102"
     },
@@ -3959,7 +4103,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L117",
-      "community": 3,
+      "community": 14,
       "norm_label": "parse and semantically validate a kql query.      returns a semanticresult with:",
       "id": "kqlbridge_init_rationale_117"
     },
@@ -3968,7 +4112,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/pyspark.py",
       "source_location": "L4",
-      "community": 3,
+      "community": 2,
       "norm_label": "experimental pyspark generator.     routes kql ast nodes to executable pyspark d",
       "id": "generators_pyspark_rationale_4"
     },
@@ -3977,7 +4121,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/pyspark.py",
       "source_location": "L12",
-      "community": 3,
+      "community": 2,
       "norm_label": "main entry point for pyspark generation.",
       "id": "generators_pyspark_rationale_12"
     },
@@ -3986,7 +4130,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L34",
-      "community": 7,
+      "community": 13,
       "norm_label": "translate a kql query string to the target sql dialect.      args:         kql:",
       "id": "kqlbridge_init_rationale_34"
     },
@@ -3995,7 +4139,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L65",
-      "community": 7,
+      "community": 15,
       "norm_label": "return the list of kql operators used in a query string.      useful for routing",
       "id": "kqlbridge_init_rationale_65"
     },
@@ -4004,7 +4148,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L100",
-      "community": 3,
+      "community": 14,
       "norm_label": "return true if the query can be fully translated to spark sql.      queries with",
       "id": "kqlbridge_init_rationale_100"
     },
@@ -4013,7 +4157,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L59",
-      "community": 0,
+      "community": 6,
       "norm_label": "kql ago(1h) \u2192 current_timestamp - interval '1 hours",
       "id": "kqlbridge_ast_nodes_rationale_59"
     },
@@ -4022,7 +4166,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L66",
-      "community": 0,
+      "community": 6,
       "norm_label": "kql bin(col, 1h) \u2192 date_trunc('hour', col)",
       "id": "kqlbridge_ast_nodes_rationale_66"
     },
@@ -4031,7 +4175,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L74",
-      "community": 0,
+      "community": 1,
       "norm_label": "a generic function call: tostring(x), strlen(x)",
       "id": "kqlbridge_ast_nodes_rationale_74"
     },
@@ -4040,7 +4184,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L81",
-      "community": 0,
+      "community": 1,
       "norm_label": "arithmetic: a + b, a - b, a * b, a / b",
       "id": "kqlbridge_ast_nodes_rationale_81"
     },
@@ -4049,7 +4193,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L98",
-      "community": 0,
+      "community": 1,
       "norm_label": "col == 'error', timegenerated > ago(1h)",
       "id": "kqlbridge_ast_nodes_rationale_98"
     },
@@ -4058,7 +4202,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L106",
-      "community": 0,
+      "community": 1,
       "norm_label": "col in ('a', 'b', 'c')",
       "id": "kqlbridge_ast_nodes_rationale_106"
     },
@@ -4067,7 +4211,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L129",
-      "community": 0,
+      "community": 2,
       "norm_label": "cond1 and cond2 / cond1 or cond2",
       "id": "kqlbridge_ast_nodes_rationale_129"
     },
@@ -4076,7 +4220,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L182",
-      "community": 0,
+      "community": 1,
       "norm_label": "dcount(col) \u2192 count(distinct col)",
       "id": "kqlbridge_ast_nodes_rationale_182"
     },
@@ -4085,7 +4229,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L189",
-      "community": 0,
+      "community": 1,
       "norm_label": "countif(cond) \u2192 count(case when cond then 1 end)",
       "id": "kqlbridge_ast_nodes_rationale_189"
     },
@@ -4103,7 +4247,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L229",
-      "community": 2,
+      "community": 1,
       "norm_label": "| where level == 'error",
       "id": "kqlbridge_ast_nodes_rationale_229"
     },
@@ -4139,7 +4283,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/ast_nodes.py",
       "source_location": "L267",
-      "community": 0,
+      "community": 2,
       "norm_label": "| extend alias = expr",
       "id": "kqlbridge_ast_nodes_rationale_267"
     },
@@ -4175,7 +4319,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/parser.py",
       "source_location": "L467",
-      "community": 5,
+      "community": 1,
       "norm_label": "returns (amount: int, kql_unit: str) e.g. (24, 'h')",
       "id": "kqlbridge_parser_rationale_467"
     },
@@ -4184,7 +4328,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L31",
-      "community": 7,
+      "community": 13,
       "norm_label": "translate a kql query string to the target sql dialect.      args:         kql:",
       "id": "kqlbridge_init_rationale_31"
     },
@@ -4193,7 +4337,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L55",
-      "community": 7,
+      "community": 15,
       "norm_label": "return the list of kql operators used in a query string.      useful for routing",
       "id": "kqlbridge_init_rationale_55"
     },
@@ -4202,7 +4346,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L90",
-      "community": 3,
+      "community": 14,
       "norm_label": "return true if the query can be fully translated to spark sql.      queries with",
       "id": "kqlbridge_init_rationale_90"
     },
@@ -4211,7 +4355,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/__init__.py",
       "source_location": "L105",
-      "community": 3,
+      "community": 14,
       "norm_label": "parse and semantically validate a kql query.      returns a semanticresult with:",
       "id": "kqlbridge_init_rationale_105"
     },
@@ -4220,7 +4364,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L65",
-      "community": 0,
+      "community": 3,
       "norm_label": "generates spark sql from a kqlquery ast.      usage:         gen = sparksqlgener",
       "id": "generators_spark_sql_rationale_65"
     },
@@ -4229,7 +4373,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L74",
-      "community": 4,
+      "community": 3,
       "norm_label": "entry point. returns a spark sql string.",
       "id": "generators_spark_sql_rationale_74"
     },
@@ -4238,7 +4382,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L85",
-      "community": 4,
+      "community": 3,
       "norm_label": "convert let bindings \u2192 with ... as (...) ctes.",
       "id": "generators_spark_sql_rationale_85"
     },
@@ -4247,7 +4391,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L95",
-      "community": 4,
+      "community": 3,
       "norm_label": "walk the pipe operators and accumulate sql clause fragments.         the assembl",
       "id": "generators_spark_sql_rationale_95"
     },
@@ -4256,7 +4400,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L198",
-      "community": 4,
+      "community": 3,
       "norm_label": "returns (select_cols, group_by_cols).          karpathy p5 \u2014 jagged intelligence",
       "id": "generators_spark_sql_rationale_198"
     },
@@ -4265,7 +4409,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L232",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a single aggregation expression.",
       "id": "generators_spark_sql_rationale_232"
     },
@@ -4274,7 +4418,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L259",
-      "community": 4,
+      "community": 3,
       "norm_label": "kql join \u2192 sql inner/left/right/full join.         returns a 'table expression'",
       "id": "generators_spark_sql_rationale_259"
     },
@@ -4283,7 +4427,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L278",
-      "community": 4,
+      "community": 3,
       "norm_label": "kql union t1, t2, t3 \u2192 select * from t1 union all select * from t2 ...",
       "id": "generators_spark_sql_rationale_278"
     },
@@ -4292,7 +4436,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L286",
-      "community": 4,
+      "community": 3,
       "norm_label": "render bin(col, n<unit>) \u2192 spark sql timestamp bucketing.         - hourly or co",
       "id": "generators_spark_sql_rationale_286"
     },
@@ -4301,7 +4445,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L303",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a scalar expression to sql.",
       "id": "generators_spark_sql_rationale_303"
     },
@@ -4310,7 +4454,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L353",
-      "community": 4,
+      "community": 3,
       "norm_label": "map kql built-in functions to spark sql equivalents.         only functions need",
       "id": "generators_spark_sql_rationale_353"
     },
@@ -4319,7 +4463,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L393",
-      "community": 4,
+      "community": 3,
       "norm_label": "render a boolean expression to a sql where fragment.",
       "id": "generators_spark_sql_rationale_393"
     },
@@ -4328,7 +4472,7 @@
       "file_type": "rationale",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L142",
-      "community": 3,
+      "community": 10,
       "norm_label": "# note: do not clear where_clauses \u2014 where filters from before",
       "id": "generators_spark_sql_rationale_142"
     },
@@ -4337,7 +4481,7 @@
       "file_type": "rationale",
       "source_file": "tests/eval/prepare.py",
       "source_location": "L61",
-      "community": 9,
+      "community": 8,
       "norm_label": "normalize a sql string for structural comparison.      operations:     - lowerca",
       "id": "eval_prepare_rationale_61"
     },
@@ -4346,7 +4490,7 @@
       "file_type": "rationale",
       "source_file": "tests/eval/prepare.py",
       "source_location": "L85",
-      "community": 9,
+      "community": 8,
       "norm_label": "check structural equivalence via canonical form.",
       "id": "eval_prepare_rationale_85"
     },
@@ -4355,7 +4499,7 @@
       "file_type": "rationale",
       "source_file": "tests/eval/prepare.py",
       "source_location": "L92",
-      "community": 9,
+      "community": 8,
       "norm_label": "check that the generated sql is parseable by sqlglot as spark sql.",
       "id": "eval_prepare_rationale_92"
     },
@@ -4364,7 +4508,7 @@
       "file_type": "rationale",
       "source_file": "tests/eval/prepare.py",
       "source_location": "L105",
-      "community": 9,
+      "community": 8,
       "norm_label": "score a single benchmark case.      returns (score: int, failure_reason: optiona",
       "id": "eval_prepare_rationale_105"
     }
@@ -5424,6 +5568,16 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L45",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_subqueryinexpr"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L22",
       "weight": 0.8,
@@ -6016,6 +6170,16 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L45",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_logicalop"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L23",
       "weight": 0.8,
@@ -6032,6 +6196,17 @@
       "source_location": "L344",
       "weight": 1.0,
       "source": "kqlbridge_parser_build_bool_expr",
+      "target": "kqlbridge_ast_nodes_logicalop"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "generators_pyspark_pysparkgenerator_remove_subqueries",
       "target": "kqlbridge_ast_nodes_logicalop"
     },
     {
@@ -6067,6 +6242,16 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L45",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_negation"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L23",
       "weight": 0.8,
@@ -6083,6 +6268,17 @@
       "source_location": "L347",
       "weight": 1.0,
       "source": "kqlbridge_parser_build_bool_expr",
+      "target": "kqlbridge_ast_nodes_negation"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "generators_pyspark_pysparkgenerator_remove_subqueries",
       "target": "kqlbridge_ast_nodes_negation"
     },
     {
@@ -6793,6 +6989,16 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L1",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_distinctop"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L23",
       "weight": 0.8,
@@ -6935,6 +7141,16 @@
     {
       "relation": "uses",
       "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L1",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_joinop"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
       "source_location": "L23",
       "weight": 0.8,
@@ -6981,6 +7197,16 @@
       "weight": 0.8,
       "confidence_score": 0.5,
       "source": "kqlbridge_explain_explainresult",
+      "target": "kqlbridge_ast_nodes_unionop"
+    },
+    {
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L1",
+      "weight": 0.8,
+      "confidence_score": 0.5,
+      "source": "generators_pyspark_pysparkgenerator",
       "target": "kqlbridge_ast_nodes_unionop"
     },
     {
@@ -8979,6 +9205,72 @@
       "context": "call",
       "confidence": "INFERRED",
       "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L343",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_datetime_quotes",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L354",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_coalesce",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L360",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_split",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L366",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_datetime_add",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L372",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_datetime_diff",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "tests/test_operators.py",
+      "source_location": "L378",
+      "weight": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions_test_strcat_delim",
+      "target": "kqlbridge_init_translate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
       "source_file": "tests/eval/prepare.py",
       "source_location": "L117",
       "weight": 1.0,
@@ -9208,13 +9500,43 @@
       "target": "generators_pyspark_pysparkgenerator_generate"
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L31",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "generators_pyspark_pysparkgenerator_extract_subqueries"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L44",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "generators_pyspark_pysparkgenerator_remove_subqueries"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L64",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "generators_pyspark_pysparkgenerator_generate_query"
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/kqlbridge/generators/pyspark.py",
-      "source_location": "L5",
+      "source_location": "L9",
       "weight": 1.0,
       "confidence_score": 1.0,
-      "source": "generators_pyspark_rationale_5",
+      "source": "generators_pyspark_rationale_9",
       "target": "generators_pyspark_pysparkgenerator"
     },
     {
@@ -9231,11 +9553,42 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L5",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_rationale_5",
+      "target": "generators_pyspark_pysparkgenerator"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
       "source_location": "L4",
       "weight": 1.0,
       "confidence_score": 1.0,
       "source": "generators_pyspark_rationale_4",
       "target": "generators_pyspark_pysparkgenerator"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L27",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator_generate",
+      "target": "generators_pyspark_pysparkgenerator_generate_query"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L17",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_rationale_17",
+      "target": "generators_pyspark_pysparkgenerator_generate"
     },
     {
       "relation": "rationale_for",
@@ -9256,6 +9609,28 @@
       "confidence_score": 1.0,
       "source": "generators_pyspark_rationale_12",
       "target": "generators_pyspark_pysparkgenerator_generate"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L83",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator_generate_query",
+      "target": "generators_pyspark_pysparkgenerator_extract_subqueries"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/pyspark.py",
+      "source_location": "L96",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_pyspark_pysparkgenerator_generate_query",
+      "target": "generators_pyspark_pysparkgenerator_remove_subqueries"
     },
     {
       "relation": "contains",
@@ -9448,6 +9823,26 @@
       "confidence_score": 1.0,
       "source": "generators_spark_sql_sparksqlgenerator",
       "target": "generators_spark_sql_sparksqlgenerator_func_call"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L452",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_datetime_add"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L469",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_datetime_diff"
     },
     {
       "relation": "method",
@@ -9901,6 +10296,38 @@
       "target": "generators_spark_sql_sparksqlgenerator_expr"
     },
     {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L441",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_datetime_add"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L442",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_datetime_diff"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L404",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_rationale_404",
+      "target": "generators_spark_sql_sparksqlgenerator_func_call"
+    },
+    {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "src/kqlbridge/generators/spark_sql.py",
@@ -9929,6 +10356,16 @@
       "confidence_score": 1.0,
       "source": "generators_spark_sql_rationale_353",
       "target": "generators_spark_sql_sparksqlgenerator_func_call"
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "src/kqlbridge/generators/spark_sql.py",
+      "source_location": "L495",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "generators_spark_sql_rationale_495",
+      "target": "generators_spark_sql_sparksqlgenerator_bool_expr"
     },
     {
       "relation": "rationale_for",
@@ -10221,6 +10658,16 @@
       "confidence_score": 1.0,
       "source": "tests_test_operators_py",
       "target": "tests_test_operators_testpublicapi"
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L341",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_py",
+      "target": "tests_test_operators_testcommunityfunctions"
     },
     {
       "relation": "rationale_for",
@@ -11449,6 +11896,66 @@
       "target": "tests_test_operators_testpublicapi_test_translate_returns_string"
     },
     {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L342",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_datetime_quotes"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L353",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_coalesce"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L359",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_split"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L365",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_datetime_add"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L371",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_datetime_diff"
+    },
+    {
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/test_operators.py",
+      "source_location": "L377",
+      "weight": 1.0,
+      "confidence_score": 1.0,
+      "source": "tests_test_operators_testcommunityfunctions",
+      "target": "tests_test_operators_testcommunityfunctions_test_strcat_delim"
+    },
+    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/eval/prepare.py",
@@ -12655,5 +13162,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "cfa699ae095f3668ca8c2062c0738a5ca4761ff6"
+  "built_at_commit": "f9852a6b0a977e4af1ed3151107c3e3e58b65704"
 }
