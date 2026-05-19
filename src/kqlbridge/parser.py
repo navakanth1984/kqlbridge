@@ -78,6 +78,7 @@ _KQL_KEYWORDS = {
 # Using match with a start position parameter (`_WORD_RE.match(kql, i)`)
 # avoids O(N^2) string slicing `kql[i:]` on long queries.
 _WORD_RE = _re.compile(r'[A-Za-z_][A-Za-z0-9_.]*')
+_COMP_OP_RE = _re.compile(r"(?i)\s*(?:==|!=|<=|>=|<|>|=~|!in\b|in\b|has\b|contains\b|startswith\b|endswith\b)")
 
 def _normalize_keywords(kql: str) -> str:
     """Lowercase KQL keywords while preserving quoted string content."""
@@ -238,20 +239,8 @@ def _preprocess_bool_funcs(kql: str) -> str:
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
-        following = kql[close_paren_idx + 1:].lstrip()
-        has_comparison = False
-        comp_operators = ["==", "!=", "<=", ">=", "<", ">", "=~"]
-        comp_keywords = ["in", "!in", "has", "contains", "startswith", "endswith"]
-        for op in comp_operators:
-            if following.startswith(op):
-                has_comparison = True
-                break
-        if not has_comparison:
-            for kw in comp_keywords:
-                if _re.match(rf"\b{kw}\b", following, _re.IGNORECASE):
-                    has_comparison = True
-                    break
-        if not has_comparison:
+
+        if not _COMP_OP_RE.match(kql, close_paren_idx + 1):
             kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
             i = close_paren_idx + 1 + len(" == true")
         else:
