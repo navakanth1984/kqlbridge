@@ -137,22 +137,7 @@ class SparkSQLGenerator:
                     select_cols = ["*"] + extend_parts
                 else:
                     select_cols = select_cols + extend_parts
-                # If a summarize follows, we must wrap the current state in a subquery
-                # so the extended columns are visible to GROUP BY / agg functions
-                future_ops = query.pipes[query.pipes.index(op) + 1:]
-                if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
-                    inner_sql = self._assemble(
-                        select_cols=select_cols,
-                        table=table,
-                        where_clauses=where_clauses,
-                        group_by=[],
-                        order="",
-                        limit="",
-                        distinct=False,
-                    )
-                    table = "(\n" + inner_sql + "\n) _extended"
-                    select_cols = ["*"]
-                    where_clauses = []
+                # DO NOT wrap in a subquery for Spark SQL; extended aliases can be referenced directly.
 
             elif isinstance(op, JoinOp):
                 # Inline join — handled in assembly
@@ -163,15 +148,27 @@ class SparkSQLGenerator:
                 select_cols = ["*"]
 
             elif isinstance(op, UnionOp):
-                union_sql = self._union(table, op)
-                if union_sql != table:  # real union was built
-                    table = union_sql
-                    select_cols = ["*"]
-                    # Check if this is the last op — return union directly if no trailing ops
+                if op.tables:  # real union was built
+                    left_sql = self._assemble(
+                        select_cols=select_cols,
+                        table=table,
+                        where_clauses=where_clauses,
+                        group_by=[],
+                        order="",
+                        limit="",
+                        distinct=False,
+                    )
+                    union_sql = self._union(left_sql, op)
+
                     remaining = query.pipes[query.pipes.index(op) + 1:]
                     if not remaining:
                         return union_sql
-                # if union_sql == table, op.tables was empty → unsupported subquery union
+
+                    table = union_sql
+                    select_cols = ["*"]
+                    where_clauses = []
+
+                # if not op.tables, unsupported subquery union
 
             elif isinstance(op, CountOp):
                 select_cols = ["COUNT(*) AS count_"]
@@ -318,7 +315,10 @@ class SparkSQLGenerator:
             new_parts = ["UNION ALL\n" + _item_sql(t) for t in op.tables]
             return table + "\n" + "\n".join(new_parts)
 
-        first = f"SELECT * FROM {table}"
+        if table.strip().upper().startswith("SELECT "):
+            first = table
+        else:
+            first = f"SELECT * FROM {table}"
         rest = ["UNION ALL\n" + _item_sql(t) for t in op.tables]
         return first + "\n" + "\n".join(rest)
 
