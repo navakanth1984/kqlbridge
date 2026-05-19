@@ -58,3 +58,25 @@ def test_translate_complex_pipeline():
         assert len(parsed) > 0
     except ImportError:
         pass
+
+def test_translate_tsql_complex_pipeline():
+    """Verify a complex KQL query successfully translates to T-SQL with its unique syntax differences."""
+    complex_query = """
+    AppLogs
+    | where TimeGenerated > ago(1d)
+    | extend IsCritical = iff(Level == 'Critical', true, false)
+    | summarize Total=count(), CriticalCount=countif(IsCritical == true) by bin(TimeGenerated, 1h), ServiceName
+    | order by Total desc
+    | take 10
+    """
+
+    assert is_supported(complex_query) is True
+
+    sql = translate(complex_query, target="tsql")
+
+    # Check for T-SQL specific dialect differences compared to Spark
+    assert "TOP 10" in sql, "T-SQL should use TOP n in SELECT, not LIMIT at the end"
+    assert "LIMIT" not in sql
+    assert "DATEADD" in sql, "T-SQL should use DATEADD/DATEDIFF for bin(), not DATE_TRUNC"
+    assert "DATE_TRUNC" not in sql
+    assert "GETDATE()" in sql, "T-SQL should use GETDATE() for ago(), not CURRENT_TIMESTAMP"
