@@ -130,8 +130,12 @@ bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
 comparison: expr COMP_OP expr
           | expr "in" "(" value_list ")"         -> in_expr
           | expr "!in" "(" value_list ")"        -> not_in_expr
+          | expr "in~" "(" value_list ")"        -> in_ci_expr
+          | expr "!in~" "(" value_list ")"       -> not_in_ci_expr
           | expr "in" "(" table_ref_expr ")"    -> subquery_in_expr
           | expr "!in" "(" table_ref_expr ")"   -> subquery_not_in_expr
+          | expr "in~" "(" table_ref_expr ")"    -> subquery_in_ci_expr
+          | expr "!in~" "(" table_ref_expr ")"   -> subquery_not_in_ci_expr
           | expr "has" STRING                    -> has_expr
           | expr "contains" STRING               -> contains_expr
           | expr "startswith" STRING             -> startswith_expr

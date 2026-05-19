@@ -503,3 +503,52 @@ class TestV07Features:
         assert "BETWEEN 2886729728 AND 2887778303" in res_private  # 172.16.0.0/12
         assert "= true" not in res_private  # no redundant bool suffix on FuncCall
 
+
+class TestV08Features:
+    def test_casting_functions(self):
+        # Test tostring, toint, tolong, todouble across targets
+        kql = "AppLogs | extend s = tostring(c1), i = toint(c2), l = tolong(c3), d = todouble(c4)"
+        
+        # 1. Spark SQL
+        spark = translate(kql, target="spark")
+        assert "CAST(c1 AS STRING)" in spark
+        assert "CAST(c2 AS INT)" in spark
+        assert "CAST(c3 AS BIGINT)" in spark
+        assert "CAST(c4 AS DOUBLE)" in spark
+
+        # 2. T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "CAST(c1 AS NVARCHAR(MAX))" in tsql
+        assert "CAST(c2 AS INT)" in tsql
+        assert "CAST(c3 AS BIGINT)" in tsql
+        assert "CAST(c4 AS FLOAT)" in tsql
+
+    def test_format_datetime(self):
+        kql = "AppLogs | extend formatted = format_datetime(timestamp, 'yyyy-MM-dd')"
+        
+        # 1. Spark SQL
+        spark = translate(kql, target="spark")
+        assert "DATE_FORMAT(timestamp, 'yyyy-MM-dd')" in spark
+
+        # 2. T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "FORMAT(timestamp, 'yyyy-MM-dd')" in tsql
+
+    def test_array_functions(self):
+        # Test array_length and array_index_of
+        kql_len = "AppLogs | extend len = array_length(arr)"
+        kql_idx = "AppLogs | extend idx = array_index_of(arr, 'target')"
+
+        # 1. Spark SQL
+        spark_len = translate(kql_len, target="spark")
+        spark_idx = translate(kql_idx, target="spark")
+        assert "size(arr)" in spark_len
+        assert "array_position(arr, 'target')" in spark_idx
+
+        # 2. T-SQL
+        tsql_len = translate(kql_len, target="tsql")
+        tsql_idx = translate(kql_idx, target="tsql")
+        assert "COALESCE((SELECT COUNT(*) FROM OPENJSON(arr)), 0)" in tsql_len
+        assert "COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON(arr) WHERE [value] = 'target'), -1)" in tsql_idx
+
+

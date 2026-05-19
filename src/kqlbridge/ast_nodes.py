@@ -54,6 +54,7 @@ class SubqueryInExpr:
     col: object
     subquery: object   # KQLQuery
     negated: bool = False
+    case_insensitive: bool = False
 
 
 @dataclass
@@ -123,6 +124,7 @@ class InExpr:
     col: Expr
     values: list[Expr]
     negated: bool = False
+    case_insensitive: bool = False
 
 
 @dataclass

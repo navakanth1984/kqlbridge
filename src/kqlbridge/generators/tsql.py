@@ -181,6 +181,21 @@ class TSQLGenerator(SparkSQLGenerator):
             return self._render_ipv4_is_private(args)
         if name == "ipv4_is_in_range":
             return self._render_ipv4_is_in_range(args)
+        if name == "tostring":
+            return f"CAST({args[0]} AS NVARCHAR(MAX))"
+        if name == "toint":
+            return f"CAST({args[0]} AS INT)"
+        if name == "tolong":
+            return f"CAST({args[0]} AS BIGINT)"
+        if name == "todouble":
+            return f"CAST({args[0]} AS FLOAT)"
+        if name == "format_datetime":
+            return f"FORMAT({args[0]}, {args[1]})"
+        if name == "array_length":
+            return f"COALESCE((SELECT COUNT(*) FROM OPENJSON({args[0]})), 0)"
+        if name == "array_index_of":
+            val = args[1] if len(args) >= 2 else "NULL"
+            return f"COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON({args[0]}) WHERE [value] = {val}), -1)"
         return super()._func_call(expr)
 
     def _bool_expr(self, expr) -> str:

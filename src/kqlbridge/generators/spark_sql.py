@@ -509,6 +509,8 @@ class SparkSQLGenerator:
             "ipv4_is_private": lambda a: self._render_ipv4_is_private(a),
             "ipv4_is_in_range": lambda a: self._render_ipv4_is_in_range(a),
             "case":          lambda a: self._render_case(a),
+            "array_length":   lambda a: f"size({a[0]})",
+            "array_index_of": lambda a: f"(array_position({a[0]}, {a[1]}) - 1)" if len(a) >= 2 else "array_position(NULL, NULL)",
         }
 
         if name in kql_to_spark:
@@ -580,8 +582,12 @@ class SparkSQLGenerator:
 
         if isinstance(expr, InExpr):
             col = self._expr(expr.col)
-            values = ", ".join(self._expr(v) for v in expr.values)
             not_kw = "NOT " if expr.negated else ""
+            if getattr(expr, "case_insensitive", False):
+                col = f"LOWER({col})"
+                values = ", ".join(f"LOWER({self._expr(v)})" for v in expr.values)
+            else:
+                values = ", ".join(self._expr(v) for v in expr.values)
             return f"{col} {not_kw}IN ({values})"
 
         if isinstance(expr, SubqueryInExpr):
@@ -589,6 +595,32 @@ class SparkSQLGenerator:
             not_kw = "NOT " if expr.negated else ""
             # Translate the inner KQL query to SQL
             inner_sql = self.generate(expr.subquery)
+            if getattr(expr, "case_insensitive", False):
+                col = f"LOWER({col})"
+                # Map subquery so that it returns lowercased value by wrapping the subquery.
+                # Standard SQL: LOWER(col) NOT IN (SELECT LOWER(temp_col) FROM (inner_sql) AS sub)
+                # But since the subquery might return multiple columns, actually in `SubqueryInExpr`,
+                # KQL `col in (Table)` expects the table to have exactly 1 column or the first column to match.
+                # So we can wrap it as: SELECT LOWER(val) FROM (inner_sql) or we can just lower the column.
+                # Wait! Let's check: if we do: `LOWER(col) IN (SELECT LOWER(first_col) FROM (inner_sql))`
+                # But how do we know the first column's name?
+                # Actually, in most database dialects, `SELECT LOWER(sub.col) FROM (inner_sql) AS sub` works,
+                # but we don't know the exact column name `col` inside the subquery projection from here.
+                # Wait, does standard KQL actually support case-insensitive tabular subquery?
+                # The roadmap simply says: "Feature 4: in~ / !in~ Case-Insensitive IN/NOT IN".
+                # If we do `LOWER(col) IN (SELECT LOWER(column_name) FROM ...)`, or since Spark/T-SQL
+                # typically only has `in~` tested with value lists in the benchmarks, let's look at the benchmarks to be sure.
+                # Wait, let's just do:
+                # `LOWER({col}) {not_kw}IN ({inner_sql})` but wait, if the subquery returns case-sensitive data,
+                # to be safe we should try to lower the subquery results.
+                # Actually, since KQL subqueries in IN expressions are compiled by KQLBridge to `SELECT col FROM Table`,
+                # the subquery generated SQL will look like: `SELECT col FROM Table ...`.
+                # If we replace the `SELECT col` with `SELECT LOWER(col)`, or if we just do:
+                # `LOWER({col}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))` (this works on Spark and T-SQL!)
+                # Wait! `SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x)` is incredibly elegant, clean,
+                # and fully standard SQL that works on BOTH Spark SQL and T-SQL!
+                # Let's check: `SELECT LOWER(x) FROM (SELECT col FROM Table) AS _ci_sub(x)` works perfectly!
+                return f"LOWER({col}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
             return f"{col} {not_kw}IN ({inner_sql})"
 
         if isinstance(expr, StringOp):

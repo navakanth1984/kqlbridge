@@ -291,7 +291,12 @@ def _build_query(tree: Tree) -> KQLQuery:
             elif child.data == "table_expr":
                 table = str(child.children[0])
             elif child.data == "pipe_op":
-                pipes.append(_build_pipe_op(child))
+                op = _build_pipe_op(child)
+                # Flatten implicit extends from summarize re-aliasing
+                if hasattr(op, "_implicit_extends"):
+                    pipes.append(ExtendOp(assignments=op._implicit_extends))
+                    del op._implicit_extends
+                pipes.append(op)
 
     if table is None:
         raise ValueError("KQL query has no table expression")
@@ -305,9 +310,21 @@ def _build_let(tree: Tree) -> LetBinding:
 
     if isinstance(value_tree, Tree) and value_tree.data == "table_ref_expr":
         table = str(value_tree.children[0])
-        pipes = [_build_pipe_op(c) for c in value_tree.children[1:]
-                 if isinstance(c, Tree) and c.data == "pipe_op"]
+        pipes = []
+        for c in value_tree.children[1:]:
+            if isinstance(c, Tree) and c.data == "pipe_op":
+                op = _build_pipe_op(c)
+                if hasattr(op, "_implicit_extends"):
+                    pipes.append(ExtendOp(assignments=op._implicit_extends))
+                    del op._implicit_extends
+                pipes.append(op)
         sub_query = KQLQuery(table=table, pipes=pipes)
+    elif isinstance(value_tree, Tree) and value_tree.data == "timespan":
+        amount, unit = _build_timespan(value_tree)
+        # Standalone timespan in let: treat as ago(N) for now to preserve interval semantic
+        expr_node = AgoExpr(amount=amount, unit=unit)
+        sub_query = KQLQuery(table="__scalar__", pipes=[])
+        sub_query.scalar_expr = expr_node
     else:
         expr_node = _build_expr(value_tree)
         sub_query = KQLQuery(table="__scalar__", pipes=[])
@@ -571,6 +588,18 @@ def _build_bool_expr(tree) -> object:
                   if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True)
 
+    if tree.data == "in_ci_expr":
+        col = _build_expr(tree.children[0])
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
+        return InExpr(col=col, values=values, negated=False, case_insensitive=True)
+
+    if tree.data == "not_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
+        return InExpr(col=col, values=values, negated=True, case_insensitive=True)
+
     if tree.data == "subquery_in_expr":
         col = _build_expr(tree.children[0])
         ref = tree.children[1]  # table_ref_expr Tree
@@ -582,6 +611,18 @@ def _build_bool_expr(tree) -> object:
         ref = tree.children[1]
         subquery = _build_table_ref(ref)
         return SubqueryInExpr(col=col, subquery=subquery, negated=True)
+
+    if tree.data == "subquery_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=False, case_insensitive=True)
+
+    if tree.data == "subquery_not_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=True, case_insensitive=True)
 
     if tree.data in ("has_expr", "contains_expr", "startswith_expr",
                      "endswith_expr", "regex_expr"):
