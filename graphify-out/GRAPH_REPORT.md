@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `94f2e3ac`
+- Built from commit: `9537c3a7`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -55,8 +55,8 @@
   run_stress_test.py → src/kqlbridge/lint.py
 - `run()` --calls--> `smart_transpile()`  [INFERRED]
   run_stress_test.py → src/kqlbridge/smart.py
-- `route_query()` --calls--> `detect_operators()`  [INFERRED]
-  examples/fabric_migration/01_simple_filter.py → src/kqlbridge/__init__.py
+- `run()` --calls--> `translate()`  [INFERRED]
+  run_stress_test.py → src/kqlbridge/__init__.py
 - `route_query()` --calls--> `translate()`  [INFERRED]
   examples/fabric_migration/01_simple_filter.py → src/kqlbridge/__init__.py
 - `sql()` --calls--> `translate()`  [INFERRED]
@@ -113,40 +113,40 @@ Cohesion: 0.15
 Nodes (12): `bag_unpack()`, code:kql (// No SQL equivalent — keep in KQL engine), code:python (from kqlbridge import is_supported, check), Deferred to v0.2, How to Handle Unsupported Operators, `ipv4_is_in_range()` / `ipv4_compare()`, `make-series`, Permanently Out of Scope (+4 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.18
-Nodes (11): _translate(), Translate a KQL query string to the target SQL dialect.      Args:         kql:, Translate a KQL query string to the target SQL dialect.      Args:         kql:, Translate a KQL query string to the target SQL dialect.      Args:         kql:, translate(), get_parser(), _normalize_keywords(), parse() (+3 more)
-
-### Community 13 - "Community 13"
 Cohesion: 0.17
 Nodes (11): Bug Reports, Code Style, code:block1 (tests/eval/prepare.py       # Eval oracle — LOCKED), code:bash (# 1. Fork and clone), code:block3 (**KQL input:** `AppLogs | where ...`), Contributing to KQLBridge, How to Contribute, License (+3 more)
 
-### Community 14 - "Community 14"
+### Community 13 - "Community 13"
 Cohesion: 0.29
 Nodes (9): _check_architecture_rules(), scripts/graphify_audit.py — KQLBridge Codebase Intelligence via Graphify =======, Fallback analysis without graphify — uses Python's ast module., Karpathy Principle 6 bloat audit checklist — run after every Tune phase., Check architectural invariants for the KQLBridge codebase.     These rules shoul, Full 7-step graphify pipeline on the KQLBridge source., _run_bloat_audit(), run_graphify_pipeline() (+1 more)
 
+### Community 14 - "Community 14"
+Cohesion: 0.22
+Nodes (6): _translate(), Translate a KQL query string to the target SQL dialect.      Args:         kql:, Translate a KQL query string to the target SQL dialect.      Args:         kql:, Translate a KQL query string to the target SQL dialect.      Args:         kql:, translate(), TestPublicAPI
+
 ### Community 15 - "Community 15"
 Cohesion: 0.22
-Nodes (6): detect_operators(), Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing, TestPublicAPI
+Nodes (8): examples/fabric_migration/01_simple_filter.py ==================================, The routing agent pattern from DE-Context Kit.     Routes each query to the most, route_query(), detect_operators(), Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing, Return the list of KQL operators used in a query string.      Useful for routing
 
 ### Community 16 - "Community 16"
 Cohesion: 0.29
-Nodes (3): _check(), _lint(), cli.py — KQLBridge command-line interface ======================================
+Nodes (6): get_parser(), _normalize_keywords(), parse(), Parse a KQL query string into a KQLQuery AST.     Keywords are normalized to low, Lowercase KQL keywords while preserving quoted string content., run()
 
 ### Community 17 - "Community 17"
 Cohesion: 0.29
-Nodes (6): 2026-05-16 — Session 0: Repo scaffold, Bloat Audit History, Current Eval Score, Operator Coverage, Operator Status — KQLBridge v0.1, Session Log
+Nodes (3): _check(), _lint(), cli.py — KQLBridge command-line interface ======================================
 
 ### Community 18 - "Community 18"
-Cohesion: 0.4
-Nodes (5): is_supported(), Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with
+Cohesion: 0.29
+Nodes (6): 2026-05-16 — Session 0: Repo scaffold, Bloat Audit History, Current Eval Score, Operator Coverage, Operator Status — KQLBridge v0.1, Session Log
 
 ### Community 19 - "Community 19"
 Cohesion: 0.4
-Nodes (5): check(), Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:
+Nodes (5): is_supported(), Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with, Return True if the query can be fully translated to Spark SQL.      Queries with
 
 ### Community 20 - "Community 20"
-Cohesion: 0.5
-Nodes (3): examples/fabric_migration/01_simple_filter.py ==================================, The routing agent pattern from DE-Context Kit.     Routes each query to the most, route_query()
+Cohesion: 0.4
+Nodes (5): check(), Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:, Parse and semantically validate a KQL query.      Returns a SemanticResult with:
 
 ## Knowledge Gaps
 - **191 isolated node(s):** `examples/fabric_migration/01_simple_filter.py ==================================`, `The routing agent pattern from DE-Context Kit.     Routes each query to the most`, `scripts/graphify_audit.py — KQLBridge Codebase Intelligence via Graphify =======`, `Full 7-step graphify pipeline on the KQLBridge source.`, `Fallback analysis without graphify — uses Python's ast module.` (+186 more)
@@ -156,9 +156,9 @@ Nodes (3): examples/fabric_migration/01_simple_filter.py =======================
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `translate()` connect `Community 12` to `Community 1`, `Community 8`, `Community 10`, `Community 15`, `Community 20`?**
+- **Why does `translate()` connect `Community 14` to `Community 1`, `Community 8`, `Community 10`, `Community 15`, `Community 16`?**
   _High betweenness centrality (0.247) - this node is a cross-community bridge._
-- **Why does `sql()` connect `Community 1` to `Community 12`?**
+- **Why does `sql()` connect `Community 1` to `Community 14`?**
   _High betweenness centrality (0.203) - this node is a cross-community bridge._
 - **Why does `SparkSQLGenerator` connect `Community 0` to `Community 2`, `Community 3`, `Community 5`, `Community 7`, `Community 10`?**
   _High betweenness centrality (0.176) - this node is a cross-community bridge._
