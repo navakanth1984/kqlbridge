@@ -373,6 +373,8 @@ class SparkSQLGenerator:
         if isinstance(expr, Comparison):
             # Comparison used as a scalar (e.g. extend IsLarge = Amount > 1000)
             # Render as direct SQL comparison expression
+            if expr.op == "=~":
+                return f"(LOWER({self._expr(expr.left)}) = LOWER({self._expr(expr.right)}))"
             op_map = {"==": "=", "=~": "=", "!=": "!=",
                       "<": "<", ">": ">", "<=": "<=", ">=": ">="}
             sql_op = op_map.get(expr.op, expr.op)
@@ -448,6 +450,8 @@ class SparkSQLGenerator:
         if isinstance(expr, Comparison):
             left = self._expr(expr.left)
             right = self._expr(expr.right)
+            if expr.op == "=~":
+                return f"LOWER({left}) = LOWER({right})"
             op = _COMP_OP_MAP.get(expr.op, expr.op)
             return f"{left} {op} {right}"
 
@@ -468,7 +472,7 @@ class SparkSQLGenerator:
             col = self._expr(expr.col)
             val = f"'{expr.value}'"
             op_map = {
-                "has":        f"{col} LIKE '% {expr.value} %'",
+                "has":        f"{col} RLIKE '(?i)\\\\b{expr.value}\\\\b'",
                 "contains":   f"{col} LIKE '%{expr.value}%'",
                 "startswith": f"{col} LIKE '{expr.value}%'",
                 "endswith":   f"{col} LIKE '%{expr.value}'",

@@ -56,6 +56,14 @@ class TestWhere:
         result = sql("AppLogs | where Message contains 'timeout'")
         assert "LIKE '%timeout%'" in result
 
+    def test_has(self):
+        result = sql("AppLogs | where Message has 'timeout'")
+        assert "RLIKE '(?i)\\\\btimeout\\\\b'" in result
+
+    def test_case_insensitive_equality(self):
+        result = sql("AppLogs | where Level =~ 'Error'")
+        assert "LOWER(Level) = LOWER('Error')" in result
+
     def test_startswith(self):
         result = sql("AppLogs | where Host startswith 'web'")
         assert "LIKE 'web%'" in result
