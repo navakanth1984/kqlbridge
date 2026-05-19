@@ -613,6 +613,18 @@ def _build_bool_expr(tree) -> object:
                   if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True)
 
+    if tree.data == "in_ci_expr":
+        col = _build_expr(tree.children[0])
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
+        return InExpr(col=col, values=values, negated=False, case_insensitive=True)
+
+    if tree.data == "not_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
+        return InExpr(col=col, values=values, negated=True, case_insensitive=True)
+
     if tree.data == "subquery_in_expr":
         col = _build_expr(tree.children[0])
         ref = tree.children[1]  # table_ref_expr Tree
@@ -624,6 +636,18 @@ def _build_bool_expr(tree) -> object:
         ref = tree.children[1]
         subquery = _build_table_ref(ref)
         return SubqueryInExpr(col=col, subquery=subquery, negated=True)
+
+    if tree.data == "subquery_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=False, case_insensitive=True)
+
+    if tree.data == "subquery_not_in_ci_expr":
+        col = _build_expr(tree.children[0])
+        ref = tree.children[1]
+        subquery = _build_table_ref(ref)
+        return SubqueryInExpr(col=col, subquery=subquery, negated=True, case_insensitive=True)
 
     if tree.data in ("has_expr", "contains_expr", "startswith_expr",
                      "endswith_expr", "regex_expr"):

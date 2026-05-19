@@ -2,8 +2,8 @@
 // ============================================================
 // LOCKED FILE — Human-designed. Agent MUST NEVER modify this.
 // ============================================================
-// Version: 0.1.0
-// Covers: 14 v0.1 operators (see program.md for full list)
+// Version: 0.1.1
+// Covers: 14 v0.1 operators + between + summarize-by-alias
 // Parser: Earley (handles ambiguous KQL constructs safely)
 
 // ─── Entry Point ────────────────────────────────────────────
@@ -12,7 +12,7 @@ start: let_stmt* table_expr ("|" pipe_op)*
 
 // ─── Let / CTE ──────────────────────────────────────────────
 
-let_stmt: "let" NAME "=" (table_ref_expr | expr) ";"
+let_stmt: "let" NAME "=" (table_ref_expr | expr | timespan) ";"
 
 table_ref_expr: NAME ("|" pipe_op)*
 
@@ -61,10 +61,14 @@ agg_func: "count" "()"                         -> agg_count
         | "bin"   "(" expr "," timespan ")"     -> agg_bin
         | "percentile" "(" expr "," expr ")"    -> agg_percentile
         | "make_list" "(" expr ")"              -> agg_make_list
+        | "stdev" "(" expr ")"                  -> agg_stdev
 
 groupby_list: groupby_item ("," groupby_item)*
-groupby_item: "bin" "(" expr "," timespan ")"  -> bin_group
-            | expr                              -> plain_group
+groupby_item: NAME "=" groupby_expr             -> named_group
+            | groupby_expr                      -> plain_group
+
+groupby_expr: "bin" "(" expr "," timespan ")"  -> bin_group_expr
+            | expr                              -> plain_group_expr
 
 // ─── order by / sort by ─────────────────────────────────────
 
@@ -145,6 +149,7 @@ comparison: expr COMP_OP expr
           | "isnull" "(" expr ")"                -> isnull_expr
           | expr "has_any" "(" value_list ")"    -> has_any_expr
           | expr "hasany" "(" value_list ")"     -> has_any_expr
+          | expr "between" "(" expr ".." expr ")" -> between_expr
 
 COMP_OP: "==" | "!=" | "<=" | ">=" | "<" | ">" | "=~"
 LOGICAL_OP: "and" | "or"
