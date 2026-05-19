@@ -23,7 +23,7 @@ from ..ast_nodes import (
     KQLQuery, LetBinding,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
     DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
     BinGroup, PlainGroup,
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
@@ -313,6 +313,26 @@ class SparkSQLGenerator:
             return f"approx_percentile({self._expr(agg.col)}, {pct_expr}){alias_suffix}"
         if isinstance(agg, AggMakeList):
             return f"collect_list({self._expr(agg.col)}){alias_suffix}"
+
+        if isinstance(agg, AggSumIf):
+            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            return f"SUM(CASE WHEN {cond} THEN {col} END){alias_suffix}"
+
+        if isinstance(agg, AggAvgIf):
+            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            return f"AVG(CASE WHEN {cond} THEN {col} END){alias_suffix}"
+
+        if isinstance(agg, AggMaxIf):
+            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            return f"MAX(CASE WHEN {cond} THEN {col} END){alias_suffix}"
+
+        if isinstance(agg, AggMinIf):
+            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            return f"MIN(CASE WHEN {cond} THEN {col} END){alias_suffix}"
+
+        if isinstance(agg, AggDCountIf):
+            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            return f"COUNT(DISTINCT CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         raise NotImplementedError(f"Unknown aggregation type: {type(agg).__name__}")
 

@@ -24,7 +24,7 @@ from .ast_nodes import (
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
     DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
     # Aggregations
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
     # Groupby
     BinGroup, PlainGroup,
     # Expressions
@@ -457,9 +457,12 @@ def _build_agg_func(tree: Tree, alias):
         "agg_min":     lambda t, a: AggMin(col=_build_expr(t.children[0]), alias=a),
         "agg_max":     lambda t, a: AggMax(col=_build_expr(t.children[0]), alias=a),
         "agg_dcount":  lambda t, a: AggDCount(col=_build_expr(t.children[0]), alias=a),
-        "agg_countif": lambda t, a: AggCountIf(
-            condition=_build_bool_expr(t.children[0]), alias=a
-        ),
+        "agg_countif": lambda t, a: AggCountIf(condition=_build_bool_expr(t.children[0]), alias=a),
+        "agg_sumif":    lambda t, a: AggSumIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_avgif":    lambda t, a: AggAvgIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_maxif":    lambda t, a: AggMaxIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_minif":    lambda t, a: AggMinIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_dcountif": lambda t, a: AggDCountIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
         "agg_bin": lambda t, a: AggCount(alias=a),
         "agg_percentile": lambda t, a: AggPercentile(
             col=_build_expr(t.children[0]), percentile=_build_expr(t.children[1]), alias=a
@@ -678,6 +681,16 @@ def _build_bool_expr(tree) -> object:
 
     if tree.data == "isnull_expr":
         return NullCheck(col=_build_expr(tree.children[0]), is_null=True)
+
+    if tree.data == "isnotempty_expr":
+        col_expr = _build_expr(tree.children[0])
+        return LogicalOp(left=NullCheck(col=col_expr, is_null=False), op="and",
+                         right=Comparison(left=col_expr, op="!=", right=StringLit(value="")))
+
+    if tree.data == "isempty_expr":
+        col_expr = _build_expr(tree.children[0])
+        return LogicalOp(left=NullCheck(col=col_expr, is_null=True), op="or",
+                         right=Comparison(left=col_expr, op="==", right=StringLit(value="")))
 
     if len(tree.children) == 1:
         return _build_bool_expr(tree.children[0])

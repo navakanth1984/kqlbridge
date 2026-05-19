@@ -52,6 +52,11 @@ agg_item: NAME "=" agg_func   -> named_agg
         | agg_func             -> anon_agg
 
 agg_func: "count" "()"                         -> agg_count
+        | "sumif"    "(" expr "," bool_expr ")" -> agg_sumif
+        | "avgif"    "(" expr "," bool_expr ")" -> agg_avgif
+        | "maxif"    "(" expr "," bool_expr ")" -> agg_maxif
+        | "minif"    "(" expr "," bool_expr ")" -> agg_minif
+        | "dcountif" "(" expr "," bool_expr ")" -> agg_dcountif
         | "sum"   "(" expr ")"                  -> agg_sum
         | "avg"   "(" expr ")"                  -> agg_avg
         | "min"   "(" expr ")"                  -> agg_min
@@ -145,7 +150,9 @@ comparison: expr COMP_OP expr
           | expr "startswith" STRING             -> startswith_expr
           | expr "endswith" STRING               -> endswith_expr
           | expr "matches" "regex" STRING        -> regex_expr
-          | "isnotnull" "(" expr ")"             -> isnotnull_expr
+          | "isnotnull"  "(" expr ")"            -> isnotnull_expr
+          | "isnotempty" "(" expr ")"            -> isnotempty_expr
+          | "isempty"    "(" expr ")"            -> isempty_expr
           | "isnull" "(" expr ")"                -> isnull_expr
           | expr "has_any" "(" value_list ")"    -> has_any_expr
           | expr "hasany" "(" value_list ")"     -> has_any_expr

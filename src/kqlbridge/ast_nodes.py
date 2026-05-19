@@ -217,6 +217,46 @@ class AggCountIf:
 
 
 @dataclass
+class AggSumIf:
+    """sumif(expr, cond) → SUM(CASE WHEN cond THEN expr END)"""
+    col: object
+    condition: object
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggAvgIf:
+    """avgif(expr, cond) → AVG(CASE WHEN cond THEN expr END)"""
+    col: object
+    condition: object
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggMaxIf:
+    """maxif(expr, cond) → MAX(CASE WHEN cond THEN expr END)"""
+    col: object
+    condition: object
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggMinIf:
+    """minif(expr, cond) → MIN(CASE WHEN cond THEN expr END)"""
+    col: object
+    condition: object
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggDCountIf:
+    """dcountif(col, cond) → COUNT(DISTINCT CASE WHEN cond THEN col END)"""
+    col: object
+    condition: object
+    alias: Optional[str] = None
+
+
+@dataclass
 class AggPercentile:
     """percentile(col, pct)"""
     col: Expr
