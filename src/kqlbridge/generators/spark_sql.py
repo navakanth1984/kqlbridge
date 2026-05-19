@@ -22,13 +22,13 @@ from __future__ import annotations
 from ..ast_nodes import (
     KQLQuery, LetBinding,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp,
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
+    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList,
     BinGroup, PlainGroup,
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr, SubqueryInExpr,
-    DatetimeLit,
+    DatetimeLit, HasAnyExpr,
 )
 
 # KQL timespan unit → SQL INTERVAL unit
@@ -185,6 +185,9 @@ class SparkSQLGenerator:
             elif isinstance(op, CountOp):
                 select_cols = ["COUNT(*) AS count_"]
 
+            elif isinstance(op, SerializeOp):
+                pass
+
         return self._assemble(
             select_cols=select_cols,
             table=table,
@@ -285,6 +288,16 @@ class SparkSQLGenerator:
         if isinstance(agg, AggCountIf):
             cond = self._bool_expr(agg.condition)
             return f"COUNT(CASE WHEN {cond} THEN 1 END){alias_suffix}"
+        if isinstance(agg, AggPercentile):
+            pct_val = self._expr(agg.percentile)
+            try:
+                numeric_pct = float(pct_val)
+                pct_expr = str(numeric_pct / 100.0)
+            except ValueError:
+                pct_expr = f"{pct_val} / 100.0"
+            return f"approx_percentile({self._expr(agg.col)}, {pct_expr}){alias_suffix}"
+        if isinstance(agg, AggMakeList):
+            return f"collect_list({self._expr(agg.col)}){alias_suffix}"
 
         raise NotImplementedError(f"Unknown aggregation type: {type(agg).__name__}")
 
@@ -467,6 +480,7 @@ class SparkSQLGenerator:
             "datetime":     lambda a: "TIMESTAMP '{}'".format(a[0].strip("'\"")),
             "datetime_add": lambda a: self._render_datetime_add(a),
             "datetime_diff": lambda a: self._render_datetime_diff(a),
+            "prev":          lambda a: f"LAG({', '.join(a)}) OVER (ORDER BY (SELECT NULL))",
         }
 
         if name in kql_to_spark:
@@ -565,5 +579,16 @@ class SparkSQLGenerator:
 
         if isinstance(expr, Negation):
             return f"NOT ({self._bool_expr(expr.expr)})"
+
+        if isinstance(expr, HasAnyExpr):
+            col = self._expr(expr.col)
+            parts = []
+            for v in expr.values:
+                if isinstance(v, StringLit):
+                    val_str = v.value
+                else:
+                    val_str = self._expr(v).strip("'\"")
+                parts.append(f"{col} RLIKE '(?i)\\\\b{val_str}\\\\b'")
+            return f"({' OR '.join(parts)})"
 
         raise NotImplementedError(f"Unknown bool expr type: {type(expr).__name__}")

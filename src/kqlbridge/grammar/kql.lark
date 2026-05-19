@@ -32,6 +32,7 @@ pipe_op: where_op
        | join_op
        | union_op
        | count_op
+       | serialize_op
 
 // ─── where ──────────────────────────────────────────────────
 
@@ -58,6 +59,8 @@ agg_func: "count" "()"                         -> agg_count
         | "dcount" "(" expr ")"                 -> agg_dcount
         | "countif" "(" bool_expr ")"           -> agg_countif
         | "bin"   "(" expr "," timespan ")"     -> agg_bin
+        | "percentile" "(" expr "," expr ")"    -> agg_percentile
+        | "make_list" "(" expr ")"              -> agg_make_list
 
 groupby_list: groupby_item ("," groupby_item)*
 groupby_item: "bin" "(" expr "," timespan ")"  -> bin_group
@@ -113,6 +116,10 @@ union_item: NAME              -> union_table_name
 
 count_op: "count"
 
+// ─── serialize ──────────────────────────────────────────────
+
+serialize_op: "serialize"
+
 // ─── Expressions ─────────────────────────────────────────────
 
 bool_expr: bool_expr LOGICAL_OP bool_expr  -> logical
@@ -132,6 +139,8 @@ comparison: expr COMP_OP expr
           | expr "matches" "regex" STRING        -> regex_expr
           | "isnotnull" "(" expr ")"             -> isnotnull_expr
           | "isnull" "(" expr ")"                -> isnull_expr
+          | expr "has_any" "(" value_list ")"    -> has_any_expr
+          | expr "hasany" "(" value_list ")"     -> has_any_expr
 
 COMP_OP: "==" | "!=" | "<=" | ">=" | "<" | ">" | "=~"
 LOGICAL_OP: "and" | "or"

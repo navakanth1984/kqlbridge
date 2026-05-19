@@ -22,16 +22,16 @@ from .ast_nodes import (
     KQLQuery, LetBinding, PipeOp,
     # Operators
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp,
+    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
     # Aggregations
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList,
     # Groupby
     BinGroup, PlainGroup,
     # Expressions
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
     FuncCall, BinaryOp,
     # Bool expressions
-    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation,
+    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
     # Order
     OrderItem, DatetimeLit, IffExpr, SubqueryInExpr,
 )
@@ -169,6 +169,7 @@ def _build_pipe_op(tree: Tree) -> PipeOp:
         "join_op":       _build_join,
         "union_op":      _build_union,
         "count_op":      lambda _: CountOp(),
+        "serialize_op":  lambda _: SerializeOp(),
     }
     builder = dispatch.get(inner.data)
     if builder is None:
@@ -248,6 +249,12 @@ def _build_agg_func(tree: Tree, alias):
             condition=_build_bool_expr(t.children[0]), alias=a
         ),
         "agg_bin": lambda t, a: AggCount(alias=a),
+        "agg_percentile": lambda t, a: AggPercentile(
+            col=_build_expr(t.children[0]), percentile=_build_expr(t.children[1]), alias=a
+        ),
+        "agg_make_list": lambda t, a: AggMakeList(
+            col=_build_expr(t.children[0]), alias=a
+        ),
     }
     builder = dispatch.get(tree.data)
     if builder is None:
@@ -420,6 +427,12 @@ def _build_bool_expr(tree) -> object:
         col = _build_expr(tree.children[0])
         value = _strip_quotes(str(tree.children[1]))
         return StringOp(col=col, op=op_name, value=value)
+
+    if tree.data == "has_any_expr":
+        col = _build_expr(tree.children[0])
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
+        return HasAnyExpr(col=col, values=values)
 
     if tree.data == "isnotnull_expr":
         return NullCheck(col=_build_expr(tree.children[0]), is_null=False)

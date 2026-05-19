@@ -411,3 +411,37 @@ class TestCommunityFunctions:
         tsql_res = translate("AppLogs | extend full = strcat_delim('-', A, B)", target="tsql")
         assert "concat_ws('-', A, B)" in spark_res
         assert "CONCAT_WS('-', A, B)" in tsql_res
+
+
+class TestV07Features:
+    def test_serialize_and_prev(self):
+        # Test serialize operator and prev() function
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "LAG(Level) OVER (ORDER BY (SELECT NULL))" in spark_res
+        assert "LAG(Level) OVER (ORDER BY (SELECT NULL))" in tsql_res
+
+    def test_has_any(self):
+        # Test has_any operator
+        kql = "AppLogs | where Message has_any ('timeout', 'error')"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "(Message RLIKE '(?i)\\\\btimeout\\\\b' OR Message RLIKE '(?i)\\\\berror\\\\b')" in spark_res
+        assert "(Message LIKE '%timeout%' OR Message LIKE '%error%')" in tsql_res
+
+    def test_percentile(self):
+        # Test percentile aggregate function
+        kql = "AppLogs | summarize percentile(Duration, 95) by Host"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "approx_percentile(Duration, 0.95)" in spark_res
+        assert "PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY Duration)" in tsql_res
+
+    def test_make_list(self):
+        # Test make_list aggregate function
+        kql = "AppLogs | summarize make_list(Level) by Host"
+        spark_res = translate(kql, target="spark")
+        tsql_res = translate(kql, target="tsql")
+        assert "collect_list(Level)" in spark_res
+        assert "STRING_AGG(Level, ',')" in tsql_res

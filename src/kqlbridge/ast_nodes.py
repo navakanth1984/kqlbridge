@@ -154,7 +154,14 @@ class Negation:
     expr: "BoolExpr"
 
 
-BoolExpr = Union[Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation]
+@dataclass
+class HasAnyExpr:
+    """col has_any ('val1', 'val2')"""
+    col: Expr
+    values: list[Expr]
+
+
+BoolExpr = Union[Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr]
 
 
 # ─── Aggregation Nodes ───────────────────────────────────────────────────────
@@ -207,7 +214,22 @@ class AggCountIf:
     alias: Optional[str] = None
 
 
-AggExpr = Union[AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf]
+@dataclass
+class AggPercentile:
+    """percentile(col, pct)"""
+    col: Expr
+    percentile: Expr
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggMakeList:
+    """make_list(col)"""
+    col: Expr
+    alias: Optional[str] = None
+
+
+AggExpr = Union[AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList]
 
 
 # ─── Group By Items ──────────────────────────────────────────────────────────
@@ -306,9 +328,15 @@ class CountOp:
     pass
 
 
+@dataclass
+class SerializeOp:
+    """| serialize"""
+    pass
+
+
 PipeOp = Union[
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp
+    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp
 ]
 
 

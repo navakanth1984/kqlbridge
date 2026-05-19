@@ -15,7 +15,10 @@ Overrides only the 4 methods where T-SQL syntax diverges:
 from __future__ import annotations
 import re
 
-from ..ast_nodes import AgoExpr, BinExpr, DatetimeLit, BoolLit
+from ..ast_nodes import (
+    AgoExpr, BinExpr, DatetimeLit, BoolLit, HasAnyExpr, StringLit,
+    AggPercentile, AggMakeList, AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
+)
 from .spark_sql import SparkSQLGenerator
 
 # KQL timespan unit → T-SQL DATEADD unit
@@ -168,3 +171,32 @@ class TSQLGenerator(SparkSQLGenerator):
         if name == "strcat_delim":
             return f"CONCAT_WS({args[0]}, {', '.join(args[1:])})"
         return super()._func_call(expr)
+
+    def _bool_expr(self, expr) -> str:
+        if isinstance(expr, HasAnyExpr):
+            col = self._expr(expr.col)
+            parts = []
+            for v in expr.values:
+                if isinstance(v, StringLit):
+                    val_str = v.value
+                else:
+                    val_str = self._expr(v).strip("'\"")
+                parts.append(f"{col} LIKE '%{val_str}%'")
+            return f"({' OR '.join(parts)})"
+        return super()._bool_expr(expr)
+
+    def _agg(self, agg) -> str:
+        alias_suffix = f" AS {agg.alias}" if getattr(agg, "alias", None) else ""
+        if isinstance(agg, AggPercentile):
+            pct_val = self._expr(agg.percentile)
+            try:
+                numeric_pct = float(pct_val)
+                pct_expr = str(numeric_pct / 100.0)
+            except ValueError:
+                pct_expr = f"{pct_val} / 100.0"
+            col_expr = self._expr(agg.col)
+            return f"PERCENTILE_CONT({pct_expr}) WITHIN GROUP (ORDER BY {col_expr}){alias_suffix}"
+        if isinstance(agg, AggMakeList):
+            col_expr = self._expr(agg.col)
+            return f"STRING_AGG({col_expr}, ','){alias_suffix}"
+        return super()._agg(agg)

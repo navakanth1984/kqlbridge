@@ -37,18 +37,18 @@ lark.exceptions.UnexpectedCharacters: No terminal matches 's' in the current par
 | serialize 
   ^
 Expected one of: 
-	* UNION
-	* EXTEND
-	* ORDER
-	* DISTINCT
-	* TAKE
 	* JOIN
 	* SORT
-	* PROJECT
 	* WHERE
-	* LIMIT
-	* SUMMARIZE
+	* DISTINCT
 	* COUNT
+	* EXTEND
+	* TAKE
+	* ORDER
+	* UNION
+	* LIMIT
+	* PROJECT
+	* SUMMARIZE
 
 
 ```

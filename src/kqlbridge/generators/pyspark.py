@@ -1,6 +1,6 @@
 from ..ast_nodes import (
     KQLQuery, PipeOp, ProjectOp, WhereOp, SummarizeOp, ExtendOp, OrderOp, TakeOp,
-    DistinctOp, JoinOp, UnionOp, Negation, SubqueryInExpr
+    DistinctOp, JoinOp, UnionOp, Negation, SubqueryInExpr, CountOp, SerializeOp
 )
 from .spark_sql import SparkSQLGenerator
 from typing import Optional
@@ -189,6 +189,12 @@ class PySparkGenerator:
                     
                     lines.append(f"{df_name} = {df_name}.agg({agg_str})")
                     
+            elif isinstance(pipe, CountOp):
+                lines.append(f"{df_name} = {df_name}.agg(F.expr(\"COUNT(*) AS count_\"))")
+                
+            elif isinstance(pipe, SerializeOp):
+                pass
+                
             else:
                 lines.append(f"# NotImplemented: {type(pipe).__name__}")
                 
