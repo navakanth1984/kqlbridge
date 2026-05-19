@@ -215,7 +215,6 @@ def _preprocess_bool_funcs(kql: str) -> str:
         match = pattern.search(kql, i)
         if not match:
             break
-        start_idx = match.start()
         open_paren_idx = match.end() - 1
         paren_depth = 1
         in_single_quote = False
@@ -392,9 +391,43 @@ def _build_summarize(tree: Tree) -> SummarizeOp:
                 groupby_list_tree = child
 
     aggregations = _build_agg_list(agg_list_tree) if agg_list_tree else []
-    group_by = _build_groupby_list(groupby_list_tree) if groupby_list_tree else []
+    
+    # Handle re-aliasing in 'by' clause: by Alias=Expr
+    # Desugar to implicit extend if needed
+    implicit_extends = []
+    group_by = []
+    
+    if groupby_list_tree:
+        for item in groupby_list_tree.children:
+            if not isinstance(item, Tree):
+                continue
+            if item.data == "named_group":
+                alias = str(item.children[0])
+                expr_tree = item.children[1]
+                # If it's a plain expression (not bin), we can extend it
+                if expr_tree.data == "plain_group_expr":
+                    expr_node = _build_expr(expr_tree.children[0])
+                    implicit_extends.append((alias, expr_node))
+                    group_by.append(PlainGroup(col=ColumnRef(name=alias)))
+                elif expr_tree.data == "bin_group_expr":
+                    col_node = _build_expr(expr_tree.children[0])
+                    amount, unit = _build_timespan(expr_tree.children[1])
+                    bin_node = BinExpr(col=col_node, amount=amount, unit=unit)
+                    implicit_extends.append((alias, bin_node))
+                    group_by.append(PlainGroup(col=ColumnRef(name=alias)))
+            elif item.data == "plain_group":
+                expr_tree = item.children[0]
+                if expr_tree.data == "bin_group_expr":
+                    col = _build_expr(expr_tree.children[0])
+                    amount, unit = _build_timespan(expr_tree.children[1])
+                    group_by.append(BinGroup(col=col, amount=amount, unit=unit))
+                else:
+                    group_by.append(PlainGroup(col=_build_expr(expr_tree.children[0])))
 
-    return SummarizeOp(aggregations=aggregations, group_by=group_by)
+    op = SummarizeOp(aggregations=aggregations, group_by=group_by)
+    if implicit_extends:
+        op._implicit_extends = implicit_extends
+    return op
 
 
 def _build_agg_list(tree: Tree) -> list:
@@ -434,6 +467,7 @@ def _build_agg_func(tree: Tree, alias):
         "agg_make_list": lambda t, a: AggMakeList(
             col=_build_expr(t.children[0]), alias=a
         ),
+        "agg_stdev": lambda t, a: AggAvg(col=FuncCall(name="stddev", args=[_build_expr(t.children[0])]), alias=a),
     }
     builder = dispatch.get(tree.data)
     if builder is None:
@@ -442,17 +476,8 @@ def _build_agg_func(tree: Tree, alias):
 
 
 def _build_groupby_list(tree: Tree) -> list:
-    result = []
-    for item in tree.children:
-        if isinstance(item, Tree):
-            if item.data == "bin_group":
-                col = _build_expr(item.children[0])
-                timespan = item.children[1]
-                amount, unit = _build_timespan(timespan)
-                result.append(BinGroup(col=col, amount=amount, unit=unit))
-            elif item.data == "plain_group":
-                result.append(PlainGroup(col=_build_expr(item.children[0])))
-    return result
+    """Note: Logic moved to _build_summarize to handle re-aliasing."""
+    return []
 
 
 def _build_order(tree: Tree) -> OrderOp:
@@ -588,18 +613,6 @@ def _build_bool_expr(tree) -> object:
                   if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True)
 
-    if tree.data == "in_ci_expr":
-        col = _build_expr(tree.children[0])
-        values = [_build_expr(v) for v in tree.children[1].children
-                  if isinstance(v, Tree)]
-        return InExpr(col=col, values=values, negated=False, case_insensitive=True)
-
-    if tree.data == "not_in_ci_expr":
-        col = _build_expr(tree.children[0])
-        values = [_build_expr(v) for v in tree.children[1].children
-                  if isinstance(v, Tree)]
-        return InExpr(col=col, values=values, negated=True, case_insensitive=True)
-
     if tree.data == "subquery_in_expr":
         col = _build_expr(tree.children[0])
         ref = tree.children[1]  # table_ref_expr Tree
@@ -611,18 +624,6 @@ def _build_bool_expr(tree) -> object:
         ref = tree.children[1]
         subquery = _build_table_ref(ref)
         return SubqueryInExpr(col=col, subquery=subquery, negated=True)
-
-    if tree.data == "subquery_in_ci_expr":
-        col = _build_expr(tree.children[0])
-        ref = tree.children[1]
-        subquery = _build_table_ref(ref)
-        return SubqueryInExpr(col=col, subquery=subquery, negated=False, case_insensitive=True)
-
-    if tree.data == "subquery_not_in_ci_expr":
-        col = _build_expr(tree.children[0])
-        ref = tree.children[1]
-        subquery = _build_table_ref(ref)
-        return SubqueryInExpr(col=col, subquery=subquery, negated=True, case_insensitive=True)
 
     if tree.data in ("has_expr", "contains_expr", "startswith_expr",
                      "endswith_expr", "regex_expr"):
@@ -636,6 +637,17 @@ def _build_bool_expr(tree) -> object:
         values = [_build_expr(v) for v in tree.children[1].children
                   if isinstance(v, Tree)]
         return HasAnyExpr(col=col, values=values)
+
+    if tree.data == "between_expr":
+        # Desugar between(expr .. expr) -> (col >= start) and (col <= end)
+        col = _build_expr(tree.children[0])
+        start = _build_expr(tree.children[1])
+        end = _build_expr(tree.children[2])
+        return LogicalOp(
+            left=Comparison(left=col, op=">=", right=start),
+            op="and",
+            right=Comparison(left=col, op="<=", right=end)
+        )
 
     if tree.data == "isnotnull_expr":
         return NullCheck(col=_build_expr(tree.children[0]), is_null=False)
