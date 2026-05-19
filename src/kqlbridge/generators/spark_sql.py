@@ -437,7 +437,7 @@ class SparkSQLGenerator:
             "coalesce":    lambda a: f"COALESCE({', '.join(a)})",
             "split":       lambda a: f"split({a[0]}, {a[1]})",
             "strcat_delim": lambda a: f"concat_ws({a[0]}, {', '.join(a[1:])})",
-            "datetime":     lambda a: f"TIMESTAMP '{a[0].strip('\'\"')}'",
+            "datetime":     lambda a: "TIMESTAMP '{}'".format(a[0].strip("'\"")),
             "datetime_add": lambda a: self._render_datetime_add(a),
             "datetime_diff": lambda a: self._render_datetime_diff(a),
         }
