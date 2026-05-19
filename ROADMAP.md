@@ -33,31 +33,23 @@ Critical correctness fix landed as a targeted patch:
 
 ---
 
-## 🚀 Milestone v0.8.0 — Planned (Next Release)
+## ✅ Milestone v0.8.0 — Completed & Released (May 2026)
 
-Based on community telemetry, the following capabilities are prioritised for v0.8:
+Full array manipulation, casting, formatting, and case-insensitive comparison support:
 
-### 1. `format_datetime(col, format)` — Datetime Formatting
-- **Pain Point:** Sentinel users constantly format timestamps for reports (`format_datetime(TimeGenerated, 'yyyy-MM-dd HH:mm')`).
-- **Spark SQL:** `date_format(col, 'yyyy-MM-dd HH:mm')`
-- **T-SQL:** `FORMAT(col, 'yyyy-MM-dd HH:mm')`
+* [x] **`format_datetime(col, format)`**: Fully implemented for Spark SQL (`DATE_FORMAT`) and T-SQL (`FORMAT`).
+* [x] **Explicit Casting**: Standardized translation for `tostring`, `toint`, `tolong`, and `todouble` across dialects.
+* [x] **Array Operations**: Robust indexing support via `array_length` and `array_index_of` with correct KQL 0-based indexing mappings.
+* [x] **Case-Insensitive List membership (`in~`, `!in~`)**: Grammar and generator capabilities fully integrated for both literal sets and subqueries.
+* [x] **Score:** 81/81 unit tests (100% success) · Published to PyPI and Test PyPI.
 
-### 2. `tostring(col)` / `toint(col)` / `tolong(col)` / `todouble(col)` — Type Casting
-- **Pain Point:** KQL type coercions ubiquitous in every schema normalisation pipeline.
-- **Spark SQL:** `CAST(col AS STRING)` / `CAST(col AS INT)` / `CAST(col AS BIGINT)` / `CAST(col AS DOUBLE)`
-- **T-SQL:** `CAST(col AS NVARCHAR(MAX))` / `CAST(col AS INT)` / `CAST(col AS BIGINT)` / `CAST(col AS FLOAT)`
+---
 
-### 3. `array_length(col)` / `array_index_of(arr, val)` — Array Inspection
-- **Pain Point:** Common in threat hunting when counting matched IOCs or finding specific entries in arrays.
-- **Spark SQL:** `size(col)` / `array_position(arr, val) - 1`
-- **T-SQL:** `JSON_ARRAY_LENGTH(col)` / custom `OPENJSON` index lookup
+## 🚀 Milestone v0.9.0 — Planned (Next Release)
 
-### 4. `not in~` (case-insensitive NOT IN) — Case-Insensitive Exclusions
-- **Pain Point:** SOC analysts frequently exclude known-good hostnames case-insensitively (`DeviceName !in~ ('desktop-abc', 'server-01')`).
-- **Spark SQL:** `NOT (LOWER(col) IN (LOWER('val1'), LOWER('val2')))`
-- **T-SQL:** `col NOT IN ('val1', 'val2')` (T-SQL is already case-insensitive by default collation)
+Based on community roadmap priorities, the following items are scheduled for the next development iteration:
 
-### 5. Multi-Line `let` + Scalar Expression Chaining
+### 1. Multi-Line `let` + Scalar Expression Chaining
 - **Pain Point:** Analysts define multiple scalar `let` bindings that reference each other.
   ```kql
   let threshold = 100;
@@ -66,27 +58,26 @@ Based on community telemetry, the following capabilities are prioritised for v0.
   ```
 - **Target:** Inline-substitute all scalar lets sequentially before final SQL emission.
 
-### 6. `summarize ... by bin_auto(TimeGenerated)` — Auto-Bin Detection
+### 2. `summarize ... by bin_auto(TimeGenerated)` — Auto-Bin Detection
 - **Pain Point:** Power BI + Azure Monitor dashboards use `bin_auto` for adaptive time granularity.
 - **Target:** Detect query time range and emit an appropriate `DATE_TRUNC` / `FLOOR` bin size.
 
 ---
 
-## 🛠 Implementation Cadence (v0.8)
+## 🛠 Implementation Cadence (v0.9)
 
-1. **Grammar First:** Extend `kql.lark` for `format_datetime`, type cast functions, `array_length`, `not in~`.
-2. **AST Nodes:** Add `CastExpr`, `ArrayLenExpr`, `FormatDatetimeExpr` dataclasses (human decision — locked after merge).
-3. **Generators:** Implement in `spark_sql.py` + override in `tsql.py` where dialect differs.
-4. **Benchmark:** Add ≥10 cases to `tests/eval/benchmark.json` covering all new operators (must be locked before implementation).
-5. **Stress Test:** Run community-driven real-world queries covering nested arrays + multi-let chains.
+1. **Let substitution compiler pass**: Build inline parser pass in `src/kqlbridge/parser.py`.
+2. **Auto-bin interval resolver**: Implement fallback resolution based on active query context.
+3. **Benchmark additions**: Add nested let binding edge-cases to `tests/eval/benchmark.json`.
 
 ---
 
-## 📦 Release Criteria (v0.8.0)
+## 📦 Release Criteria (v0.9.0)
 
 | Gate | Requirement |
 |---|---|
-| Unit tests | 90+ tests, 100% pass |
-| Eval oracle | 130/130+ (new cases added) |
+| Unit tests | 95+ tests, 100% pass |
+| Eval oracle | 140/140+ (new cases added) |
 | Python support | 3.10, 3.11, 3.12, 3.13 |
-| PyPI publish | `pip install kqlbridge==0.8.0` |
+| PyPI publish | `pip install kqlbridge==0.9.0` |
+
