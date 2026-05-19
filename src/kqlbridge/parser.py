@@ -74,24 +74,30 @@ _KQL_KEYWORDS = {
 }
 
 
+# Optimization: Pre-compile word matching regex.
+# Using match with a start position parameter (`_WORD_RE.match(kql, i)`)
+# avoids O(N^2) string slicing `kql[i:]` on long queries.
+_WORD_RE = _re.compile(r'[A-Za-z_][A-Za-z0-9_.]*')
+
 def _normalize_keywords(kql: str) -> str:
     """Lowercase KQL keywords while preserving quoted string content."""
     result = []
     i = 0
-    while i < len(kql):
+    kql_len = len(kql)
+    while i < kql_len:
         if kql[i] in ('"', "'"):
             q = kql[i]
             j = i + 1
-            while j < len(kql) and kql[j] != q:
+            while j < kql_len and kql[j] != q:
                 j += 1
             result.append(kql[i:j + 1])
             i = j + 1
         else:
-            m = _re.match(r'[A-Za-z_][A-Za-z0-9_.]*', kql[i:])
+            m = _WORD_RE.match(kql, i)
             if m:
                 word = m.group()
                 result.append(word.lower() if word.lower() in _KQL_KEYWORDS else word)
-                i += len(word)
+                i = m.end()
             else:
                 result.append(kql[i])
                 i += 1
