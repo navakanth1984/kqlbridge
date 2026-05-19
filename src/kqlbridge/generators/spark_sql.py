@@ -620,7 +620,7 @@ class SparkSQLGenerator:
                 # Wait! `SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x)` is incredibly elegant, clean,
                 # and fully standard SQL that works on BOTH Spark SQL and T-SQL!
                 # Let's check: `SELECT LOWER(x) FROM (SELECT col FROM Table) AS _ci_sub(x)` works perfectly!
-                return f"LOWER({col}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
+                return f"{col} {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
             return f"{col} {not_kw}IN ({inner_sql})"
 
         if isinstance(expr, StringOp):

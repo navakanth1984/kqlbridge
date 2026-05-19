@@ -551,4 +551,31 @@ class TestV08Features:
         assert "COALESCE((SELECT COUNT(*) FROM OPENJSON(arr)), 0)" in tsql_len
         assert "COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON(arr) WHERE [value] = 'target'), -1)" in tsql_idx
 
+    def test_case_insensitive_list_membership(self):
+        # 1. Literal set membership
+        kql_lit = "AppLogs | where Message in~ ('Error', 'Warning') and Message !in~ ('info')"
+        
+        spark_lit = translate(kql_lit, target="spark")
+        assert "LOWER(Message) IN (LOWER('Error'), LOWER('Warning'))" in spark_lit
+        assert "LOWER(Message) NOT IN (LOWER('info'))" in spark_lit
+
+        tsql_lit = translate(kql_lit, target="tsql")
+        assert "LOWER(Message) IN (LOWER('Error'), LOWER('Warning'))" in tsql_lit
+        assert "LOWER(Message) NOT IN (LOWER('info'))" in tsql_lit
+
+        # 2. Subquery membership
+        kql_sub = "AppLogs | where Message in~ (OtherTable | project Name) and Message !in~ (OtherTable | project Name)"
+        
+        spark_sub = translate(kql_sub, target="spark").replace("\n", " ")
+        while "  " in spark_sub:
+            spark_sub = spark_sub.replace("  ", " ")
+        assert "LOWER(Message) IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in spark_sub
+        assert "LOWER(Message) NOT IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in spark_sub
+
+        tsql_sub = translate(kql_sub, target="tsql").replace("\n", " ")
+        while "  " in tsql_sub:
+            tsql_sub = tsql_sub.replace("  ", " ")
+        assert "LOWER(Message) IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in tsql_sub
+        assert "LOWER(Message) NOT IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in tsql_sub
+
 
