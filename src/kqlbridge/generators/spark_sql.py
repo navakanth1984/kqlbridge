@@ -203,7 +203,7 @@ class SparkSQLGenerator:
         # If the table is already a UNION ALL block, wrap it as a subquery
         # so ORDER BY and LIMIT can be applied to the combined result
         # If table is a UNION ALL block, wrap in subquery only when trailing ops exist
-        if "UNION ALL" in table and (order or limit or where_clauses or group_by):
+        if "UNION ALL" in table and (order or limit or where_clauses or group_by or select_cols != ["*"]):
             table = "(\n" + table + "\n) _union_result"
 
         parts = [
