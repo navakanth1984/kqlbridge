@@ -147,7 +147,9 @@ def _build_let(tree: Tree) -> LetBinding:
                  if isinstance(c, Tree) and c.data == "pipe_op"]
         sub_query = KQLQuery(table=table, pipes=pipes)
     else:
+        expr_node = _build_expr(value_tree)
         sub_query = KQLQuery(table="__scalar__", pipes=[])
+        sub_query.scalar_expr = expr_node
 
     return LetBinding(name=name, value=sub_query)
 

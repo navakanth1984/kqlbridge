@@ -15,7 +15,7 @@ Traceback (most recent call last):
                    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
   File "C:\Users\navka\navakanth001\kqlbridge\src\kqlbridge\smart.py", line 29, in smart_transpile
     query = parse(kql)
-  File "C:\Users\navka\navakanth001\kqlbridge\src\kqlbridge\parser.py", line 108, in parse
+  File "C:\Users\navka\navakanth001\kqlbridge\src\kqlbridge\parser.py", line 114, in parse
     tree = get_parser().parse(normalized)
   File "C:\Users\navka\AppData\Local\Programs\Python\Python313\Lib\site-packages\lark\lark.py", line 677, in parse
     return self.parser.parse(text, start=start, on_error=on_error)
@@ -37,18 +37,18 @@ lark.exceptions.UnexpectedCharacters: No terminal matches 's' in the current par
 | serialize 
   ^
 Expected one of: 
-	* TAKE
-	* LIMIT
-	* DISTINCT
-	* SORT
-	* COUNT
-	* ORDER
-	* SUMMARIZE
 	* UNION
-	* JOIN
-	* PROJECT
 	* EXTEND
+	* ORDER
+	* DISTINCT
+	* TAKE
+	* JOIN
+	* SORT
+	* PROJECT
 	* WHERE
+	* LIMIT
+	* SUMMARIZE
+	* COUNT
 
 
 ```

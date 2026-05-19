@@ -71,7 +71,15 @@ class SparkSQLGenerator:
 
     def generate(self, query: KQLQuery) -> str:
         """Entry point. Returns a Spark SQL string."""
-        ctes = self._build_ctes(query.let_bindings)
+        self._scalar_bindings = {}
+        non_scalar_bindings = []
+        for binding in query.let_bindings:
+            if hasattr(binding.value, "scalar_expr"):
+                self._scalar_bindings[binding.name] = binding.value.scalar_expr
+            else:
+                non_scalar_bindings.append(binding)
+
+        ctes = self._build_ctes(non_scalar_bindings)
         body = self._build_body(query)
 
         if ctes:
@@ -96,6 +104,7 @@ class SparkSQLGenerator:
         The assembly order is: SELECT … FROM … WHERE … GROUP BY … ORDER BY … LIMIT
         """
         table = query.table
+        self._current_base_table = query.table
         select_cols: list[str] = ["*"]
         where_clauses: list[str] = []
         group_by: list[str] = []
@@ -298,8 +307,24 @@ class SparkSQLGenerator:
         }
         join_kw = kind_map.get(op.kind, "INNER JOIN")
         right_table = op.right.table
+
+        # If left_table is a union result, wrap it in a subquery so the join applies to the entire union
+        if "UNION ALL" in left_table and not left_table.strip().startswith("("):
+            left_table = "(\n" + left_table + "\n) _union_result"
+
+        # Determine the appropriate table alias/name prefix for left columns in the ON clause
+        left_strip = left_table.strip()
+        if left_strip.endswith("_extended"):
+            left_prefix = "_extended"
+        elif left_strip.endswith("_union_result"):
+            left_prefix = "_union_result"
+        else:
+            left_prefix = getattr(self, "_current_base_table", None)
+            if not left_prefix:
+                left_prefix = left_strip.split()[0].strip("()")
+
         on_clause = " AND ".join(
-            f"{left_table}.{k} = {right_table}.{k}" for k in op.keys
+            f"{left_prefix}.{k} = {right_table}.{k}" for k in op.keys
         )
         return f"{left_table}\n{join_kw} {right_table} ON {on_clause}"
 
@@ -345,6 +370,8 @@ class SparkSQLGenerator:
         """Render a scalar expression to SQL."""
 
         if isinstance(expr, ColumnRef):
+            if getattr(self, "_scalar_bindings", None) and expr.name in self._scalar_bindings:
+                return self._expr(self._scalar_bindings[expr.name])
             return expr.name
 
         if isinstance(expr, StringLit):

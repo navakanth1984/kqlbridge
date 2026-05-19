@@ -276,6 +276,16 @@ class TestJoin:
         assert "CustomerId" in result
         assert "Region" in result
 
+    def test_chained_joins(self):
+        result = sql("Table1 | join kind=inner (Table2) on x | join kind=leftouter (Table3) on y")
+        assert "INNER JOIN Table2 ON Table1.x = Table2.x" in result
+        assert "LEFT OUTER JOIN Table3 ON Table1.y = Table3.y" in result
+
+    def test_union_join_pipeline(self):
+        result = sql("Table1 | union Table2 | join (Table3) on x")
+        assert "FROM (\nSELECT * FROM Table1\nUNION ALL\nSELECT * FROM Table2\n) _union_result" in result
+        assert "INNER JOIN Table3 ON _union_result.x = Table3.x" in result
+
 
 # ─── 12 union ────────────────────────────────────────────────────────────────
 
@@ -304,6 +314,28 @@ class TestLet:
         kql = "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName"
         result = sql(kql)
         assert "FROM errors" in result
+
+    def test_scalar_let_binding_spark(self):
+        from kqlbridge import translate
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = translate(kql, target="spark")
+        assert "WHERE Time > CURRENT_TIMESTAMP - INTERVAL '1 days'" in res
+        assert "WITH" not in res
+
+    def test_scalar_let_binding_tsql(self):
+        from kqlbridge import translate
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = translate(kql, target="tsql")
+        assert "WHERE Time > DATEADD(day, -1, GETDATE())" in res
+        assert "WITH" not in res
+
+    def test_scalar_let_binding_pyspark(self):
+        from kqlbridge.generators.pyspark import PySparkGenerator
+        from kqlbridge.parser import parse
+        kql = "let x = ago(1d); Table1 | where Time > x"
+        res = PySparkGenerator().generate(parse(kql))
+        assert 'df = df.filter("Time > CURRENT_TIMESTAMP - INTERVAL \'1 days\'")' in res
+        assert "WITH" not in res
 
 
 # ─── 14 count ────────────────────────────────────────────────────────────────
