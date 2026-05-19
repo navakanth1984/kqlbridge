@@ -23,3 +23,8 @@ src/kqlbridge/semantic.py       linguist-generated=false
 
 # Graphify output - exclude from language statistics
 graphify-out/** linguist-generated=true
+graphify-out/* linguist-generated=true
+graphify-out/**/* linguist-generated=true
+graphify-out/graph.html linguist-generated=true
+graphify-out/graph.json linguist-generated=true
+graphify-out/GRAPH_REPORT.md linguist-generated=true
