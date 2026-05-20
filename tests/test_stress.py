@@ -377,5 +377,155 @@ class TestRegression:
         assert "WHERE LocationCount > 1" in result or "where locationcount > 1" in result.lower()
 
 
+class TestAdvancedThreatHuntingQueries:
+    """Stress tests representing highly complex, real-world security analytics & threat-hunting queries."""
+
+    def test_lateral_movement_and_admin_abuse(self):
+        kql = """
+        let ForeignLogins = SigninLogs
+            | where TimeGenerated > ago(7d)
+            | where Location != "US" and (ResultType == 0 or ResultType == 50126)
+            | summarize FailedCount = countif(ResultType == 50126), SuccessCount = countif(ResultType == 0) by UserPrincipalName, IPAddress;
+        let AdminActions = AuditLogs
+            | where TimeGenerated > ago(7d)
+            | where OperationName in ("Add user", "Add member to role", "Update user")
+            | project TimeGenerated, OperationName, TargetUser = TargetResources, DeviceId = UserPrincipalName;
+        ForeignLogins
+        | join kind=inner (AdminActions) on DeviceId
+        | extend HighRisk = iff(FailedCount > 5 and SuccessCount > 0, true, false)
+        | where HighRisk == true
+        | summarize ActionCount = count() by DeviceId, OperationName, bin(TimeGenerated, 1h)
+        """
+        # Test Spark SQL Translation
+        spark_sql = translate(kql, target="spark")
+        assert "WITH ForeignLogins AS" in spark_sql or "with foreignlogins as" in spark_sql.lower()
+        assert "AdminActions AS" in spark_sql or "adminactions as" in spark_sql.lower()
+        assert "INNER JOIN AdminActions" in spark_sql or "inner join adminactions" in spark_sql.lower()
+        assert "CASE WHEN (FailedCount > 5 AND SuccessCount > 0) THEN true ELSE false END" in spark_sql
+        assert "GROUP BY DeviceId, OperationName" in spark_sql or "group by deviceid, operationname" in spark_sql.lower()
+
+        # Test T-SQL Translation
+        tsql = translate(kql, target="tsql")
+        assert "WITH ForeignLogins AS" in tsql or "with foreignlogins as" in tsql.lower()
+        assert "DATEADD(day, -7, GETDATE())" in tsql
+        assert "CASE WHEN (FailedCount > 5 AND SuccessCount > 0) THEN 1 ELSE 0 END" in tsql
+
+        # Test PySpark Translation
+        pyspark_df = translate(kql, target="pyspark")
+        assert "ForeignLogins = spark.table('SigninLogs')" in pyspark_df
+        assert "ForeignLogins = ForeignLogins.filter(\"(Location <> 'US' AND (ResultType = 0 OR ResultType = 50126))\")" in pyspark_df
+        assert "df = ForeignLogins" in pyspark_df
+        assert "join_right_DeviceId = AdminActions" in pyspark_df
+        assert "HighRisk" in pyspark_df
+
+    def test_port_scan_lolbin_correlation(self):
+        kql = """
+        let ObfuscatedCommands = DeviceProcessEvents
+            | where TimeGenerated > ago(1d)
+            | where FileName =~ "powershell.exe" or FileName =~ "cmd.exe"
+            | where CommandLine has "bypass" or CommandLine has "encodedcommand" or CommandLine has "downloadstring"
+            | project ProcessTime = TimeGenerated, DeviceId, CommandLine;
+        let PortScans = DeviceNetworkEvents
+            | where TimeGenerated > ago(1d)
+            | where RemotePort in (4444, 8080, 9000)
+            | summarize ConnectionCount = count() by DeviceId, RemotePort, bin(TimeGenerated, 10m);
+        ObfuscatedCommands
+        | join kind=inner (PortScans) on DeviceId
+        | where ProcessTime between (TimeGenerated .. datetime_add("minute", 30, TimeGenerated))
+        | summarize AlertCount = count() by DeviceId, RemotePort
+        """
+        # Test Spark SQL
+        spark_sql = translate(kql, target="spark")
+        assert "LOWER(FileName) = LOWER('powershell.exe') OR LOWER(FileName) = LOWER('cmd.exe')" in spark_sql
+        assert "CommandLine RLIKE '(?i)\\\\bbypass\\\\b'" in spark_sql or "CommandLine LIKE '%bypass%'" in spark_sql
+        assert "RemotePort IN (4444, 8080, 9000)" in spark_sql
+        assert "ProcessTime >= TimeGenerated" in spark_sql
+
+        # Test T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "DATEADD(day, -1, GETDATE())" in tsql
+        assert "RemotePort IN (4444, 8080, 9000)" in tsql
+
+        # Test PySpark
+        pyspark_df = translate(kql, target="pyspark")
+        assert "ObfuscatedCommands = spark.table('DeviceProcessEvents')" in pyspark_df
+
+    def test_ransomware_killchain_tracking(self):
+        kql = """
+        let Downloads = DeviceFileEvents
+            | where TimeGenerated > ago(3d)
+            | where FolderPath has "Downloads" and (FileName endswith ".exe" or FileName endswith ".ps1" or FileName endswith ".bat")
+            | project DownloadTime = TimeGenerated, DeviceId, DownloadedFile = FileName;
+        let Evasion = SecurityEvent
+            | where TimeGenerated > ago(3d)
+            | where EventID == 1102 or EventID == 4698 or EventID == 4702
+            | project EvasionTime = TimeGenerated, DeviceId = Computer, EventID;
+        let Exfil = DeviceNetworkEvents
+            | where TimeGenerated > ago(3d)
+            | where BytesSent > 10000000
+            | summarize TotalExfilBytes = sum(BytesSent) by DeviceId;
+        Downloads
+        | join kind=inner (Evasion) on DeviceId
+        | join kind=inner (Exfil) on DeviceId
+        | where EvasionTime > DownloadTime
+        | project DeviceId, DownloadedFile, EventID, TotalExfilBytes
+        """
+        # Test Spark SQL
+        spark_sql = translate(kql, target="spark")
+        assert "Downloads AS (" in spark_sql
+        assert "Evasion AS (" in spark_sql
+        assert "Exfil AS (" in spark_sql
+        assert "SUM(BytesSent) AS TotalExfilBytes" in spark_sql or "sum(BytesSent) AS TotalExfilBytes" in spark_sql.lower()
+        assert "INNER JOIN Evasion" in spark_sql or "inner join evasion" in spark_sql.lower()
+        assert "INNER JOIN Exfil" in spark_sql or "inner join exfil" in spark_sql.lower()
+        assert "EvasionTime > DownloadTime" in spark_sql
+
+        # Test T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "DATEADD(day, -3, GETDATE())" in tsql
+
+        # Test PySpark
+        pyspark_df = translate(kql, target="pyspark")
+        assert "Downloads = spark.table('DeviceFileEvents')" in pyspark_df
+        assert "df = Downloads" in pyspark_df
+
+    def test_login_anomaly_statistical_hunter(self):
+        kql = """
+        SigninLogs
+        | where TimeGenerated > ago(30d)
+        | where ResultType == 0
+        | extend Duration = toint(Duration)
+        | summarize 
+            TotalLogins = count(),
+            AvgDuration = avg(Duration),
+            P95Duration = percentile(Duration, 95),
+            UniqueLocations = dcount(Location),
+            AccessedHosts = make_list(ResourceDisplayName)
+          by UserPrincipalName, bin(TimeGenerated, 1d)
+        | where UniqueLocations > 3 or AvgDuration > P95Duration
+        | sort by UniqueLocations desc
+        """
+        # Test Spark SQL
+        spark_sql = translate(kql, target="spark")
+        assert "CAST(Duration AS INT) AS Duration" in spark_sql
+        assert "COUNT(*) AS TotalLogins" in spark_sql or "count(*) AS TotalLogins" in spark_sql.lower()
+        assert "AVG(Duration) AS AvgDuration" in spark_sql or "avg(Duration) AS AvgDuration" in spark_sql.lower()
+        assert "approx_percentile(Duration, 0.95) AS P95Duration" in spark_sql
+        assert "COUNT(DISTINCT Location) AS UniqueLocations" in spark_sql or "count(DISTINCT Location) AS UniqueLocations" in spark_sql.lower()
+        assert "collect_list(ResourceDisplayName) AS AccessedHosts" in spark_sql
+        assert "ORDER BY UniqueLocations DESC" in spark_sql or "order by uniquelocations desc" in spark_sql.lower()
+
+        # Test T-SQL
+        tsql = translate(kql, target="tsql")
+        assert "CAST(Duration AS INT) AS Duration" in tsql
+        assert "DATEADD(day, -30, GETDATE())" in tsql
+
+        # Test PySpark
+        pyspark_df = translate(kql, target="pyspark")
+        assert "df = spark.table('SigninLogs')" in pyspark_df
+        assert 'F.expr("approx_percentile(Duration, 0.95) AS P95Duration")' in pyspark_df
+        assert 'F.expr("collect_list(ResourceDisplayName) AS AccessedHosts")' in pyspark_df
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])
