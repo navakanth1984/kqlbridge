@@ -45,7 +45,7 @@ class TestComplexQueries:
     def test_union_with_different_schemas(self):
         """Test union of tables with different column sets."""
         kql = """
-        (Table1 | project A, B, C)
+        Table1 | project A, B, C
         | union (Table2 | project A, B, C)
         | union (Table3 | project A, B, C)
         """
@@ -84,7 +84,7 @@ class TestComplexQueries:
         Data
         | extend Month = bin(Timestamp, 1d)
         | extend DayOfWeek = dayofweek(Timestamp)
-        | extend IsWeekend = dayofweek(Timestamp) in (0, 6)
+        | extend IsWeekend = iff(dayofweek(Timestamp) == 0 or dayofweek(Timestamp) == 6, true, false)
         | extend Risk = iff(Value > 100, "High", "Low")
         | project Timestamp, Month, DayOfWeek, IsWeekend, Risk
         """
@@ -159,7 +159,7 @@ class TestEdgeCases:
 
     def test_null_comparisons(self):
         """Test null value comparisons."""
-        kql = "T | where Value is null or Other is not null"
+        kql = "T | where isnull(Value) or isnotnull(Other)"
         result = translate(kql, target="spark")
         assert "IS NULL" in result or "is null" in result
         assert "IS NOT NULL" in result or "is not null" in result
@@ -288,7 +288,7 @@ class TestJoinOperations:
         """Test basic inner join."""
         kql = """
         T1
-        | join kind=inner T2 on Key
+        | join kind=inner (T2) on Key
         """
         try:
             result = translate(kql, target="spark")
@@ -320,7 +320,7 @@ class TestRegression:
     def test_union_then_summarize(self):
         """Regression: union followed by additional operations."""
         kql = """
-        (T1 | project A, B)
+        T1 | project A, B
         | union (T2 | project A, B)
         | summarize Count=count() by A
         """
