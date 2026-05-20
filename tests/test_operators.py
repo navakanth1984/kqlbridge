@@ -172,6 +172,15 @@ class TestBin:
         assert "FLOOR" in result
         assert "300" in result  # 5 * 60
 
+    def test_bin_auto(self):
+        from kqlbridge import translate
+        kql = "AppLogs | summarize count() by bin_auto(TimeGenerated)"
+        res_spark = translate(kql, target="spark")
+        assert "DATE_TRUNC('day', TimeGenerated)" in res_spark
+
+        res_tsql = translate(kql, target="tsql")
+        assert "DATEADD(day, DATEDIFF(day, 0, TimeGenerated), 0)" in res_tsql
+
 
 # ─── 06 ago ──────────────────────────────────────────────────────────────────
 
@@ -336,6 +345,17 @@ class TestLet:
         res = PySparkGenerator().generate(parse(kql))
         assert 'df = df.filter("Time > CURRENT_TIMESTAMP - INTERVAL \'1 days\'")' in res
         assert "WITH" not in res
+
+    def test_multi_line_let_chaining(self):
+        from kqlbridge import translate
+        kql = "let lookback = ago(7d); let threshold = lookback; AppLogs | where TimeGenerated > threshold"
+        res = translate(kql, target="spark")
+        assert "WHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '7 days'" in res
+        assert "WITH" not in res
+
+        res_tsql = translate(kql, target="tsql")
+        assert "WHERE TimeGenerated > DATEADD(day, -7, GETDATE())" in res_tsql
+        assert "WITH" not in res_tsql
 
 
 # ─── 14 count ────────────────────────────────────────────────────────────────

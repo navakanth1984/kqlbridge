@@ -282,11 +282,22 @@ def _build_query(tree: Tree) -> KQLQuery:
     let_bindings = []
     table = None
     pipes = []
+    scalar_let_names = set()
 
     for child in tree.children:
         if isinstance(child, Tree):
             if child.data == "let_stmt":
-                let_bindings.append(_build_let(child))
+                binding = _build_let(child)
+                if (binding.value.table in scalar_let_names
+                        and not binding.value.pipes
+                        and not hasattr(binding.value, "scalar_expr")):
+                    ref_name = binding.value.table
+                    binding.value.table = "__scalar__"
+                    binding.value.scalar_expr = ColumnRef(name=ref_name)
+                
+                if hasattr(binding.value, "scalar_expr"):
+                    scalar_let_names.add(binding.name)
+                let_bindings.append(binding)
             elif child.data == "table_expr":
                 table = str(child.children[0])
             elif child.data == "pipe_op":

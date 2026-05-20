@@ -17,7 +17,7 @@ import re
 
 from ..ast_nodes import (
     AgoExpr, BinExpr, DatetimeLit, BoolLit, HasAnyExpr, StringLit,
-    AggPercentile, AggMakeList, AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf,
+    AggPercentile, AggMakeList, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf,
 )
 from .spark_sql import SparkSQLGenerator
 
@@ -227,23 +227,28 @@ class TSQLGenerator(SparkSQLGenerator):
             return f"STRING_AGG({col_expr}, ','){alias_suffix}"
 
         if isinstance(agg, AggSumIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"SUM(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggAvgIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"AVG(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggMaxIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"MAX(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggMinIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"MIN(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggDCountIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"COUNT(DISTINCT CASE WHEN {cond} THEN {col} END){alias_suffix}"
         return super()._agg(agg)
 

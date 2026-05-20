@@ -315,23 +315,28 @@ class SparkSQLGenerator:
             return f"collect_list({self._expr(agg.col)}){alias_suffix}"
 
         if isinstance(agg, AggSumIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"SUM(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggAvgIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"AVG(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggMaxIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"MAX(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggMinIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"MIN(CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         if isinstance(agg, AggDCountIf):
-            cond = self._bool_expr(agg.condition); col = self._expr(agg.col)
+            cond = self._bool_expr(agg.condition)
+            col = self._expr(agg.col)
             return f"COUNT(DISTINCT CASE WHEN {cond} THEN {col} END){alias_suffix}"
 
         raise NotImplementedError(f"Unknown aggregation type: {type(agg).__name__}")
@@ -528,6 +533,7 @@ class SparkSQLGenerator:
             "parse_json_path": lambda a: self._render_parse_json_path(a),
             "ipv4_is_private": lambda a: self._render_ipv4_is_private(a),
             "ipv4_is_in_range": lambda a: self._render_ipv4_is_in_range(a),
+            "bin_auto":         lambda a: self._render_bin(a[0], 1, "d"),
             "case":          lambda a: self._render_case(a),
             "array_length":   lambda a: f"size({a[0]})",
             "array_index_of": lambda a: f"(array_position({a[0]}, {a[1]}) - 1)" if len(a) >= 2 else "array_position(NULL, NULL)",

@@ -1,9 +1,8 @@
 from ..ast_nodes import (
-    KQLQuery, PipeOp, ProjectOp, WhereOp, SummarizeOp, ExtendOp, OrderOp, TakeOp,
+    KQLQuery, ProjectOp, WhereOp, SummarizeOp, ExtendOp, OrderOp, TakeOp,
     DistinctOp, JoinOp, UnionOp, Negation, SubqueryInExpr, CountOp, SerializeOp
 )
 from .spark_sql import SparkSQLGenerator
-from typing import Optional
 
 class PySparkGenerator:
     """
@@ -30,7 +29,7 @@ class PySparkGenerator:
         return "\n".join(lines)
 
     def _extract_subqueries(self, expr) -> list[tuple[SubqueryInExpr, bool]]:
-        from ..ast_nodes import Negation, LogicalOp, SubqueryInExpr
+        from ..ast_nodes import LogicalOp, SubqueryInExpr
         
         if isinstance(expr, SubqueryInExpr):
             return [(expr, False)]
@@ -43,7 +42,7 @@ class PySparkGenerator:
         return []
 
     def _remove_subqueries(self, expr):
-        from ..ast_nodes import Negation, LogicalOp, SubqueryInExpr
+        from ..ast_nodes import LogicalOp, SubqueryInExpr
         
         if isinstance(expr, SubqueryInExpr):
             return None

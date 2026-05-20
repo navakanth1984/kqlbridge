@@ -54,238 +54,301 @@
       "label": "IffExpr",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L60"
+      "source_location": "L61"
     },
     {
       "id": "kqlbridge_ast_nodes_datetimelit",
       "label": "DatetimeLit",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L68"
+      "source_location": "L69"
     },
     {
       "id": "kqlbridge_ast_nodes_agoexpr",
       "label": "AgoExpr",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L74"
+      "source_location": "L75"
     },
     {
       "id": "kqlbridge_ast_nodes_binexpr",
       "label": "BinExpr",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L81"
+      "source_location": "L82"
     },
     {
       "id": "kqlbridge_ast_nodes_funccall",
       "label": "FuncCall",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L89"
+      "source_location": "L90"
     },
     {
       "id": "kqlbridge_ast_nodes_binaryop",
       "label": "BinaryOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L96"
+      "source_location": "L97"
     },
     {
       "id": "kqlbridge_ast_nodes_comparison",
       "label": "Comparison",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L113"
+      "source_location": "L114"
     },
     {
       "id": "kqlbridge_ast_nodes_inexpr",
       "label": "InExpr",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L121"
+      "source_location": "L122"
     },
     {
       "id": "kqlbridge_ast_nodes_stringop",
       "label": "StringOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L129"
+      "source_location": "L131"
     },
     {
       "id": "kqlbridge_ast_nodes_nullcheck",
       "label": "NullCheck",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L137"
+      "source_location": "L139"
     },
     {
       "id": "kqlbridge_ast_nodes_logicalop",
       "label": "LogicalOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L144"
+      "source_location": "L146"
     },
     {
       "id": "kqlbridge_ast_nodes_negation",
       "label": "Negation",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L152"
+      "source_location": "L154"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_hasanyexpr",
+      "label": "HasAnyExpr",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L160"
     },
     {
       "id": "kqlbridge_ast_nodes_aggcount",
       "label": "AggCount",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L163"
+      "source_location": "L172"
     },
     {
       "id": "kqlbridge_ast_nodes_aggsum",
       "label": "AggSum",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L169"
+      "source_location": "L178"
     },
     {
       "id": "kqlbridge_ast_nodes_aggavg",
       "label": "AggAvg",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L176"
+      "source_location": "L185"
     },
     {
       "id": "kqlbridge_ast_nodes_aggmin",
       "label": "AggMin",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L183"
+      "source_location": "L192"
     },
     {
       "id": "kqlbridge_ast_nodes_aggmax",
       "label": "AggMax",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L190"
+      "source_location": "L199"
     },
     {
       "id": "kqlbridge_ast_nodes_aggdcount",
       "label": "AggDCount",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L197"
+      "source_location": "L206"
     },
     {
       "id": "kqlbridge_ast_nodes_aggcountif",
       "label": "AggCountIf",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L204"
+      "source_location": "L213"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggsumif",
+      "label": "AggSumIf",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L220"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggavgif",
+      "label": "AggAvgIf",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L228"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggmaxif",
+      "label": "AggMaxIf",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L236"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggminif",
+      "label": "AggMinIf",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L244"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggdcountif",
+      "label": "AggDCountIf",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L252"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggpercentile",
+      "label": "AggPercentile",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L260"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_aggmakelist",
+      "label": "AggMakeList",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L268"
     },
     {
       "id": "kqlbridge_ast_nodes_bingroup",
       "label": "BinGroup",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L216"
+      "source_location": "L280"
     },
     {
       "id": "kqlbridge_ast_nodes_plaingroup",
       "label": "PlainGroup",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L224"
+      "source_location": "L288"
     },
     {
       "id": "kqlbridge_ast_nodes_orderitem",
       "label": "OrderItem",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L235"
+      "source_location": "L299"
     },
     {
       "id": "kqlbridge_ast_nodes_whereop",
       "label": "WhereOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L244"
+      "source_location": "L308"
     },
     {
       "id": "kqlbridge_ast_nodes_projectop",
       "label": "ProjectOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L250"
+      "source_location": "L314"
     },
     {
       "id": "kqlbridge_ast_nodes_summarizeop",
       "label": "SummarizeOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L257"
+      "source_location": "L321"
     },
     {
       "id": "kqlbridge_ast_nodes_orderop",
       "label": "OrderOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L264"
+      "source_location": "L328"
     },
     {
       "id": "kqlbridge_ast_nodes_takeop",
       "label": "TakeOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L270"
+      "source_location": "L334"
     },
     {
       "id": "kqlbridge_ast_nodes_distinctop",
       "label": "DistinctOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L276"
+      "source_location": "L340"
     },
     {
       "id": "kqlbridge_ast_nodes_extendop",
       "label": "ExtendOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L283"
+      "source_location": "L347"
     },
     {
       "id": "kqlbridge_ast_nodes_joinop",
       "label": "JoinOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L289"
+      "source_location": "L353"
     },
     {
       "id": "kqlbridge_ast_nodes_unionop",
       "label": "UnionOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L297"
+      "source_location": "L361"
     },
     {
       "id": "kqlbridge_ast_nodes_countop",
       "label": "CountOp",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L304"
+      "source_location": "L368"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_serializeop",
+      "label": "SerializeOp",
+      "file_type": "code",
+      "source_file": "ast_nodes.py",
+      "source_location": "L374"
     },
     {
       "id": "kqlbridge_ast_nodes_letbinding",
       "label": "LetBinding",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L318"
+      "source_location": "L388"
     },
     {
       "id": "kqlbridge_ast_nodes_kqlquery",
       "label": "KQLQuery",
       "file_type": "code",
       "source_file": "ast_nodes.py",
-      "source_location": "L325"
+      "source_location": "L395"
     },
     {
       "id": "kqlbridge_ast_nodes_rationale_1",
@@ -337,165 +400,207 @@
       "source_location": "L53"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_61",
+      "id": "kqlbridge_ast_nodes_rationale_62",
       "label": "iff(condition, true_val, false_val) \u2192 CASE WHEN ... THEN ... ELSE ... END",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L61"
+      "source_location": "L62"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_69",
+      "id": "kqlbridge_ast_nodes_rationale_70",
       "label": "A KQL datetime literal: datetime(2024-01-01)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L69"
+      "source_location": "L70"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_75",
+      "id": "kqlbridge_ast_nodes_rationale_76",
       "label": "KQL ago(1h) \u2192 CURRENT_TIMESTAMP - INTERVAL '1 hours",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L75"
+      "source_location": "L76"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_82",
+      "id": "kqlbridge_ast_nodes_rationale_83",
       "label": "KQL bin(col, 1h) \u2192 DATE_TRUNC('hour', col)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L82"
+      "source_location": "L83"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_90",
+      "id": "kqlbridge_ast_nodes_rationale_91",
       "label": "A generic function call: tostring(x), strlen(x)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L90"
+      "source_location": "L91"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_97",
+      "id": "kqlbridge_ast_nodes_rationale_98",
       "label": "Arithmetic: a + b, a - b, a * b, a / b",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L97"
+      "source_location": "L98"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_114",
+      "id": "kqlbridge_ast_nodes_rationale_115",
       "label": "col == 'Error', TimeGenerated > ago(1h)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L114"
+      "source_location": "L115"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_122",
+      "id": "kqlbridge_ast_nodes_rationale_123",
       "label": "col in ('a', 'b', 'c')",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L122"
+      "source_location": "L123"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_130",
+      "id": "kqlbridge_ast_nodes_rationale_132",
       "label": "has, contains, startswith, endswith, matches regex",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L130"
+      "source_location": "L132"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_138",
+      "id": "kqlbridge_ast_nodes_rationale_140",
       "label": "isnotnull(col) / isnull(col)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L138"
+      "source_location": "L140"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_145",
+      "id": "kqlbridge_ast_nodes_rationale_147",
       "label": "cond1 and cond2 / cond1 or cond2",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L145"
+      "source_location": "L147"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_198",
+      "id": "kqlbridge_ast_nodes_rationale_161",
+      "label": "col has_any ('val1', 'val2')",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L161"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_207",
       "label": "dcount(col) \u2192 COUNT(DISTINCT col)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L198"
+      "source_location": "L207"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_205",
+      "id": "kqlbridge_ast_nodes_rationale_214",
       "label": "countif(cond) \u2192 COUNT(CASE WHEN cond THEN 1 END)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L205"
+      "source_location": "L214"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_217",
-      "label": "by bin(TimeGenerated, 1h)",
+      "id": "kqlbridge_ast_nodes_rationale_221",
+      "label": "sumif(expr, cond) \u2192 SUM(CASE WHEN cond THEN expr END)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L217"
+      "source_location": "L221"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_229",
+      "label": "avgif(expr, cond) \u2192 AVG(CASE WHEN cond THEN expr END)",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L229"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_237",
+      "label": "maxif(expr, cond) \u2192 MAX(CASE WHEN cond THEN expr END)",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L237"
     },
     {
       "id": "kqlbridge_ast_nodes_rationale_245",
-      "label": "| where Level == 'Error",
+      "label": "minif(expr, cond) \u2192 MIN(CASE WHEN cond THEN expr END)",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
       "source_location": "L245"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_251",
+      "id": "kqlbridge_ast_nodes_rationale_253",
+      "label": "dcountif(col, cond) \u2192 COUNT(DISTINCT CASE WHEN cond THEN col END)",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L253"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_281",
+      "label": "by bin(TimeGenerated, 1h)",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L281"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_309",
+      "label": "| where Level == 'Error",
+      "file_type": "rationale",
+      "source_file": "ast_nodes.py",
+      "source_location": "L309"
+    },
+    {
+      "id": "kqlbridge_ast_nodes_rationale_315",
       "label": "| project Message, Level  or  | project NewName=OldName, Level",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L251"
+      "source_location": "L315"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_258",
+      "id": "kqlbridge_ast_nodes_rationale_322",
       "label": "| summarize count() by ServiceName",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L258"
+      "source_location": "L322"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_277",
+      "id": "kqlbridge_ast_nodes_rationale_341",
       "label": "| distinct col1, col2",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L277"
+      "source_location": "L341"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_284",
+      "id": "kqlbridge_ast_nodes_rationale_348",
       "label": "| extend alias = expr",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L284"
+      "source_location": "L348"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_290",
+      "id": "kqlbridge_ast_nodes_rationale_354",
       "label": "| join kind=inner (RightTable | ...) on key",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L290"
+      "source_location": "L354"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_298",
+      "id": "kqlbridge_ast_nodes_rationale_362",
       "label": "| union T2, T3  or  | union (T2 | where ...), T3",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L298"
+      "source_location": "L362"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_319",
+      "id": "kqlbridge_ast_nodes_rationale_389",
       "label": "let errors = AppLogs | where Level == 'Error';",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L319"
+      "source_location": "L389"
     },
     {
-      "id": "kqlbridge_ast_nodes_rationale_326",
+      "id": "kqlbridge_ast_nodes_rationale_396",
       "label": "The root AST node. Represents a complete KQL query.      let_bindings \u2192 will bec",
       "file_type": "rationale",
       "source_file": "ast_nodes.py",
-      "source_location": "L326"
+      "source_location": "L396"
     },
     {
       "id": "cli_py",
@@ -838,168 +943,210 @@
       "label": "_normalize_keywords()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L77"
+      "source_location": "L82"
+    },
+    {
+      "id": "kqlbridge_parser_split_case_args",
+      "label": "_split_case_args()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L107"
+    },
+    {
+      "id": "kqlbridge_parser_build_iff_chain",
+      "label": "_build_iff_chain()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L141"
+    },
+    {
+      "id": "kqlbridge_parser_preprocess_case",
+      "label": "_preprocess_case()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L153"
+    },
+    {
+      "id": "kqlbridge_parser_preprocess_json",
+      "label": "_preprocess_json()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L197"
+    },
+    {
+      "id": "kqlbridge_parser_preprocess_mv_expand",
+      "label": "_preprocess_mv_expand()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L204"
+    },
+    {
+      "id": "kqlbridge_parser_preprocess_bool_funcs",
+      "label": "_preprocess_bool_funcs()",
+      "file_type": "code",
+      "source_file": "parser.py",
+      "source_location": "L211"
     },
     {
       "id": "kqlbridge_parser_parse",
       "label": "parse()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L101"
+      "source_location": "L261"
     },
     {
       "id": "kqlbridge_parser_build_query",
       "label": "_build_query()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L114"
+      "source_location": "L281"
     },
     {
       "id": "kqlbridge_parser_build_let",
       "label": "_build_let()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L134"
+      "source_location": "L317"
     },
     {
       "id": "kqlbridge_parser_build_pipe_op",
       "label": "_build_pipe_op()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L151"
+      "source_location": "L348"
     },
     {
       "id": "kqlbridge_parser_build_where",
       "label": "_build_where()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L171"
+      "source_location": "L369"
     },
     {
       "id": "kqlbridge_parser_build_project",
       "label": "_build_project()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L175"
+      "source_location": "L373"
     },
     {
       "id": "kqlbridge_parser_build_summarize",
       "label": "_build_summarize()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L195"
+      "source_location": "L393"
     },
     {
       "id": "kqlbridge_parser_build_agg_list",
       "label": "_build_agg_list()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L212"
+      "source_location": "L444"
     },
     {
       "id": "kqlbridge_parser_build_agg_item",
       "label": "_build_agg_item()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L220"
+      "source_location": "L452"
     },
     {
       "id": "kqlbridge_parser_build_agg_func",
       "label": "_build_agg_func()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L231"
+      "source_location": "L463"
     },
     {
       "id": "kqlbridge_parser_build_groupby_list",
       "label": "_build_groupby_list()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L250"
+      "source_location": "L492"
     },
     {
       "id": "kqlbridge_parser_build_order",
       "label": "_build_order()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L264"
+      "source_location": "L497"
     },
     {
       "id": "kqlbridge_parser_build_take",
       "label": "_build_take()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L278"
+      "source_location": "L511"
     },
     {
       "id": "kqlbridge_parser_build_distinct",
       "label": "_build_distinct()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L283"
+      "source_location": "L516"
     },
     {
       "id": "kqlbridge_parser_build_extend",
       "label": "_build_extend()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L295"
+      "source_location": "L528"
     },
     {
       "id": "kqlbridge_parser_build_join",
       "label": "_build_join()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L316"
+      "source_location": "L549"
     },
     {
       "id": "kqlbridge_parser_build_union",
       "label": "_build_union()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L337"
+      "source_location": "L570"
     },
     {
       "id": "kqlbridge_parser_build_bool_expr",
       "label": "_build_bool_expr()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L359"
+      "source_location": "L592"
     },
     {
       "id": "kqlbridge_parser_build_expr",
       "label": "_build_expr()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L430"
+      "source_location": "L714"
     },
     {
       "id": "kqlbridge_parser_token_to_expr",
       "label": "_token_to_expr()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L484"
+      "source_location": "L768"
     },
     {
       "id": "kqlbridge_parser_build_table_ref",
       "label": "_build_table_ref()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L503"
+      "source_location": "L787"
     },
     {
       "id": "kqlbridge_parser_build_timespan",
       "label": "_build_timespan()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L510"
+      "source_location": "L794"
     },
     {
       "id": "kqlbridge_parser_strip_quotes",
       "label": "_strip_quotes()",
       "file_type": "code",
       "source_file": "parser.py",
-      "source_location": "L517"
+      "source_location": "L801"
     },
     {
       "id": "kqlbridge_parser_rationale_1",
@@ -1009,32 +1156,39 @@
       "source_location": "L1"
     },
     {
-      "id": "kqlbridge_parser_rationale_78",
+      "id": "kqlbridge_parser_rationale_83",
       "label": "Lowercase KQL keywords while preserving quoted string content.",
       "file_type": "rationale",
       "source_file": "parser.py",
-      "source_location": "L78"
+      "source_location": "L83"
     },
     {
-      "id": "kqlbridge_parser_rationale_102",
+      "id": "kqlbridge_parser_rationale_262",
       "label": "Parse a KQL query string into a KQLQuery AST.     Keywords are normalized to low",
       "file_type": "rationale",
       "source_file": "parser.py",
-      "source_location": "L102"
+      "source_location": "L262"
     },
     {
-      "id": "kqlbridge_parser_rationale_504",
+      "id": "kqlbridge_parser_rationale_493",
+      "label": "Note: Logic moved to _build_summarize to handle re-aliasing.",
+      "file_type": "rationale",
+      "source_file": "parser.py",
+      "source_location": "L493"
+    },
+    {
+      "id": "kqlbridge_parser_rationale_788",
       "label": "Build a KQLQuery from a table_ref_expr tree (used in let and in-subquery).",
       "file_type": "rationale",
       "source_file": "parser.py",
-      "source_location": "L504"
+      "source_location": "L788"
     },
     {
-      "id": "kqlbridge_parser_rationale_511",
+      "id": "kqlbridge_parser_rationale_795",
       "label": "Returns (amount: int, kql_unit: str) e.g. (24, 'h')",
       "file_type": "rationale",
       "source_file": "parser.py",
-      "source_location": "L511"
+      "source_location": "L795"
     },
     {
       "id": "semantic_py",
@@ -1237,21 +1391,21 @@
       "label": "PySparkGenerator",
       "file_type": "code",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L8"
+      "source_location": "L7"
     },
     {
       "id": "generators_pyspark_pysparkgenerator_init",
       "label": ".__init__()",
       "file_type": "code",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L13"
+      "source_location": "L12"
     },
     {
       "id": "generators_pyspark_pysparkgenerator_generate",
       "label": ".generate()",
       "file_type": "code",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L16"
+      "source_location": "L15"
     },
     {
       "id": "generators_pyspark_pysparkgenerator_extract_subqueries",
@@ -1275,18 +1429,18 @@
       "source_location": "L64"
     },
     {
-      "id": "generators_pyspark_rationale_9",
+      "id": "generators_pyspark_rationale_8",
       "label": "Experimental PySpark Generator.     Routes KQL AST nodes to executable PySpark D",
       "file_type": "rationale",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L9"
+      "source_location": "L8"
     },
     {
-      "id": "generators_pyspark_rationale_17",
+      "id": "generators_pyspark_rationale_16",
       "label": "Main entry point for PySpark generation.",
       "file_type": "rationale",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L17"
+      "source_location": "L16"
     },
     {
       "id": "generators_spark_sql_py",
@@ -1314,105 +1468,140 @@
       "label": "._build_ctes()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L83"
+      "source_location": "L92"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_build_body",
       "label": "._build_body()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L93"
+      "source_location": "L102"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_assemble",
       "label": "._assemble()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L191"
+      "source_location": "L214"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_where",
       "label": "._where()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L223"
+      "source_location": "L250"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_summarize",
       "label": "._summarize()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L226"
+      "source_location": "L253"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_agg",
       "label": "._agg()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L260"
+      "source_location": "L287"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_order",
       "label": "._order()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L282"
+      "source_location": "L344"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_join",
       "label": "._join()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L287"
+      "source_location": "L349"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_union",
       "label": "._union()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L306"
+      "source_location": "L384"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_render_bin",
       "label": "._render_bin()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L327"
+      "source_location": "L405"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_expr",
       "label": "._expr()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L344"
+      "source_location": "L422"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_func_call",
       "label": "._func_call()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L403"
+      "source_location": "L489"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_render_datetime_add",
       "label": "._render_datetime_add()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L452"
+      "source_location": "L549"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_render_datetime_diff",
       "label": "._render_datetime_diff()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L469"
+      "source_location": "L566"
     },
     {
       "id": "generators_spark_sql_sparksqlgenerator_bool_expr",
       "label": "._bool_expr()",
       "file_type": "code",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L494"
+      "source_location": "L591"
+    },
+    {
+      "id": "generators_spark_sql_sparksqlgenerator_render_parse_json_path",
+      "label": "._render_parse_json_path()",
+      "file_type": "code",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L689"
+    },
+    {
+      "id": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_private",
+      "label": "._render_ipv4_is_private()",
+      "file_type": "code",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L694"
+    },
+    {
+      "id": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_in_range",
+      "label": "._render_ipv4_is_in_range()",
+      "file_type": "code",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L709"
+    },
+    {
+      "id": "generators_spark_sql_sparksqlgenerator_render_case",
+      "label": "._render_case()",
+      "file_type": "code",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L731"
+    },
+    {
+      "id": "generators_spark_sql_sparksqlgenerator_render_iff_func",
+      "label": "._render_iff_func()",
+      "file_type": "code",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L740"
     },
     {
       "id": "generators_spark_sql_rationale_1",
@@ -1436,81 +1625,81 @@
       "source_location": "L73"
     },
     {
-      "id": "generators_spark_sql_rationale_84",
+      "id": "generators_spark_sql_rationale_93",
       "label": "Convert let bindings \u2192 WITH ... AS (...) CTEs.",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L84"
+      "source_location": "L93"
     },
     {
-      "id": "generators_spark_sql_rationale_94",
+      "id": "generators_spark_sql_rationale_103",
       "label": "Walk the pipe operators and accumulate SQL clause fragments.         The assembl",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L94"
+      "source_location": "L103"
     },
     {
-      "id": "generators_spark_sql_rationale_227",
+      "id": "generators_spark_sql_rationale_254",
       "label": "Returns (select_cols, group_by_cols).          Karpathy P5 \u2014 Jagged Intelligence",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L227"
-    },
-    {
-      "id": "generators_spark_sql_rationale_261",
-      "label": "Render a single aggregation expression.",
-      "file_type": "rationale",
-      "source_file": "generators\\spark_sql.py",
-      "source_location": "L261"
+      "source_location": "L254"
     },
     {
       "id": "generators_spark_sql_rationale_288",
-      "label": "KQL join \u2192 SQL INNER/LEFT/RIGHT/FULL JOIN.         Returns a 'table expression'",
+      "label": "Render a single aggregation expression.",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
       "source_location": "L288"
     },
     {
-      "id": "generators_spark_sql_rationale_307",
+      "id": "generators_spark_sql_rationale_350",
+      "label": "KQL join \u2192 SQL INNER/LEFT/RIGHT/FULL JOIN.         Returns a 'table expression'",
+      "file_type": "rationale",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L350"
+    },
+    {
+      "id": "generators_spark_sql_rationale_385",
       "label": "KQL union T1, T2 or union (T1 | ...) \u2192 UNION ALL",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L307"
+      "source_location": "L385"
     },
     {
-      "id": "generators_spark_sql_rationale_328",
+      "id": "generators_spark_sql_rationale_406",
       "label": "Render bin(col, N<unit>) \u2192 Spark SQL timestamp bucketing.         - Hourly or co",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L328"
+      "source_location": "L406"
     },
     {
-      "id": "generators_spark_sql_rationale_345",
+      "id": "generators_spark_sql_rationale_423",
       "label": "Render a scalar expression to SQL.",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L345"
+      "source_location": "L423"
     },
     {
-      "id": "generators_spark_sql_rationale_404",
+      "id": "generators_spark_sql_rationale_490",
       "label": "Map KQL built-in functions to Spark SQL equivalents.         Only functions need",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L404"
+      "source_location": "L490"
     },
     {
-      "id": "generators_spark_sql_rationale_495",
+      "id": "generators_spark_sql_rationale_592",
       "label": "Render a boolean expression to a SQL WHERE fragment.",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L495"
+      "source_location": "L592"
     },
     {
-      "id": "generators_spark_sql_rationale_160",
+      "id": "generators_spark_sql_rationale_180",
       "label": "# NOTE: do NOT clear where_clauses \u2014 WHERE filters from before",
       "file_type": "rationale",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L160"
+      "source_location": "L180"
     },
     {
       "id": "generators_tsql_py",
@@ -1524,7 +1713,7 @@
       "label": "TSQLGenerator",
       "file_type": "code",
       "source_file": "generators\\tsql.py",
-      "source_location": "L31"
+      "source_location": "L34"
     },
     {
       "id": "sparksqlgenerator",
@@ -1538,28 +1727,56 @@
       "label": "._assemble()",
       "file_type": "code",
       "source_file": "generators\\tsql.py",
-      "source_location": "L46"
+      "source_location": "L49"
     },
     {
       "id": "generators_tsql_tsqlgenerator_render_bin",
       "label": "._render_bin()",
       "file_type": "code",
       "source_file": "generators\\tsql.py",
-      "source_location": "L85"
+      "source_location": "L92"
     },
     {
       "id": "generators_tsql_tsqlgenerator_expr",
       "label": "._expr()",
       "file_type": "code",
       "source_file": "generators\\tsql.py",
-      "source_location": "L113"
+      "source_location": "L120"
     },
     {
       "id": "generators_tsql_tsqlgenerator_func_call",
       "label": "._func_call()",
       "file_type": "code",
       "source_file": "generators\\tsql.py",
-      "source_location": "L136"
+      "source_location": "L143"
+    },
+    {
+      "id": "generators_tsql_tsqlgenerator_bool_expr",
+      "label": "._bool_expr()",
+      "file_type": "code",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L201"
+    },
+    {
+      "id": "generators_tsql_tsqlgenerator_agg",
+      "label": "._agg()",
+      "file_type": "code",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L214"
+    },
+    {
+      "id": "generators_tsql_tsqlgenerator_render_ipv4_is_private",
+      "label": "._render_ipv4_is_private()",
+      "file_type": "code",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L255"
+    },
+    {
+      "id": "generators_tsql_tsqlgenerator_render_ipv4_is_in_range",
+      "label": "._render_ipv4_is_in_range()",
+      "file_type": "code",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L270"
     },
     {
       "id": "generators_tsql_rationale_1",
@@ -1569,11 +1786,11 @@
       "source_location": "L1"
     },
     {
-      "id": "generators_tsql_rationale_32",
+      "id": "generators_tsql_rationale_35",
       "label": "Generates T-SQL from a KQLQuery AST.     Inherits from SparkSQLGenerator \u2014 overr",
       "file_type": "rationale",
       "source_file": "generators\\tsql.py",
-      "source_location": "L32"
+      "source_location": "L35"
     },
     {
       "id": "generators_init_py",
@@ -1664,7 +1881,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L60",
+      "source_location": "L61",
       "weight": 1.0
     },
     {
@@ -1673,7 +1890,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L68",
+      "source_location": "L69",
       "weight": 1.0
     },
     {
@@ -1682,7 +1899,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L74",
+      "source_location": "L75",
       "weight": 1.0
     },
     {
@@ -1691,7 +1908,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L81",
+      "source_location": "L82",
       "weight": 1.0
     },
     {
@@ -1700,7 +1917,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L89",
+      "source_location": "L90",
       "weight": 1.0
     },
     {
@@ -1709,7 +1926,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L96",
+      "source_location": "L97",
       "weight": 1.0
     },
     {
@@ -1718,7 +1935,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L113",
+      "source_location": "L114",
       "weight": 1.0
     },
     {
@@ -1727,7 +1944,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L121",
+      "source_location": "L122",
       "weight": 1.0
     },
     {
@@ -1736,7 +1953,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L129",
+      "source_location": "L131",
       "weight": 1.0
     },
     {
@@ -1745,7 +1962,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L137",
+      "source_location": "L139",
       "weight": 1.0
     },
     {
@@ -1754,7 +1971,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L144",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -1763,7 +1980,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L152",
+      "source_location": "L154",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_hasanyexpr",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -1772,7 +1998,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L163",
+      "source_location": "L172",
       "weight": 1.0
     },
     {
@@ -1781,7 +2007,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L169",
+      "source_location": "L178",
       "weight": 1.0
     },
     {
@@ -1790,7 +2016,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L176",
+      "source_location": "L185",
       "weight": 1.0
     },
     {
@@ -1799,7 +2025,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L183",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -1808,7 +2034,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L190",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -1817,7 +2043,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L197",
+      "source_location": "L206",
       "weight": 1.0
     },
     {
@@ -1826,39 +2052,39 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L204",
+      "source_location": "L213",
       "weight": 1.0
     },
     {
       "source": "ast_nodes_py",
-      "target": "kqlbridge_ast_nodes_bingroup",
+      "target": "kqlbridge_ast_nodes_aggsumif",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L216",
+      "source_location": "L220",
       "weight": 1.0
     },
     {
       "source": "ast_nodes_py",
-      "target": "kqlbridge_ast_nodes_plaingroup",
+      "target": "kqlbridge_ast_nodes_aggavgif",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L224",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
       "source": "ast_nodes_py",
-      "target": "kqlbridge_ast_nodes_orderitem",
+      "target": "kqlbridge_ast_nodes_aggmaxif",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L235",
+      "source_location": "L236",
       "weight": 1.0
     },
     {
       "source": "ast_nodes_py",
-      "target": "kqlbridge_ast_nodes_whereop",
+      "target": "kqlbridge_ast_nodes_aggminif",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
@@ -1867,11 +2093,74 @@
     },
     {
       "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_aggdcountif",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L252",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_aggpercentile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L260",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_aggmakelist",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_bingroup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L280",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_plaingroup",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L288",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_orderitem",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L299",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_whereop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L308",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
       "target": "kqlbridge_ast_nodes_projectop",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L250",
+      "source_location": "L314",
       "weight": 1.0
     },
     {
@@ -1880,7 +2169,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L257",
+      "source_location": "L321",
       "weight": 1.0
     },
     {
@@ -1889,7 +2178,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L264",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -1898,7 +2187,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L270",
+      "source_location": "L334",
       "weight": 1.0
     },
     {
@@ -1907,7 +2196,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L276",
+      "source_location": "L340",
       "weight": 1.0
     },
     {
@@ -1916,7 +2205,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L283",
+      "source_location": "L347",
       "weight": 1.0
     },
     {
@@ -1925,7 +2214,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L289",
+      "source_location": "L353",
       "weight": 1.0
     },
     {
@@ -1934,7 +2223,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L297",
+      "source_location": "L361",
       "weight": 1.0
     },
     {
@@ -1943,7 +2232,16 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L304",
+      "source_location": "L368",
+      "weight": 1.0
+    },
+    {
+      "source": "ast_nodes_py",
+      "target": "kqlbridge_ast_nodes_serializeop",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L374",
       "weight": 1.0
     },
     {
@@ -1952,7 +2250,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L318",
+      "source_location": "L388",
       "weight": 1.0
     },
     {
@@ -1961,7 +2259,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L325",
+      "source_location": "L395",
       "weight": 1.0
     },
     {
@@ -2028,134 +2326,161 @@
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_61",
+      "source": "kqlbridge_ast_nodes_rationale_62",
       "target": "kqlbridge_ast_nodes_iffexpr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L61",
+      "source_location": "L62",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_69",
+      "source": "kqlbridge_ast_nodes_rationale_70",
       "target": "kqlbridge_ast_nodes_datetimelit",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L69",
+      "source_location": "L70",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_75",
+      "source": "kqlbridge_ast_nodes_rationale_76",
       "target": "kqlbridge_ast_nodes_agoexpr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L75",
+      "source_location": "L76",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_82",
+      "source": "kqlbridge_ast_nodes_rationale_83",
       "target": "kqlbridge_ast_nodes_binexpr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L82",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_90",
+      "source": "kqlbridge_ast_nodes_rationale_91",
       "target": "kqlbridge_ast_nodes_funccall",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L90",
+      "source_location": "L91",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_97",
+      "source": "kqlbridge_ast_nodes_rationale_98",
       "target": "kqlbridge_ast_nodes_binaryop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L97",
+      "source_location": "L98",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_114",
+      "source": "kqlbridge_ast_nodes_rationale_115",
       "target": "kqlbridge_ast_nodes_comparison",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L114",
+      "source_location": "L115",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_122",
+      "source": "kqlbridge_ast_nodes_rationale_123",
       "target": "kqlbridge_ast_nodes_inexpr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L122",
+      "source_location": "L123",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_130",
+      "source": "kqlbridge_ast_nodes_rationale_132",
       "target": "kqlbridge_ast_nodes_stringop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L130",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_138",
+      "source": "kqlbridge_ast_nodes_rationale_140",
       "target": "kqlbridge_ast_nodes_nullcheck",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L138",
+      "source_location": "L140",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_145",
+      "source": "kqlbridge_ast_nodes_rationale_147",
       "target": "kqlbridge_ast_nodes_logicalop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L145",
+      "source_location": "L147",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_198",
+      "source": "kqlbridge_ast_nodes_rationale_161",
+      "target": "kqlbridge_ast_nodes_hasanyexpr",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L161",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_207",
       "target": "kqlbridge_ast_nodes_aggdcount",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L198",
+      "source_location": "L207",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_205",
+      "source": "kqlbridge_ast_nodes_rationale_214",
       "target": "kqlbridge_ast_nodes_aggcountif",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L205",
+      "source_location": "L214",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_217",
-      "target": "kqlbridge_ast_nodes_bingroup",
+      "source": "kqlbridge_ast_nodes_rationale_221",
+      "target": "kqlbridge_ast_nodes_aggsumif",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L217",
+      "source_location": "L221",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_229",
+      "target": "kqlbridge_ast_nodes_aggavgif",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L229",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_237",
+      "target": "kqlbridge_ast_nodes_aggmaxif",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
       "source": "kqlbridge_ast_nodes_rationale_245",
-      "target": "kqlbridge_ast_nodes_whereop",
+      "target": "kqlbridge_ast_nodes_aggminif",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
@@ -2163,75 +2488,102 @@
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_251",
+      "source": "kqlbridge_ast_nodes_rationale_253",
+      "target": "kqlbridge_ast_nodes_aggdcountif",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L253",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_281",
+      "target": "kqlbridge_ast_nodes_bingroup",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L281",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_309",
+      "target": "kqlbridge_ast_nodes_whereop",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "ast_nodes.py",
+      "source_location": "L309",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_ast_nodes_rationale_315",
       "target": "kqlbridge_ast_nodes_projectop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L251",
+      "source_location": "L315",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_258",
+      "source": "kqlbridge_ast_nodes_rationale_322",
       "target": "kqlbridge_ast_nodes_summarizeop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L258",
+      "source_location": "L322",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_277",
+      "source": "kqlbridge_ast_nodes_rationale_341",
       "target": "kqlbridge_ast_nodes_distinctop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L277",
+      "source_location": "L341",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_284",
+      "source": "kqlbridge_ast_nodes_rationale_348",
       "target": "kqlbridge_ast_nodes_extendop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L284",
+      "source_location": "L348",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_290",
+      "source": "kqlbridge_ast_nodes_rationale_354",
       "target": "kqlbridge_ast_nodes_joinop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L290",
+      "source_location": "L354",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_298",
+      "source": "kqlbridge_ast_nodes_rationale_362",
       "target": "kqlbridge_ast_nodes_unionop",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L298",
+      "source_location": "L362",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_319",
+      "source": "kqlbridge_ast_nodes_rationale_389",
       "target": "kqlbridge_ast_nodes_letbinding",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L319",
+      "source_location": "L389",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_ast_nodes_rationale_326",
+      "source": "kqlbridge_ast_nodes_rationale_396",
       "target": "kqlbridge_ast_nodes_kqlquery",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "ast_nodes.py",
-      "source_location": "L326",
+      "source_location": "L396",
       "weight": 1.0
     },
     {
@@ -2906,7 +3258,61 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L77",
+      "source_location": "L82",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_split_case_args",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L107",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_build_iff_chain",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L141",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_preprocess_case",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L153",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_preprocess_json",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L197",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_preprocess_mv_expand",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L204",
+      "weight": 1.0
+    },
+    {
+      "source": "parser_py",
+      "target": "kqlbridge_parser_preprocess_bool_funcs",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L211",
       "weight": 1.0
     },
     {
@@ -2915,7 +3321,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L101",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -2924,7 +3330,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L114",
+      "source_location": "L281",
       "weight": 1.0
     },
     {
@@ -2933,7 +3339,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L134",
+      "source_location": "L317",
       "weight": 1.0
     },
     {
@@ -2942,7 +3348,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L151",
+      "source_location": "L348",
       "weight": 1.0
     },
     {
@@ -2951,7 +3357,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L171",
+      "source_location": "L369",
       "weight": 1.0
     },
     {
@@ -2960,7 +3366,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L175",
+      "source_location": "L373",
       "weight": 1.0
     },
     {
@@ -2969,7 +3375,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L195",
+      "source_location": "L393",
       "weight": 1.0
     },
     {
@@ -2978,7 +3384,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L212",
+      "source_location": "L444",
       "weight": 1.0
     },
     {
@@ -2987,7 +3393,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L220",
+      "source_location": "L452",
       "weight": 1.0
     },
     {
@@ -2996,7 +3402,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L231",
+      "source_location": "L463",
       "weight": 1.0
     },
     {
@@ -3005,7 +3411,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L250",
+      "source_location": "L492",
       "weight": 1.0
     },
     {
@@ -3014,7 +3420,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L264",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -3023,7 +3429,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L278",
+      "source_location": "L511",
       "weight": 1.0
     },
     {
@@ -3032,7 +3438,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L283",
+      "source_location": "L516",
       "weight": 1.0
     },
     {
@@ -3041,7 +3447,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L295",
+      "source_location": "L528",
       "weight": 1.0
     },
     {
@@ -3050,7 +3456,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L316",
+      "source_location": "L549",
       "weight": 1.0
     },
     {
@@ -3059,7 +3465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L337",
+      "source_location": "L570",
       "weight": 1.0
     },
     {
@@ -3068,7 +3474,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L359",
+      "source_location": "L592",
       "weight": 1.0
     },
     {
@@ -3077,7 +3483,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L430",
+      "source_location": "L714",
       "weight": 1.0
     },
     {
@@ -3086,7 +3492,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L484",
+      "source_location": "L768",
       "weight": 1.0
     },
     {
@@ -3095,7 +3501,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L503",
+      "source_location": "L787",
       "weight": 1.0
     },
     {
@@ -3104,7 +3510,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L510",
+      "source_location": "L794",
       "weight": 1.0
     },
     {
@@ -3113,7 +3519,67 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L517",
+      "source_location": "L801",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_preprocess_case",
+      "target": "kqlbridge_parser_split_case_args",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L190",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_preprocess_case",
+      "target": "kqlbridge_parser_build_iff_chain",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L191",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_parse",
+      "target": "kqlbridge_parser_preprocess_case",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L268",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_parse",
+      "target": "kqlbridge_parser_preprocess_json",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L269",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_parse",
+      "target": "kqlbridge_parser_preprocess_mv_expand",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L270",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_parse",
+      "target": "kqlbridge_parser_preprocess_bool_funcs",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L271",
       "weight": 1.0
     },
     {
@@ -3123,7 +3589,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L107",
+      "source_location": "L273",
       "weight": 1.0
     },
     {
@@ -3133,7 +3599,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L108",
+      "source_location": "L274",
       "weight": 1.0
     },
     {
@@ -3143,7 +3609,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L109",
+      "source_location": "L275",
       "weight": 1.0
     },
     {
@@ -3153,7 +3619,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L122",
+      "source_location": "L290",
       "weight": 1.0
     },
     {
@@ -3163,7 +3629,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L126",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -3173,7 +3639,27 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L140",
+      "source_location": "L326",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_let",
+      "target": "kqlbridge_parser_build_timespan",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L333",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_let",
+      "target": "kqlbridge_parser_build_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L339",
       "weight": 1.0
     },
     {
@@ -3183,7 +3669,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L172",
+      "source_location": "L370",
       "weight": 1.0
     },
     {
@@ -3193,17 +3679,27 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L206",
+      "source_location": "L404",
       "weight": 1.0
     },
     {
       "source": "kqlbridge_parser_build_summarize",
-      "target": "kqlbridge_parser_build_groupby_list",
+      "target": "kqlbridge_parser_build_expr",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L207",
+      "source_location": "L420",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_summarize",
+      "target": "kqlbridge_parser_build_timespan",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L425",
       "weight": 1.0
     },
     {
@@ -3213,7 +3709,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L216",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -3223,7 +3719,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L228",
+      "source_location": "L460",
       "weight": 1.0
     },
     {
@@ -3233,7 +3729,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L234",
+      "source_location": "L466",
       "weight": 1.0
     },
     {
@@ -3243,27 +3739,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L240",
-      "weight": 1.0
-    },
-    {
-      "source": "kqlbridge_parser_build_groupby_list",
-      "target": "kqlbridge_parser_build_expr",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "parser.py",
-      "source_location": "L255",
-      "weight": 1.0
-    },
-    {
-      "source": "kqlbridge_parser_build_groupby_list",
-      "target": "kqlbridge_parser_build_timespan",
-      "relation": "calls",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "source_file": "parser.py",
-      "source_location": "L257",
+      "source_location": "L471",
       "weight": 1.0
     },
     {
@@ -3273,7 +3749,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L269",
+      "source_location": "L502",
       "weight": 1.0
     },
     {
@@ -3283,7 +3759,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L304",
+      "source_location": "L537",
       "weight": 1.0
     },
     {
@@ -3293,7 +3769,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L349",
+      "source_location": "L582",
       "weight": 1.0
     },
     {
@@ -3303,7 +3779,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L376",
+      "source_location": "L609",
       "weight": 1.0
     },
     {
@@ -3313,7 +3789,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L400",
+      "source_location": "L645",
       "weight": 1.0
     },
     {
@@ -3323,7 +3799,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L413",
+      "source_location": "L670",
       "weight": 1.0
     },
     {
@@ -3333,7 +3809,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L432",
+      "source_location": "L716",
       "weight": 1.0
     },
     {
@@ -3343,7 +3819,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L438",
+      "source_location": "L722",
       "weight": 1.0
     },
     {
@@ -3353,7 +3829,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L462",
+      "source_location": "L746",
       "weight": 1.0
     },
     {
@@ -3363,7 +3839,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L473",
+      "source_location": "L757",
       "weight": 1.0
     },
     {
@@ -3373,7 +3849,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L487",
+      "source_location": "L771",
       "weight": 1.0
     },
     {
@@ -3383,7 +3859,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L506",
+      "source_location": "L790",
       "weight": 1.0
     },
     {
@@ -3396,39 +3872,48 @@
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_rationale_78",
+      "source": "kqlbridge_parser_rationale_83",
       "target": "kqlbridge_parser_normalize_keywords",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L78",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_rationale_102",
+      "source": "kqlbridge_parser_rationale_262",
       "target": "kqlbridge_parser_parse",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L102",
+      "source_location": "L262",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_rationale_504",
+      "source": "kqlbridge_parser_rationale_493",
+      "target": "kqlbridge_parser_build_groupby_list",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "parser.py",
+      "source_location": "L493",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_rationale_788",
       "target": "kqlbridge_parser_build_table_ref",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L504",
+      "source_location": "L788",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_rationale_511",
+      "source": "kqlbridge_parser_rationale_795",
       "target": "kqlbridge_parser_build_timespan",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "parser.py",
-      "source_location": "L511",
+      "source_location": "L795",
       "weight": 1.0
     },
     {
@@ -3889,21 +4374,11 @@
     },
     {
       "source": "generators_pyspark_py",
-      "target": "typing",
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "generators\\pyspark.py",
-      "source_location": "L6",
-      "weight": 1.0
-    },
-    {
-      "source": "generators_pyspark_py",
       "target": "generators_pyspark_pysparkgenerator",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L8",
+      "source_location": "L7",
       "weight": 1.0
     },
     {
@@ -3912,7 +4387,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L13",
+      "source_location": "L12",
       "weight": 1.0
     },
     {
@@ -3921,7 +4396,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L16",
+      "source_location": "L15",
       "weight": 1.0
     },
     {
@@ -3968,7 +4443,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L83",
+      "source_location": "L86",
       "weight": 1.0
     },
     {
@@ -3978,25 +4453,25 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L96",
+      "source_location": "L99",
       "weight": 1.0
     },
     {
-      "source": "generators_pyspark_rationale_9",
+      "source": "generators_pyspark_rationale_8",
       "target": "generators_pyspark_pysparkgenerator",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L9",
+      "source_location": "L8",
       "weight": 1.0
     },
     {
-      "source": "generators_pyspark_rationale_17",
+      "source": "generators_pyspark_rationale_16",
       "target": "generators_pyspark_pysparkgenerator_generate",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L17",
+      "source_location": "L16",
       "weight": 1.0
     },
     {
@@ -4033,7 +4508,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L83",
+      "source_location": "L92",
       "weight": 1.0
     },
     {
@@ -4042,7 +4517,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L93",
+      "source_location": "L102",
       "weight": 1.0
     },
     {
@@ -4051,7 +4526,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L191",
+      "source_location": "L214",
       "weight": 1.0
     },
     {
@@ -4060,7 +4535,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L223",
+      "source_location": "L250",
       "weight": 1.0
     },
     {
@@ -4069,7 +4544,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L226",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -4078,7 +4553,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L260",
+      "source_location": "L287",
       "weight": 1.0
     },
     {
@@ -4087,7 +4562,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L282",
+      "source_location": "L344",
       "weight": 1.0
     },
     {
@@ -4096,7 +4571,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L287",
+      "source_location": "L349",
       "weight": 1.0
     },
     {
@@ -4105,7 +4580,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L306",
+      "source_location": "L384",
       "weight": 1.0
     },
     {
@@ -4114,7 +4589,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L327",
+      "source_location": "L405",
       "weight": 1.0
     },
     {
@@ -4123,7 +4598,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L344",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -4132,7 +4607,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L403",
+      "source_location": "L489",
       "weight": 1.0
     },
     {
@@ -4141,7 +4616,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L452",
+      "source_location": "L549",
       "weight": 1.0
     },
     {
@@ -4150,7 +4625,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L469",
+      "source_location": "L566",
       "weight": 1.0
     },
     {
@@ -4159,7 +4634,52 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L494",
+      "source_location": "L591",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_parse_json_path",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L689",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_private",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L694",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_in_range",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L709",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_case",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L731",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "generators_spark_sql_sparksqlgenerator_render_iff_func",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L740",
       "weight": 1.0
     },
     {
@@ -4169,7 +4689,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L74",
+      "source_location": "L83",
       "weight": 1.0
     },
     {
@@ -4179,7 +4699,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L75",
+      "source_location": "L84",
       "weight": 1.0
     },
     {
@@ -4189,7 +4709,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L87",
+      "source_location": "L96",
       "weight": 1.0
     },
     {
@@ -4199,7 +4719,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L109",
+      "source_location": "L119",
       "weight": 1.0
     },
     {
@@ -4209,7 +4729,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L119",
+      "source_location": "L129",
       "weight": 1.0
     },
     {
@@ -4219,7 +4739,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L122",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -4229,7 +4749,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L134",
+      "source_location": "L151",
       "weight": 1.0
     },
     {
@@ -4239,7 +4759,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L144",
+      "source_location": "L164",
       "weight": 1.0
     },
     {
@@ -4249,7 +4769,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L159",
+      "source_location": "L179",
       "weight": 1.0
     },
     {
@@ -4259,7 +4779,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L166",
+      "source_location": "L186",
       "weight": 1.0
     },
     {
@@ -4269,7 +4789,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L224",
+      "source_location": "L251",
       "weight": 1.0
     },
     {
@@ -4279,7 +4799,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L241",
+      "source_location": "L268",
       "weight": 1.0
     },
     {
@@ -4289,7 +4809,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L242",
+      "source_location": "L269",
       "weight": 1.0
     },
     {
@@ -4299,7 +4819,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L253",
+      "source_location": "L280",
       "weight": 1.0
     },
     {
@@ -4309,7 +4829,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L267",
+      "source_location": "L294",
       "weight": 1.0
     },
     {
@@ -4319,7 +4839,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L277",
+      "source_location": "L304",
       "weight": 1.0
     },
     {
@@ -4329,7 +4849,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L283",
+      "source_location": "L345",
       "weight": 1.0
     },
     {
@@ -4339,7 +4859,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L368",
+      "source_location": "L448",
       "weight": 1.0
     },
     {
@@ -4349,7 +4869,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L384",
+      "source_location": "L464",
       "weight": 1.0
     },
     {
@@ -4359,7 +4879,17 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L396",
+      "source_location": "L479",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_iff_func",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -4369,7 +4899,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L410",
+      "source_location": "L499",
       "weight": 1.0
     },
     {
@@ -4379,7 +4909,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L441",
+      "source_location": "L530",
       "weight": 1.0
     },
     {
@@ -4389,7 +4919,57 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L442",
+      "source_location": "L531",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_parse_json_path",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L533",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_private",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L534",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_ipv4_is_in_range",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L535",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_bin",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L536",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_func_call",
+      "target": "generators_spark_sql_sparksqlgenerator_render_case",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L537",
       "weight": 1.0
     },
     {
@@ -4399,7 +4979,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L498",
+      "source_location": "L595",
       "weight": 1.0
     },
     {
@@ -4409,7 +4989,27 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L515",
+      "source_location": "L623",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_render_iff_func",
+      "target": "generators_spark_sql_sparksqlgenerator_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L744",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator_render_iff_func",
+      "target": "generators_spark_sql_sparksqlgenerator_bool_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L751",
       "weight": 1.0
     },
     {
@@ -4440,44 +5040,35 @@
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_84",
+      "source": "generators_spark_sql_rationale_93",
       "target": "generators_spark_sql_sparksqlgenerator_build_ctes",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L84",
+      "source_location": "L93",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_94",
+      "source": "generators_spark_sql_rationale_103",
       "target": "generators_spark_sql_sparksqlgenerator_build_body",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L94",
+      "source_location": "L103",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_227",
+      "source": "generators_spark_sql_rationale_254",
       "target": "generators_spark_sql_sparksqlgenerator_summarize",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L227",
-      "weight": 1.0
-    },
-    {
-      "source": "generators_spark_sql_rationale_261",
-      "target": "generators_spark_sql_sparksqlgenerator_agg",
-      "relation": "rationale_for",
-      "confidence": "EXTRACTED",
-      "source_file": "generators\\spark_sql.py",
-      "source_location": "L261",
+      "source_location": "L254",
       "weight": 1.0
     },
     {
       "source": "generators_spark_sql_rationale_288",
-      "target": "generators_spark_sql_sparksqlgenerator_join",
+      "target": "generators_spark_sql_sparksqlgenerator_agg",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
@@ -4485,57 +5076,66 @@
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_307",
+      "source": "generators_spark_sql_rationale_350",
+      "target": "generators_spark_sql_sparksqlgenerator_join",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L350",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_spark_sql_rationale_385",
       "target": "generators_spark_sql_sparksqlgenerator_union",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L307",
+      "source_location": "L385",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_328",
+      "source": "generators_spark_sql_rationale_406",
       "target": "generators_spark_sql_sparksqlgenerator_render_bin",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L328",
+      "source_location": "L406",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_345",
+      "source": "generators_spark_sql_rationale_423",
       "target": "generators_spark_sql_sparksqlgenerator_expr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L345",
+      "source_location": "L423",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_404",
+      "source": "generators_spark_sql_rationale_490",
       "target": "generators_spark_sql_sparksqlgenerator_func_call",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L404",
+      "source_location": "L490",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_495",
+      "source": "generators_spark_sql_rationale_592",
       "target": "generators_spark_sql_sparksqlgenerator_bool_expr",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L495",
+      "source_location": "L592",
       "weight": 1.0
     },
     {
-      "source": "generators_spark_sql_rationale_160",
+      "source": "generators_spark_sql_rationale_180",
       "target": "generators_spark_sql_py",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\spark_sql.py",
-      "source_location": "L160",
+      "source_location": "L180",
       "weight": 1.0
     },
     {
@@ -4565,7 +5165,7 @@
       "context": "import",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L19",
+      "source_location": "L22",
       "weight": 1.0
     },
     {
@@ -4574,7 +5174,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L31",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -4583,7 +5183,7 @@
       "relation": "inherits",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L31",
+      "source_location": "L34",
       "weight": 1.0
     },
     {
@@ -4592,7 +5192,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L46",
+      "source_location": "L49",
       "weight": 1.0
     },
     {
@@ -4601,7 +5201,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L85",
+      "source_location": "L92",
       "weight": 1.0
     },
     {
@@ -4610,7 +5210,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L113",
+      "source_location": "L120",
       "weight": 1.0
     },
     {
@@ -4619,7 +5219,43 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L136",
+      "source_location": "L143",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "generators_tsql_tsqlgenerator_bool_expr",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L201",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "generators_tsql_tsqlgenerator_agg",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L214",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "generators_tsql_tsqlgenerator_render_ipv4_is_private",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L255",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "generators_tsql_tsqlgenerator_render_ipv4_is_in_range",
+      "relation": "method",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L270",
       "weight": 1.0
     },
     {
@@ -4629,7 +5265,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L125",
+      "source_location": "L132",
       "weight": 1.0
     },
     {
@@ -4639,7 +5275,57 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L138",
+      "source_location": "L145",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator_func_call",
+      "target": "generators_tsql_tsqlgenerator_render_ipv4_is_private",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L181",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator_func_call",
+      "target": "generators_tsql_tsqlgenerator_render_ipv4_is_in_range",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L183",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator_bool_expr",
+      "target": "generators_tsql_tsqlgenerator_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L203",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator_agg",
+      "target": "generators_tsql_tsqlgenerator_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L217",
+      "weight": 1.0
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator_agg",
+      "target": "generators_tsql_tsqlgenerator_bool_expr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L230",
       "weight": 1.0
     },
     {
@@ -4652,12 +5338,12 @@
       "weight": 1.0
     },
     {
-      "source": "generators_tsql_rationale_32",
+      "source": "generators_tsql_rationale_35",
       "target": "generators_tsql_tsqlgenerator",
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L32",
+      "source_location": "L35",
       "weight": 1.0
     },
     {
@@ -5284,20 +5970,29 @@
     },
     {
       "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_countop",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\pyspark.py",
+      "source_location": "L1",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_pyspark_pysparkgenerator",
+      "target": "kqlbridge_ast_nodes_serializeop",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\pyspark.py",
+      "source_location": "L1",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_pyspark_pysparkgenerator",
       "target": "generators_spark_sql_sparksqlgenerator",
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\pyspark.py",
       "source_location": "L5",
-      "weight": 0.8
-    },
-    {
-      "source": "generators_pyspark_pysparkgenerator",
-      "target": "kqlbridge_ast_nodes_negation",
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "generators\\pyspark.py",
-      "source_location": "L32",
       "weight": 0.8
     },
     {
@@ -5316,15 +6011,6 @@
       "confidence": "INFERRED",
       "source_file": "generators\\pyspark.py",
       "source_location": "L32",
-      "weight": 0.8
-    },
-    {
-      "source": "generators_pyspark_pysparkgenerator",
-      "target": "kqlbridge_ast_nodes_negation",
-      "relation": "uses",
-      "confidence": "INFERRED",
-      "source_file": "generators\\pyspark.py",
-      "source_location": "L45",
       "weight": 0.8
     },
     {
@@ -5351,7 +6037,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L162",
+      "source_location": "L165",
       "weight": 0.8
     },
     {
@@ -5360,7 +6046,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\pyspark.py",
-      "source_location": "L162",
+      "source_location": "L165",
       "weight": 0.8
     },
     {
@@ -5473,6 +6159,15 @@
     },
     {
       "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_serializeop",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
       "target": "kqlbridge_ast_nodes_aggcount",
       "relation": "uses",
       "confidence": "INFERRED",
@@ -5528,6 +6223,69 @@
     {
       "source": "generators_spark_sql_sparksqlgenerator",
       "target": "kqlbridge_ast_nodes_aggcountif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggsumif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggavgif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggmaxif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggminif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggdcountif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggpercentile",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggmakelist",
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\spark_sql.py",
@@ -5715,6 +6473,15 @@
       "weight": 0.8
     },
     {
+      "source": "generators_spark_sql_sparksqlgenerator",
+      "target": "kqlbridge_ast_nodes_hasanyexpr",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\spark_sql.py",
+      "source_location": "L22",
+      "weight": 0.8
+    },
+    {
       "source": "generators_tsql_tsqlgenerator",
       "target": "kqlbridge_ast_nodes_agoexpr",
       "relation": "uses",
@@ -5752,11 +6519,92 @@
     },
     {
       "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_hasanyexpr",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_stringlit",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggpercentile",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggmakelist",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggsumif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggavgif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggmaxif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggminif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
+      "target": "kqlbridge_ast_nodes_aggdcountif",
+      "relation": "uses",
+      "confidence": "INFERRED",
+      "source_file": "generators\\tsql.py",
+      "source_location": "L18",
+      "weight": 0.8
+    },
+    {
+      "source": "generators_tsql_tsqlgenerator",
       "target": "generators_spark_sql_sparksqlgenerator",
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L19",
+      "source_location": "L22",
       "weight": 0.8
     },
     {
@@ -5765,7 +6613,7 @@
       "relation": "uses",
       "confidence": "INFERRED",
       "source_file": "generators\\tsql.py",
-      "source_location": "L130",
+      "source_location": "L137",
       "weight": 0.8
     },
     {
@@ -5847,13 +6695,46 @@
     },
     {
       "source": "kqlbridge_parser_build_query",
+      "target": "kqlbridge_ast_nodes_columnref",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L296",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_query",
+      "target": "kqlbridge_ast_nodes_extendop",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L307",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_query",
       "target": "kqlbridge_ast_nodes_kqlquery",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L131",
+      "source_location": "L314",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_let",
+      "target": "kqlbridge_ast_nodes_extendop",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L328",
       "weight": 1.0
     },
     {
@@ -5864,7 +6745,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L142",
+      "source_location": "L331",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_let",
+      "target": "kqlbridge_ast_nodes_agoexpr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L335",
       "weight": 1.0
     },
     {
@@ -5875,7 +6767,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L146",
+      "source_location": "L343",
       "weight": 1.0
     },
     {
@@ -5886,7 +6778,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L163",
+      "source_location": "L360",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_pipe_op",
+      "target": "kqlbridge_ast_nodes_serializeop",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L361",
       "weight": 1.0
     },
     {
@@ -5897,7 +6800,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L172",
+      "source_location": "L370",
       "weight": 1.0
     },
     {
@@ -5908,7 +6811,51 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L192",
+      "source_location": "L390",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_summarize",
+      "target": "kqlbridge_ast_nodes_plaingroup",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L422",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_summarize",
+      "target": "kqlbridge_ast_nodes_columnref",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L422",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_summarize",
+      "target": "kqlbridge_ast_nodes_binexpr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L426",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_summarize",
+      "target": "kqlbridge_ast_nodes_bingroup",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L434",
       "weight": 1.0
     },
     {
@@ -5919,7 +6866,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L209",
+      "source_location": "L438",
       "weight": 1.0
     },
     {
@@ -5930,7 +6877,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L233",
+      "source_location": "L465",
       "weight": 1.0
     },
     {
@@ -5941,7 +6888,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L234",
+      "source_location": "L466",
       "weight": 1.0
     },
     {
@@ -5952,7 +6899,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L235",
+      "source_location": "L467",
       "weight": 1.0
     },
     {
@@ -5963,7 +6910,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L236",
+      "source_location": "L468",
       "weight": 1.0
     },
     {
@@ -5974,7 +6921,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L237",
+      "source_location": "L469",
       "weight": 1.0
     },
     {
@@ -5985,7 +6932,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L238",
+      "source_location": "L470",
       "weight": 1.0
     },
     {
@@ -5996,29 +6943,95 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L239",
+      "source_location": "L471",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_build_groupby_list",
-      "target": "kqlbridge_ast_nodes_bingroup",
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggsumif",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L258",
+      "source_location": "L472",
       "weight": 1.0
     },
     {
-      "source": "kqlbridge_parser_build_groupby_list",
-      "target": "kqlbridge_ast_nodes_plaingroup",
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggavgif",
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L260",
+      "source_location": "L473",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggmaxif",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L474",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggminif",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L475",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggdcountif",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L476",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggpercentile",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L478",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_aggmakelist",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L481",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_agg_func",
+      "target": "kqlbridge_ast_nodes_funccall",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L484",
       "weight": 1.0
     },
     {
@@ -6029,7 +7042,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L274",
+      "source_location": "L507",
       "weight": 1.0
     },
     {
@@ -6040,7 +7053,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L275",
+      "source_location": "L508",
       "weight": 1.0
     },
     {
@@ -6051,7 +7064,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L280",
+      "source_location": "L513",
       "weight": 1.0
     },
     {
@@ -6062,7 +7075,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L285",
+      "source_location": "L518",
       "weight": 1.0
     },
     {
@@ -6073,7 +7086,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L307",
+      "source_location": "L540",
       "weight": 1.0
     },
     {
@@ -6084,7 +7097,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L313",
+      "source_location": "L546",
       "weight": 1.0
     },
     {
@@ -6095,7 +7108,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L327",
+      "source_location": "L560",
       "weight": 1.0
     },
     {
@@ -6106,7 +7119,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L334",
+      "source_location": "L567",
       "weight": 1.0
     },
     {
@@ -6117,7 +7130,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L354",
+      "source_location": "L587",
       "weight": 1.0
     },
     {
@@ -6128,7 +7141,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L361",
+      "source_location": "L594",
       "weight": 1.0
     },
     {
@@ -6139,7 +7152,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L361",
+      "source_location": "L594",
       "weight": 1.0
     },
     {
@@ -6150,7 +7163,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L361",
+      "source_location": "L594",
       "weight": 1.0
     },
     {
@@ -6161,7 +7174,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L367",
+      "source_location": "L600",
       "weight": 1.0
     },
     {
@@ -6172,7 +7185,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L370",
+      "source_location": "L603",
       "weight": 1.0
     },
     {
@@ -6183,7 +7196,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L389",
+      "source_location": "L622",
       "weight": 1.0
     },
     {
@@ -6194,7 +7207,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L401",
+      "source_location": "L646",
       "weight": 1.0
     },
     {
@@ -6205,7 +7218,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L414",
+      "source_location": "L671",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_bool_expr",
+      "target": "kqlbridge_ast_nodes_hasanyexpr",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L677",
       "weight": 1.0
     },
     {
@@ -6216,7 +7240,18 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L417",
+      "source_location": "L691",
+      "weight": 1.0
+    },
+    {
+      "source": "kqlbridge_parser_build_bool_expr",
+      "target": "kqlbridge_ast_nodes_stringlit",
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "parser.py",
+      "source_location": "L699",
       "weight": 1.0
     },
     {
@@ -6227,7 +7262,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L435",
+      "source_location": "L719",
       "weight": 1.0
     },
     {
@@ -6238,7 +7273,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L439",
+      "source_location": "L723",
       "weight": 1.0
     },
     {
@@ -6249,7 +7284,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L444",
+      "source_location": "L728",
       "weight": 1.0
     },
     {
@@ -6260,7 +7295,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L450",
+      "source_location": "L734",
       "weight": 1.0
     },
     {
@@ -6271,7 +7306,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L456",
+      "source_location": "L740",
       "weight": 1.0
     },
     {
@@ -6282,7 +7317,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L462",
+      "source_location": "L746",
       "weight": 1.0
     },
     {
@@ -6293,7 +7328,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L464",
+      "source_location": "L748",
       "weight": 1.0
     },
     {
@@ -6304,7 +7339,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L466",
+      "source_location": "L750",
       "weight": 1.0
     },
     {
@@ -6315,7 +7350,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L468",
+      "source_location": "L752",
       "weight": 1.0
     },
     {
@@ -6326,7 +7361,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L470",
+      "source_location": "L754",
       "weight": 1.0
     },
     {
@@ -6337,7 +7372,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L476",
+      "source_location": "L760",
       "weight": 1.0
     },
     {
@@ -6348,7 +7383,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L487",
+      "source_location": "L771",
       "weight": 1.0
     },
     {
@@ -6359,7 +7394,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L489",
+      "source_location": "L773",
       "weight": 1.0
     },
     {
@@ -6370,7 +7405,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L491",
+      "source_location": "L775",
       "weight": 1.0
     },
     {
@@ -6381,7 +7416,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L495",
+      "source_location": "L779",
       "weight": 1.0
     },
     {
@@ -6392,7 +7427,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L498",
+      "source_location": "L782",
       "weight": 1.0
     },
     {
@@ -6403,7 +7438,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "parser.py",
-      "source_location": "L508",
+      "source_location": "L792",
       "weight": 1.0
     },
     {
