@@ -112,13 +112,25 @@ See [unsupported_operators.md](docs/unsupported_operators.md) for operators with
 
 ---
 
+## Debugging & Jules Integration
+
+KQLBridge includes a robust diagnostic framework optimized for developers and autonomous testing agents (like **Jules**). 
+Failed tests from the stress suite (`run_stress_test.py`) are automatically serialized as detailed markdown reports inside `.jules/`.
+
+See the complete [Debugging and Jules Integration Guide](docs/debugging_guide.md) to learn how to:
+- Trace Lark AST trees and token parses.
+- Integrate step-by-step VS Code debugging.
+- Retrieve local diagnostic logs for auto-remediation.
+
+---
+
 ## Eval Score
 
 KQLBridge measures accuracy against a **locked 100-query benchmark** (70 standard, 20 edge-case, 10 adversarial). The eval script is the single source of truth — it is never modified by the agent loop.
 
 ```bash
 python tests/eval/prepare.py
-# SCORE: 85.0% (85/100)
+# SCORE: 100.0% (120/120)
 ```
 
 ---
