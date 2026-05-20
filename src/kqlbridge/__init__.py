@@ -19,29 +19,31 @@ from .lint import lint, LintResult  # noqa: F401 — public API
 from .explain import explain, ExplainResult  # noqa: F401 — public API
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
+from .generators.pyspark import PySparkGenerator
 
-__version__ = "0.9.0"
+__version__ = "0.9.2"
 __all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__"]
 
 from .smart import smart_transpile
 
 _SPARK_GEN = SparkSQLGenerator()
 _TSQL_GEN = TSQLGenerator()
+_PYSPARK_GEN = PySparkGenerator()
 
 
 def translate(
     kql: str,
-    target: Literal["spark", "tsql"] = "spark",
+    target: Literal["spark", "tsql", "pyspark"] = "spark",
 ) -> str:
     """
     Translate a KQL query string to the target SQL dialect.
 
     Args:
         kql:    KQL query string
-        target: "spark" (default) or "tsql"
+        target: "spark" (default), "tsql", or "pyspark"
 
     Returns:
-        SQL string in the target dialect
+        SQL/Python string in the target dialect
 
     Raises:
         lark.exceptions.UnexpectedInput: on KQL parse error
@@ -73,7 +75,9 @@ def translate(
         return _SPARK_GEN.generate(query)
     if target == "tsql":
         return _TSQL_GEN.generate(query)
-    raise ValueError(f"Unknown target: {target!r}. Use 'spark' or 'tsql'.")
+    if target == "pyspark":
+        return _PYSPARK_GEN.generate(query)
+    raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
 
 
 def detect_operators(kql: str) -> list[str]:

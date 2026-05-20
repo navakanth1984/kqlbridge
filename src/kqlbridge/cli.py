@@ -21,7 +21,12 @@ def _translate(args: argparse.Namespace) -> int:
     from kqlbridge import translate, is_supported
 
     kql = args.kql
-    target = "tsql" if getattr(args, "tsql", False) else "spark"
+    if getattr(args, "tsql", False):
+        target = "tsql"
+    elif getattr(args, "pyspark", False):
+        target = "pyspark"
+    else:
+        target = "spark"
 
     if not is_supported(kql):
         print("[kqlbridge] ✗ Query contains unsupported operators.", file=sys.stderr)
@@ -88,7 +93,12 @@ def _lint(args) -> int:
 def _explain(args) -> int:
     from kqlbridge.explain import explain
     import sys
-    target = "tsql" if getattr(args, "tsql", False) else "spark"
+    if getattr(args, "tsql", False):
+        target = "tsql"
+    elif getattr(args, "pyspark", False):
+        target = "pyspark"
+    else:
+        target = "spark"
     try:
         result = explain(args.kql, target=target)
         print(result.annotated_sql)
@@ -132,9 +142,10 @@ def main() -> None:
     sub = parser.add_subparsers(dest="command", metavar="<command>")
 
     # translate
-    p_translate = sub.add_parser("translate", help="Translate KQL to SQL")
+    p_translate = sub.add_parser("translate", help="Translate KQL to SQL/Python")
     p_translate.add_argument("kql", help="KQL query string")
     p_translate.add_argument("--tsql", action="store_true", help="Output T-SQL instead of Spark SQL")
+    p_translate.add_argument("--pyspark", action="store_true", help="Output PySpark DataFrame Python code")
     p_translate.set_defaults(func=_translate)
 
     # check
@@ -148,6 +159,8 @@ def main() -> None:
     p_explain.add_argument("kql", help="KQL query string")
     p_explain.add_argument("--tsql", action="store_true",
         help="Explain T-SQL output instead of Spark SQL")
+    p_explain.add_argument("--pyspark", action="store_true",
+        help="Explain PySpark DataFrame Python code")
     p_explain.set_defaults(func=_explain)
 
     p_lint = sub.add_parser("lint", help="Detect semantic drift in AI-generated KQL")

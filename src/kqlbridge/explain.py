@@ -248,32 +248,55 @@ def _expr_note(expr) -> str:
 
 # ─── Annotated SQL builder ────────────────────────────────────────────────────
 
-def _build_annotated_sql(sql: str, notes: list[str], warnings: list[str]) -> str:
+def _build_annotated_sql(sql: str, notes: list[str], warnings: list[str], is_python: bool = False) -> str:
     """
-    Prepend a header comment block to the SQL with all annotations.
+    Prepend a header comment block to the SQL/Python with all annotations.
     """
-    lines = ["/* KQLBridge Translation Annotations"]
-    lines.append(" * " + "─" * 50)
-    for i, note in enumerate(notes, 1):
-        lines.append(f" * {i:2}. {note}")
-    if warnings:
-        lines.append(" *")
-        lines.append(" * ⚠  Semantic drift warnings:")
-        for w in warnings:
-            # wrap at 70 chars
-            words = w.split()
-            line = " *    "
-            for word in words:
-                if len(line) + len(word) > 75:
-                    lines.append(line.rstrip())
-                    line = " *    " + word + " "
-                else:
-                    line += word + " "
-            lines.append(line.rstrip())
-    lines.append(" */")
-    lines.append("")
-    lines.append(sql)
-    return "\n".join(lines)
+    if is_python:
+        lines = ["# KQLBridge Translation Annotations"]
+        lines.append("# " + "─" * 50)
+        for i, note in enumerate(notes, 1):
+            lines.append(f"# {i:2}. {note}")
+        if warnings:
+            lines.append("#")
+            lines.append("# ⚠  Semantic drift warnings:")
+            for w in warnings:
+                # wrap at 70 chars
+                words = w.split()
+                line = "#    "
+                for word in words:
+                    if len(line) + len(word) > 75:
+                        lines.append(line.rstrip())
+                        line = "#    " + word + " "
+                    else:
+                        line += word + " "
+                lines.append(line.rstrip())
+        lines.append("")
+        lines.append(sql)
+        return "\n".join(lines)
+    else:
+        lines = ["/* KQLBridge Translation Annotations"]
+        lines.append(" * " + "─" * 50)
+        for i, note in enumerate(notes, 1):
+            lines.append(f" * {i:2}. {note}")
+        if warnings:
+            lines.append(" *")
+            lines.append(" * ⚠  Semantic drift warnings:")
+            for w in warnings:
+                # wrap at 70 chars
+                words = w.split()
+                line = " *    "
+                for word in words:
+                    if len(line) + len(word) > 75:
+                        lines.append(line.rstrip())
+                        line = " *    " + word + " "
+                    else:
+                        line += word + " "
+                lines.append(line.rstrip())
+        lines.append(" */")
+        lines.append("")
+        lines.append(sql)
+        return "\n".join(lines)
 
 
 # ─── Public API ──────────────────────────────────────────────────────────────
@@ -284,7 +307,7 @@ def explain(kql: str, target: str = "spark") -> ExplainResult:
 
     Args:
         kql:    KQL query string
-        target: "spark" (default) or "tsql"
+        target: "spark" (default), "tsql", or "pyspark"
 
     Returns:
         ExplainResult with .annotated_sql, .summary, .annotations, .warnings
@@ -293,6 +316,7 @@ def explain(kql: str, target: str = "spark") -> ExplainResult:
     from lark.exceptions import UnexpectedInput as _LarkUnexpectedInput
     from .generators.spark_sql import SparkSQLGenerator
     from .generators.tsql import TSQLGenerator
+    from .generators.pyspark import PySparkGenerator
 
     try:
         query = parse(kql)
@@ -301,11 +325,17 @@ def explain(kql: str, target: str = "spark") -> ExplainResult:
             f"Unsupported KQL syntax. Use is_supported() to check first.\n{e}"
         ) from None
 
-    gen = TSQLGenerator() if target == "tsql" else SparkSQLGenerator()
+    if target == "tsql":
+        gen = TSQLGenerator()
+    elif target == "pyspark":
+        gen = PySparkGenerator()
+    else:
+        gen = SparkSQLGenerator()
+        
     sql = gen.generate(query)
 
     notes, warnings = _annotate_query(query)
-    annotated = _build_annotated_sql(sql, notes, warnings)
+    annotated = _build_annotated_sql(sql, notes, warnings, is_python=(target == "pyspark"))
 
     return ExplainResult(
         kql=kql,

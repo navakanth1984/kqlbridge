@@ -599,3 +599,51 @@ class TestV08Features:
         assert "LOWER(Message) NOT IN (SELECT LOWER(x) FROM (SELECT Name FROM OtherTable) AS _ci_sub(x))" in tsql_sub
 
 
+class TestV09PySpark:
+    def test_pyspark_integration_translate(self):
+        from kqlbridge import translate
+        kql = "AppLogs | where Level == 'Error' | project TimeGenerated, Message"
+        res = translate(kql, target="pyspark")
+        assert "import pyspark.sql.functions as F" in res
+        assert "df = spark.table('AppLogs')" in res
+        assert "df = df.filter(\"Level = 'Error'\")" in res
+        assert 'df = df.selectExpr("TimeGenerated", "Message")' in res
+
+    def test_explain_pyspark(self):
+        from kqlbridge.explain import explain
+        kql = "AppLogs | where Level == 'Error' | project TimeGenerated, Message"
+        res = explain(kql, target="pyspark")
+        assert "# KQLBridge Translation Annotations" in res.annotated_sql
+        assert "#  1. where col == val" in res.annotated_sql
+        assert "df = spark.table('AppLogs')" in res.annotated_sql
+
+    def test_cli_pyspark_translate(self):
+        from kqlbridge.cli import _translate
+        import argparse
+        import io
+        from contextlib import redirect_stdout
+        
+        args = argparse.Namespace(kql="AppLogs | take 5", pyspark=True, tsql=False)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            code = _translate(args)
+        assert code == 0
+        out = f.getvalue()
+        assert "df = df.limit(5)" in out
+
+    def test_cli_pyspark_explain(self):
+        from kqlbridge.cli import _explain
+        import argparse
+        import io
+        from contextlib import redirect_stdout
+        
+        args = argparse.Namespace(kql="AppLogs | take 5", pyspark=True, tsql=False)
+        f = io.StringIO()
+        with redirect_stdout(f):
+            code = _explain(args)
+        assert code == 0
+        out = f.getvalue()
+        assert "# KQLBridge Translation Annotations" in out
+        assert "df = df.limit(5)" in out
+
+
