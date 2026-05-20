@@ -328,6 +328,54 @@ class TestRegression:
         assert "UNION ALL" in result
         assert "GROUP BY" in result
 
+    def test_sentinel_anomalous_login_spikes(self):
+        """Test real-world Sentinel: failed login spikes per hour."""
+        kql = """
+        SecurityEvent
+        | where TimeGenerated > ago(24h)
+        | where EventID == 4625
+        | summarize FailedCount = count() by Account, bin(TimeGenerated, 1h)
+        | where FailedCount > 10
+        | sort by FailedCount desc
+        """
+        result = translate(kql, target="spark")
+        assert "FROM (" in result
+        assert "GROUP BY" in result
+        assert "WHERE FailedCount > 10" in result or "where failedcount > 10" in result.lower()
+        assert "ORDER BY FailedCount DESC" in result or "order by failedcount desc" in result.lower()
+
+    def test_sentinel_suspicious_powershell_join(self):
+        """Test real-world Sentinel: suspicious powershell processes joined with network events."""
+        kql = """
+        let SuspiciousProcesses = DeviceProcessEvents
+            | where FileName == "powershell.exe"
+            | where CommandLine has_any ("encoded", "bypass", "hidden");
+        SuspiciousProcesses
+        | join kind=inner (
+            DeviceNetworkEvents
+            | where RemotePort == 4444
+        ) on DeviceId
+        | project TimeGenerated, DeviceName, AccountName, CommandLine, RemoteIP
+        """
+        result = translate(kql, target="spark")
+        assert "WITH SuspiciousProcesses AS" in result or "with suspiciousprocesses as" in result.lower()
+        assert "INNER JOIN (" in result or "inner join (" in result.lower()
+        assert "FROM DeviceNetworkEvents" in result or "from devicenetworkevents" in result.lower()
+        assert "RemotePort = 4444" in result
+
+    def test_sentinel_multi_location_signin(self):
+        """Test real-world Sentinel: multi-location login alerts."""
+        kql = """
+        SigninLogs
+        | where TimeGenerated > ago(24h)
+        | summarize LocationCount = dcount(Location) by UserPrincipalName, bin(TimeGenerated, 1h)
+        | where LocationCount > 1
+        """
+        result = translate(kql, target="spark")
+        assert "FROM (" in result
+        assert "GROUP BY" in result
+        assert "WHERE LocationCount > 1" in result or "where locationcount > 1" in result.lower()
+
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v", "--tb=short"])

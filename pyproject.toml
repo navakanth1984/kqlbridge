@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "kqlbridge"
-version = "0.9.0"
+version = "0.9.1"
 description = "KQL → Spark SQL / T-SQL transpiler for Microsoft Fabric and Databricks"
 readme = "README.md"
 license = { file = "LICENSE" }

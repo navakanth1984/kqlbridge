@@ -558,6 +558,14 @@ def _build_join(tree: Tree) -> JoinOp:
             elif child.data == "table_expr":
                 right_table = str(child.children[0])
                 right_query = KQLQuery(table=right_table, pipes=[])
+            elif child.data == "pipe_op":
+                if right_query is None:
+                    raise ValueError("join_op has no right-side table expression before pipe_op")
+                op = _build_pipe_op(child)
+                if hasattr(op, "_implicit_extends"):
+                    right_query.pipes.append(ExtendOp(assignments=op._implicit_extends))
+                    del op._implicit_extends
+                right_query.pipes.append(op)
             elif child.data == "join_keys":
                 keys = [str(t) for t in child.children if isinstance(t, Token)]
 
