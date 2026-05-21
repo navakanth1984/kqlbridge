@@ -1,15 +1,24 @@
 import pytest
 from kqlbridge import translate, detect_operators, is_supported
 
+import pytest
+from kqlbridge import translate, detect_operators, is_supported
+
 def test_unsupported_operators():
     """Verify that unsupported operators are correctly flagged by is_supported."""
-    unsupported_queries = [
-        "AppLogs | make-series count() on TimeGenerated from ago(7d) to now() step 1d",
+    # render and evaluate remain Tier 3 — correctly unsupported
+    still_unsupported = [
         "AppLogs | render timechart",
         "Events | evaluate bag_unpack(properties)",
     ]
-    for q in unsupported_queries:
-        assert is_supported(q) is False
+    for q in still_unsupported:
+        assert is_supported(q) is False, f"Expected unsupported: {q}"
+
+    # make-series is now Tier 2 via TEG v5 — FIX-03
+    assert is_supported(
+        "AppLogs | make-series count() on TimeGenerated from ago(7d) to now() step 1d"
+    ) is True
+
 
 
 def test_detect_multiple_operators():

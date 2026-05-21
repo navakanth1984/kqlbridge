@@ -11,6 +11,7 @@ Public API:
 
 from __future__ import annotations
 from typing import Literal
+from enum import Enum
 
 from .parser import parse
 from lark.exceptions import UnexpectedInput as _LarkUnexpectedInput
@@ -24,8 +25,22 @@ from .generators.pyspark import PySparkGenerator
 from .smart import smart_transpile
 from .micro_model import TimeSeriesMicroModel
 
-__version__ = "0.11.0"
-__all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__", "TimeSeriesMicroModel"]
+# FIX-05: declare output type contract — Pandas/PySpark return Python code,
+# not SQL strings. Callers must branch on OutputType before passing to an engine.
+class OutputType(Enum):
+    SQL = "sql"       # Spark SQL, T-SQL — run through a SQL engine
+    PYTHON = "python" # Pandas, PySpark — execute as Python code
+
+def target_output_type(target: str) -> OutputType:
+    """Return the OutputType for a given translate() target string."""
+    return OutputType.PYTHON if target in ("pandas", "pyspark") else OutputType.SQL
+
+__version__ = "0.11.1"  # patched: FIX-01 through FIX-05
+__all__ = [
+    "translate", "smart_transpile", "detect_operators", "is_supported",
+    "check", "__version__", "TimeSeriesMicroModel",
+    "OutputType", "target_output_type",  # FIX-05
+]
 
 _SPARK_GEN = SparkSQLGenerator()
 _TSQL_GEN = TSQLGenerator()
@@ -120,12 +135,30 @@ def detect_operators(kql: str) -> list[str]:
         CountOp: "count",
     }
 
+    # FIX-03: detect make-series and fill functions BEFORE calling the grammar
+    # parser, which doesn't have a make-series production rule yet.
+    # Karpathy P3: only added this pre-check block; _OP_NAMES dict unchanged.
+    import re as _re_detect
+    ops: list[str] = []
+    normalized = " ".join(kql.lower().split())
+    if _re_detect.search(r"\|\s*make-series\b", normalized):
+        ops.append("make-series")
+    if _re_detect.search(r"\bseries_fill_linear\s*\(", normalized):
+        ops.append("series_fill_linear")
+    if _re_detect.search(r"\bseries_fill_forward\s*\(", normalized):
+        ops.append("series_fill_forward")
+
+    # For mixed pipelines (e.g. "T | where x | make-series ..."), truncate at
+    # the make-series pipe so the grammar can still detect preceding operators.
+    kql_for_grammar = _re_detect.split(r"\|\s*make-series\b", kql, maxsplit=1, flags=_re_detect.IGNORECASE)[0].rstrip(" |")
+
     try:
-        query = parse(kql)
-        return [_OP_NAMES[type(op)] for op in query.pipes
+        query = parse(kql_for_grammar)
+        ops += [_OP_NAMES[type(op)] for op in query.pipes
                 if type(op) in _OP_NAMES]
     except Exception:
-        return []
+        pass  # grammar failed — ops from pre-check still returned
+    return ops
 
 
 def is_supported(kql: str) -> bool:
@@ -135,6 +168,14 @@ def is_supported(kql: str) -> bool:
     Queries with unsupported operators (make-series, render, etc.)
     return False — the caller should keep those in the native KQL engine.
     """
+    # FIX-03: make-series is handled via TEG v5 (TimeSeriesMicroModel).
+    # The Lark grammar doesn't have a make-series rule yet, so parse() raises.
+    # We pre-check for it and return True since translate() handles it.
+    import re as _re_sup
+    normalized = " ".join(kql.lower().split())
+    if _re_sup.search(r"\|\s*make-series\b", normalized):
+        return True  # TEG v5 handles this path
+
     try:
         query = parse(kql)
         result = _semantic_check(query)
@@ -153,5 +194,15 @@ def check(kql: str) -> SemanticResult:
     - warnings: Non-blocking issues
     - errors: Blocking issues (unsupported operators, ambiguities)
     """
+    # FIX-03: make-series bypasses the Lark grammar via TEG v5.
+    # Return a valid SemanticResult without calling parse() on it.
+    import re as _re_chk
+    normalized = " ".join(kql.lower().split())
+    if _re_chk.search(r"\|\s*make-series\b", normalized):
+        return SemanticResult(
+            is_valid=True,
+            warnings=["make-series handled via TEG v5 (TimeSeriesMicroModel)"],
+            errors=[],
+        )
     query = parse(kql)
     return _semantic_check(query)

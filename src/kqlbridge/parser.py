@@ -200,6 +200,34 @@ _BOOL_COMP_RE = _re.compile(
     _re.IGNORECASE
 )
 
+# FIX-01: Pre-process datetime(YYYY-MM-DD) → datetime('YYYY-MM-DD')
+# Root cause: the Lark grammar matches datetime(...) as func_call, and the
+# hyphens in the date are parsed as subtraction (BinaryOp).
+# Quoting the ISO string makes the parser see a StringLit argument instead.
+# Karpathy P3: only matches the date-like pattern; does not touch datetime
+# expressions that already contain quotes or function calls inside.
+_DATETIME_ISO_RE = _re.compile(
+    r"""(?<!\w)  # not preceded by a word char (avoids partial matches)
+    datetime\(   # literal keyword
+    (\d{4}       # 4-digit year
+    [-/]         # separator
+    \d{1,2}      # 1-2 digit month
+    [-/]         # separator
+    \d{1,2}      # 1-2 digit day
+    (?:[T ]\d{2}:\d{2}(?::\d{2})?)? # optional time component
+    )
+    \)""",
+    _re.VERBOSE,
+)
+
+def _preprocess_datetime_literals(kql: str) -> str:
+    """Quote bare ISO date strings inside datetime() so the parser
+    treats them as string literals, not arithmetic expressions.
+    datetime(2024-01-01) → datetime('2024-01-01')
+    Skips already-quoted values and non-date content."""
+    return _DATETIME_ISO_RE.sub(lambda m: f"datetime('{m.group(1)}')", kql)
+
+
 def _preprocess_bool_funcs(kql: str) -> str:
     i = 0
     while i < len(kql):
@@ -250,6 +278,7 @@ def parse(kql: str) -> KQLQuery:
     kql = _preprocess_json(kql)
     kql = _preprocess_mv_expand(kql)
     kql = _preprocess_bool_funcs(kql)
+    kql = _preprocess_datetime_literals(kql)  # FIX-01: quote bare ISO dates
     
     normalized = _normalize_keywords(kql.strip())
     tree = get_parser().parse(normalized)

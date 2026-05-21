@@ -395,12 +395,12 @@ class TestCommunityFunctions:
         spark_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="spark")
         tsql_res = translate("AppLogs | where TimeGenerated > datetime('2024-01-01')", target="tsql")
         assert "TIMESTAMP '2024-01-01'" in spark_res
-        assert "CONVERT(datetime, '2024-01-01')" in tsql_res
+        assert "CAST('2024-01-01' AS DATETIME2)" in tsql_res
 
         spark_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="spark")
         tsql_res_double = translate("AppLogs | where TimeGenerated > datetime(\"2024-01-01\")", target="tsql")
         assert "TIMESTAMP '2024-01-01'" in spark_res_double
-        assert "CONVERT(datetime, '2024-01-01')" in tsql_res_double
+        assert "CAST('2024-01-01' AS DATETIME2)" in tsql_res_double
 
     def test_coalesce(self):
         spark_res = translate("AppLogs | extend x = coalesce(A, B, C)", target="spark")

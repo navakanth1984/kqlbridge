@@ -165,6 +165,49 @@ class TimeSeriesMicroModel:
             if linear_fill_cols:
                 self.interpolation = "linear"
 
+        # FIX-04: validate temporal bounds after all paths (kql string OR explicit params).
+        # Karpathy P3: only added this call; __init__ is otherwise unchanged.
+        self._validate()
+
+    def _validate(self) -> None:
+        """FIX-04: Guard against silent runtime bombs.
+        Raises ValueError for zero-step and end-before-start configurations.
+        Called at the end of __init__ regardless of construction path.
+        Karpathy P1: assumptions are explicit and checked here, not at SQL execution time.
+        """
+        # Guard 1: zero step generates an infinite sequence in Spark
+        if self.step:
+            step_val = self.step.get("value", 0)
+            if step_val == 0:
+                raise ValueError(
+                    f"step value must be > 0, got 0. "
+                    f"A zero-step generates an infinite sequence at runtime."
+                )
+
+        # Guard 2: end before or equal to start produces wrong/empty results silently
+        if self.start and self.end:
+            # Compare only for literal datetime types — skip ago()/now() comparisons
+            # since those are relative and resolved at query time.
+            if self.start.get("type") == "datetime" and self.end.get("type") == "datetime":
+                try:
+                    from datetime import datetime as _dt
+                    start_dt = _dt.fromisoformat(self.start["value"])
+                    end_dt = _dt.fromisoformat(self.end["value"])
+                    if start_dt >= end_dt:
+                        raise ValueError(
+                            f"from_time must be strictly before to_time. "
+                            f"Got from_time={self.start['value']!r} >= to_time={self.end['value']!r}. "
+                            f"This would produce an empty or reversed time grid."
+                        )
+                except (ValueError, KeyError, TypeError) as exc:
+                    if "must be strictly before" in str(exc):
+                        raise  # re-raise our own validation error
+                    # unparseable datetime — let it fail at SQL execution time
+
+        # Guard 3: empty table name
+        if self.source_query is not None and self.source_query.strip() == "":
+            raise ValueError("table name must not be empty.")
+
     def _parse(self) -> None:
         match = re.search(r"\|\s*make-series\s", self.kql, re.IGNORECASE)
         if not match:

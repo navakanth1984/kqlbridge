@@ -665,6 +665,20 @@ class SparkSQLGenerator:
         if name in kql_to_spark:
             return kql_to_spark[name](args)
 
+        # FIX-02: window functions require OVER() — plain call without OVER is invalid SQL.
+        # Emit a valid unpartitioned OVER() and flag for human review.
+        # Karpathy P3: only added this block; the kql_to_spark dict above is unchanged.
+        _WINDOW_FNS = {
+            "row_number", "rank", "dense_rank", "ntile",
+            "percent_rank", "cume_dist",
+        }
+        if name in _WINDOW_FNS:
+            args_str = ", ".join(args) if args else ""
+            return (
+                f"{name}({args_str}) OVER ()  "
+                f"-- GPS S FIX-02: add PARTITION BY / ORDER BY for correct results"
+            )
+
         # Unknown function — pass through as-is with a comment
         args_str = ", ".join(args)
         return f"{name}({args_str}) /* KQL function — verify Spark equivalent */"

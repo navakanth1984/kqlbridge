@@ -123,9 +123,11 @@ class TSQLGenerator(SparkSQLGenerator):
             return f"DATEADD({unit}, -{expr.amount}, GETDATE())"
 
         if isinstance(expr, DatetimeLit):
+            # FIX-01: extract the ISO date string directly from the raw literal
+            # e.g. DatetimeLit(raw="datetime('2024-01-01')") → CAST('2024-01-01' AS DATETIME2)
             inner = expr.raw.replace("datetime(", "").rstrip(")")
             inner = inner.strip("'\"")
-            return f"CONVERT(datetime, '{inner}')"
+            return f"CAST('{inner}' AS DATETIME2)"
 
         if isinstance(expr, BinExpr):
             col = self._expr(expr.col)
@@ -144,8 +146,10 @@ class TSQLGenerator(SparkSQLGenerator):
         name = expr.name.lower()
         args = [self._expr(a) for a in expr.args]
         if name == "datetime":
-            arg_sql = self._expr(expr.args[0])
-            return f"CONVERT(datetime, {arg_sql})"
+            # FIX-01: args[0] is the already-rendered date string (quoted by pre-processor)
+            # Strip surrounding quotes and emit CAST('...' AS DATETIME2)
+            date_str = args[0].strip("'\"") if args else ""
+            return f"CAST('{date_str}' AS DATETIME2)"
         if name == "split":
             return f"STRING_SPLIT({args[0]}, {args[1]})"
         if name == "datetime_add":
