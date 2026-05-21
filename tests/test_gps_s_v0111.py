@@ -7,7 +7,7 @@ import time, gc, sys, traceback, concurrent.futures, statistics
 import kqlbridge
 from kqlbridge import translate, smart_transpile, detect_operators, is_supported, TimeSeriesMicroModel
 
-assert kqlbridge.__version__ == "0.11.1", f"Wrong version: {kqlbridge.__version__}"
+assert kqlbridge.__version__ == "0.11.2", f"Wrong version: {kqlbridge.__version__}"
 
 results = []
 
