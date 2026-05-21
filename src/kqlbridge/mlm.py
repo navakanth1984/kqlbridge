@@ -21,16 +21,6 @@ class MLMAgent:
         else:
             self.memory_path = memory_path
             
-        self.memory: Dict[str, Any] = {
-            "overrides": {},
-            "rules": [],
-            "telemetry": {
-                "failures": {},
-                "success_count": 0,
-                "total_translations": 0
-            }
-        }
-        self.load_default_memory()
         self.load_memory()
 
     def load_default_memory(self) -> None:
@@ -51,6 +41,16 @@ class MLMAgent:
 
     def load_memory(self) -> None:
         """Load telemetry and overrides from local JSON store."""
+        self.memory = {
+            "overrides": {},
+            "rules": [],
+            "telemetry": {
+                "failures": {},
+                "success_count": 0,
+                "total_translations": 0
+            }
+        }
+        self.load_default_memory()
         if os.path.exists(self.memory_path):
             try:
                 with open(self.memory_path, "r", encoding="utf-8") as f:
@@ -87,6 +87,7 @@ class MLMAgent:
                 "total_translations": 0
             }
         }
+        self.load_default_memory()
         self.save_memory()
 
     def learn(self, kql: str, error: Optional[str] = None, fix_sql: Optional[str] = None) -> None:

@@ -17,7 +17,7 @@ from kqlbridge import (
 
 def test_version_pin():
     """GPS P: eval oracle must run against a known version. Never skip."""
-    assert kqlbridge.__version__ == "0.11.1", (
+    assert kqlbridge.__version__ == "0.11.2", (
         f"Wrong version: {kqlbridge.__version__!r}. "
         "These tests are calibrated for v0.11.0 only."
     )
