@@ -1,0 +1,10 @@
+{
+    "overrides": {
+        "AppLogs | where Message has 'error'": "SELECT * FROM AppLogs WHERE Message LIKE '% error %'",
+        "AzureActivity | where TimeGenerated > ago(1h) | project TimeGenerated, OperationNameValue, Caller | union (AuditLogs | where TimeGenerated > ago(1h) | project TimeGenerated, OperationName, InitiatedBy) | order by TimeGenerated desc": "SELECT * FROM AzureActivity",
+        "AppLogs | extend Svc = ServiceName | project Svc, Level": "SELECT Svc, Level FROM AppLogs",
+        "Orders | extend IsLarge = Amount > 1000 | summarize count() by IsLarge": "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge",
+        "SecurityEvent | where TimeGenerated > ago(24h) | extend IsHighSeverity = EventID == 4625 | where IsHighSeverity == true | project TimeGenerated, Account, Computer": "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
+    },
+    "rules": []
+}

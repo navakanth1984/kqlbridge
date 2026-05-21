@@ -30,7 +30,24 @@ class MLMAgent:
                 "total_translations": 0
             }
         }
+        self.load_default_memory()
         self.load_memory()
+
+    def load_default_memory(self) -> None:
+        """Load packaged default memory database relative to __file__."""
+        default_path = os.path.join(os.path.dirname(__file__), "default_memory.json")
+        if os.path.exists(default_path):
+            try:
+                with open(default_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    self.memory["overrides"].update(data.get("overrides", {}))
+                    # Prevent duplicates in rules
+                    for rule in data.get("rules", []):
+                        if rule not in self.memory["rules"]:
+                            self.memory["rules"].append(rule)
+            except Exception as e:
+                import logging
+                logging.warning("[kqlbridge] MLM Agent failed to load packaged default memory: %s", e)
 
     def load_memory(self) -> None:
         """Load telemetry and overrides from local JSON store."""

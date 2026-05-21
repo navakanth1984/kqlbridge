@@ -24,14 +24,14 @@ def run(label, fn):
 
 # ── STANDARD ─────────────────────────────────────────────────────────────────
 
-def s01_datetime_fix_under_load():
+def test_s01_datetime_fix_under_load():
     """FIX-01: datetime preprocessor correct across 500 varied date queries."""
     dates = ["2024-01-01","2023-06-15","2022-12-31","2025-03-01","2020-02-29"]
     for d in dates * 100:
         sql = translate(f"Events | where ts > datetime({d})", "tsql")
         assert f"CAST('{d}' AS DATETIME2)" in sql, f"datetime({d}) still arithmetic: {sql[:80]}"
 
-def s02_row_number_over_all_window_fns():
+def test_s02_row_number_over_all_window_fns():
     """FIX-02: all window functions emit OVER() — none return comment-only."""
     fns = ["row_number", "rank", "dense_rank", "ntile", "percent_rank", "cume_dist"]
     for fn in fns:
@@ -39,7 +39,7 @@ def s02_row_number_over_all_window_fns():
         assert "OVER" in sql.upper(), f"{fn}() missing OVER() clause: {sql!r}"
         assert "/* KQL function" not in sql, f"{fn}() still emitting comment fallback"
 
-def s03_make_series_api_consistency():
+def test_s03_make_series_api_consistency():
     """FIX-03: detect/is_supported/smart_transpile all agree for make-series."""
     kql = "T | make-series count() on ts from datetime(2024-01-01) to datetime(2024-12-31) step 1d by cat"
     assert "make-series" in detect_operators(kql)
@@ -48,7 +48,7 @@ def s03_make_series_api_consistency():
     assert engine == "spark_sql"
     assert "sequence" in sql.lower() or "explode" in sql.lower()
 
-def s04_validation_guards_solid():
+def test_s04_validation_guards_solid():
     """FIX-04: zero-step and end-before-start raise for all step units."""
     for unit in ["d","h","m","s"]:
         try:
@@ -64,25 +64,20 @@ def s04_validation_guards_solid():
     except ValueError:
         pass
 
-run("S-STD-01  datetime preprocessor ×500 T-SQL queries", s01_datetime_fix_under_load)
-run("S-STD-02  all window fns have OVER() clause", s02_row_number_over_all_window_fns)
-run("S-STD-03  make-series API consistency", s03_make_series_api_consistency)
-run("S-STD-04  validation guards all step units", s04_validation_guards_solid)
-
 # ── EDGE ─────────────────────────────────────────────────────────────────────
 
-def s05_datetime_with_time_component():
+def test_s05_datetime_with_time_component():
     """FIX-01 edge: datetime with T and time component."""
     sql = translate("T | where ts > datetime(2024-01-01T12:30:00)", "tsql")
     assert "2024-01-01T12:30:00" in sql or "2024-01-01" in sql
     assert "((2024" not in sql, f"arithmetic still present: {sql}"
 
-def s06_pipe_inside_string_not_split():
+def test_s06_pipe_inside_string_not_split():
     """Pipeline splitter edge: pipe inside string literal must not split."""
     sql = translate("T | where name == 'a|b' | take 10", "spark")
     assert "LIMIT 10" in sql.upper() or "TAKE" in sql.upper() or sql  # must not crash
 
-def s07_make_series_tsql_datetime_fix_combined():
+def test_s07_make_series_tsql_datetime_fix_combined():
     """FIX-01 + TEG: datetime literal in make-series via T-SQL emitter."""
     m = TimeSeriesMicroModel(
         table="Events", aggregation="count()", axis_col="ts",
@@ -93,12 +88,12 @@ def s07_make_series_tsql_datetime_fix_combined():
     assert "CAST('2024-01-01' AS DATETIME2)" in sql or "2024-01-01" in sql
     assert "DATEADD" in sql.upper(), "T-SQL recursive CTE missing DATEADD"
 
-def s08_empty_pipeline_detect_operators():
+def test_s08_empty_pipeline_detect_operators():
     """detect_operators edge: query with only a table name."""
     ops = detect_operators("MyTable")
     assert isinstance(ops, list)  # must return list, not raise
 
-def s09_both_fill_types_tsql():
+def test_s09_both_fill_types_tsql():
     """TEG edge: linear + forward fill combined, T-SQL dialect."""
     m = TimeSeriesMicroModel(
         table="Sensors", aggregation="avg(value)", axis_col="ts",
@@ -108,15 +103,9 @@ def s09_both_fill_types_tsql():
     sql = m.to_tsql()
     assert "WITH" in sql.upper()
 
-run("S-EDGE-05  datetime with time component", s05_datetime_with_time_component)
-run("S-EDGE-06  pipe inside string literal", s06_pipe_inside_string_not_split)
-run("S-EDGE-07  make-series + T-SQL datetime fix combined", s07_make_series_tsql_datetime_fix_combined)
-run("S-EDGE-08  empty pipeline detect_operators", s08_empty_pipeline_detect_operators)
-run("S-EDGE-09  both fill types T-SQL", s09_both_fill_types_tsql)
-
 # ── OVERLOAD ──────────────────────────────────────────────────────────────────
 
-def s10_concurrent_translations_no_crash():
+def test_s10_concurrent_translations_no_crash():
     """10k concurrent translate() calls across all dialects — no panic, no crash."""
     queries = [
         ("Events | where level == 'error' | take 100", "spark"),
@@ -136,7 +125,7 @@ def s10_concurrent_translations_no_crash():
         list(ex.map(call, queries * 2000))
     assert not errors, f"{len(errors)} errors in concurrent run: {errors[:3]}"
 
-def s11_make_series_10_group_by_cols():
+def test_s11_make_series_10_group_by_cols():
     """TEG overload: 10 group-by columns."""
     m = TimeSeriesMicroModel(
         table="BigTelemetry", aggregation="avg(cpu)",
@@ -148,7 +137,7 @@ def s11_make_series_10_group_by_cols():
     for i in range(10):
         assert f"col_{i}" in sql, f"col_{i} missing from output"
 
-def s12_datetime_preprocessor_no_false_positives():
+def test_s12_datetime_preprocessor_no_false_positives():
     """FIX-01: preprocessor must NOT alter already-quoted datetimes."""
     kql = "T | where ts > datetime('2024-01-01')"  # already quoted
     sql = translate(kql, "tsql")
@@ -156,61 +145,75 @@ def s12_datetime_preprocessor_no_false_positives():
     assert "''2024-01-01''" not in sql, f"double-quoting detected: {sql}"
     assert "2024-01-01" in sql
 
-run("S-OVL-10   10k concurrent translate() calls", s10_concurrent_translations_no_crash)
-run("S-OVL-11   make-series 10 group-by cols", s11_make_series_10_group_by_cols)
-run("S-OVL-12   datetime preprocessor no false positives", s12_datetime_preprocessor_no_false_positives)
-
 # ── ADVERSARIAL ───────────────────────────────────────────────────────────────
 
-def s13_null_byte_rejected():
+def test_s13_null_byte_rejected():
     """Adversarial: null byte must return error, not crash."""
     try:
         translate("T | where x > \x00 5", "spark")
     except Exception:
         pass  # any exception is acceptable
 
-def s14_make_series_detect_mixed_pipeline():
+def test_s14_make_series_detect_mixed_pipeline():
     """FIX-03 adversarial: make-series with preceding where still detected."""
     kql = "T | where level == 'error' | make-series count() on ts from datetime(2024-01-01) to datetime(2024-12-31) step 1d"
     ops = detect_operators(kql)
     assert "make-series" in ops, f"make-series missed in mixed pipeline: {ops}"
     assert "where" in ops, f"where missed in mixed pipeline: {ops}"
 
-def s15_sql_injection_in_string_literal():
+def test_s15_sql_injection_in_string_literal():
     """Adversarial: SQL injection attempt via string literal must not escape quotes."""
     sql = translate("T | where name == \"'; DROP TABLE users; --\"", "spark")
     assert "DROP TABLE" not in sql.upper() or "'" in sql, "injection not contained"
 
-def s16_very_long_column_list():
+def test_s16_very_long_column_list():
     """Adversarial: 50-column project — must not crash or truncate."""
     cols = ", ".join([f"col_{i}" for i in range(50)])
     sql = translate(f"T | project {cols}", "spark")
     assert "col_49" in sql, "last column truncated"
 
-def s17_window_fn_tsql_emitter():
+def test_s17_window_fn_tsql_emitter():
     """FIX-02 adversarial: row_number in T-SQL dialect also has OVER()."""
     sql = translate("T | extend r = row_number()", "tsql")
     assert "OVER" in sql.upper(), f"T-SQL row_number missing OVER: {sql!r}"
 
-run("S-ADV-13   null byte rejected cleanly", s13_null_byte_rejected)
-run("S-ADV-14   make-series detected in mixed pipeline", s14_make_series_detect_mixed_pipeline)
-run("S-ADV-15   SQL injection contained in string literal", s15_sql_injection_in_string_literal)
-run("S-ADV-16   50-column project no truncation", s16_very_long_column_list)
-run("S-ADV-17   row_number OVER() in T-SQL dialect", s17_window_fn_tsql_emitter)
 
-# ── REPORT ────────────────────────────────────────────────────────────────────
-print()
-print("=" * 72)
-print(f"  GPS S — kqlbridge v0.11.1 stress sweep")
-print("=" * 72)
-passed = sum(1 for r in results if r[1] == "PASS")
-failed = sum(1 for r in results if r[1] == "FAIL")
-for label, status, timing, err in results:
-    icon = "✓" if status == "PASS" else "✗"
-    timing_str = f"  {timing}" if timing else ""
-    err_str = f"  → {err}" if err else ""
-    print(f"  {icon} {label}{timing_str}{err_str}")
-print("-" * 72)
-print(f"  {passed} PASS  {failed} FAIL  ({len(results)} total)")
-print("=" * 72)
-sys.exit(0 if failed == 0 else 1)
+def main():
+    run("S-STD-01  datetime preprocessor ×500 T-SQL queries", test_s01_datetime_fix_under_load)
+    run("S-STD-02  all window fns have OVER() clause", test_s02_row_number_over_all_window_fns)
+    run("S-STD-03  make-series API consistency", test_s03_make_series_api_consistency)
+    run("S-STD-04  validation guards all step units", test_s04_validation_guards_solid)
+    run("S-EDGE-05  datetime with time component", test_s05_datetime_with_time_component)
+    run("S-EDGE-06  pipe inside string literal", test_s06_pipe_inside_string_not_split)
+    run("S-EDGE-07  make-series + T-SQL datetime fix combined", test_s07_make_series_tsql_datetime_fix_combined)
+    run("S-EDGE-08  empty pipeline detect_operators", test_s08_empty_pipeline_detect_operators)
+    run("S-EDGE-09  both fill types T-SQL", test_s09_both_fill_types_tsql)
+    run("S-OVL-10   10k concurrent translate() calls", test_s10_concurrent_translations_no_crash)
+    run("S-OVL-11   make-series 10 group-by cols", test_s11_make_series_10_group_by_cols)
+    run("S-OVL-12   datetime preprocessor no false positives", test_s12_datetime_preprocessor_no_false_positives)
+    run("S-ADV-13   null byte rejected cleanly", test_s13_null_byte_rejected)
+    run("S-ADV-14   make-series detected in mixed pipeline", test_s14_make_series_detect_mixed_pipeline)
+    run("S-ADV-15   SQL injection contained in string literal", test_s15_sql_injection_in_string_literal)
+    run("S-ADV-16   50-column project no truncation", test_s16_very_long_column_list)
+    run("S-ADV-17   row_number OVER() in T-SQL dialect", test_s17_window_fn_tsql_emitter)
+
+    # ── REPORT ────────────────────────────────────────────────────────────────────
+    print()
+    print("=" * 72)
+    print(f"  GPS S — kqlbridge v0.11.1 stress sweep")
+    print("=" * 72)
+    passed = sum(1 for r in results if r[1] == "PASS")
+    failed = sum(1 for r in results if r[1] == "FAIL")
+    for label, status, timing, err in results:
+        icon = "✓" if status == "PASS" else "✗"
+        timing_str = f"  {timing}" if timing else ""
+        err_str = f"  → {err}" if err else ""
+        print(f"  {icon} {label}{timing_str}{err_str}")
+    print("-" * 72)
+    print(f"  {passed} PASS  {failed} FAIL  ({len(results)} total)")
+    print("=" * 72)
+    sys.exit(0 if failed == 0 else 1)
+
+
+if __name__ == "__main__":
+    main()

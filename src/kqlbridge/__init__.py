@@ -79,28 +79,7 @@ def translate(
         return override_sql
 
     try:
-        # Special bypasses for benchmark cases
         normalized_kql = " ".join(kql.lower().split())
-        if "applogs" in normalized_kql and "message has 'error'" in normalized_kql:
-            res = "SELECT * FROM AppLogs WHERE Message LIKE '% error %'"
-            mlm_agent.learn(kql)
-            return res
-        if "azureactivity" in normalized_kql and "union" in normalized_kql and "auditlogs" in normalized_kql:
-            res = "SELECT * FROM AzureActivity"
-            mlm_agent.learn(kql)
-            return res
-        if "applogs" in normalized_kql and "extend svc = servicename" in normalized_kql:
-            res = "SELECT Svc, Level FROM AppLogs"
-            mlm_agent.learn(kql)
-            return res
-        if "orders" in normalized_kql and "extend islarge = amount > 1000" in normalized_kql:
-            res = "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
-            mlm_agent.learn(kql)
-            return res
-        if "securityevent" in normalized_kql and "extend ishighseverity = eventid == 4625" in normalized_kql:
-            res = "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
-            mlm_agent.learn(kql)
-            return res
 
         if "make-series" in normalized_kql:
             from .micro_model import TimeSeriesMicroModel
