@@ -74,34 +74,20 @@ _KQL_KEYWORDS = {
 }
 
 
-# Optimization: Pre-compile word matching regex.
-# Using match with a start position parameter (`_WORD_RE.match(kql, i)`)
-# avoids O(N^2) string slicing `kql[i:]` on long queries.
-_WORD_RE = _re.compile(r'[A-Za-z_][A-Za-z0-9_.]*')
+# Optimization: Pre-compile string and word matching regex.
+# Replaces O(N) python-level looping with optimized C-level regex substitution.
+_NORMALIZE_RE = _re.compile(r'("[^"]*"|\'[^\']*\')|([A-Za-z_][A-Za-z0-9_.]*)')
+
+def _normalize_replacer(match: _re.Match) -> str:
+    if match.group(1) is not None:
+        return match.group(1)
+    word = match.group(2)
+    lower_word = word.lower()
+    return lower_word if lower_word in _KQL_KEYWORDS else word
 
 def _normalize_keywords(kql: str) -> str:
     """Lowercase KQL keywords while preserving quoted string content."""
-    result = []
-    i = 0
-    kql_len = len(kql)
-    while i < kql_len:
-        if kql[i] in ('"', "'"):
-            q = kql[i]
-            j = i + 1
-            while j < kql_len and kql[j] != q:
-                j += 1
-            result.append(kql[i:j + 1])
-            i = j + 1
-        else:
-            m = _WORD_RE.match(kql, i)
-            if m:
-                word = m.group()
-                result.append(word.lower() if word.lower() in _KQL_KEYWORDS else word)
-                i = m.end()
-            else:
-                result.append(kql[i])
-                i += 1
-    return ''.join(result)
+    return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
 def _split_case_args(arg_str: str) -> list[str]:
@@ -208,11 +194,16 @@ def _preprocess_mv_expand(kql: str) -> str:
         kql
     )
 
+_BOOL_FUNCS_RE = _re.compile(r"\b(ipv4_is_private|ipv4_is_in_range)\s*\(", _re.IGNORECASE)
+_BOOL_COMP_RE = _re.compile(
+    r"\s*(?:==|!=|<=|>=|<|>|=~|(?i:in|has|contains|startswith|endswith)\b|!in\b)",
+    _re.IGNORECASE
+)
+
 def _preprocess_bool_funcs(kql: str) -> str:
-    pattern = _re.compile(r"\b(ipv4_is_private|ipv4_is_in_range)\s*\(", _re.IGNORECASE)
     i = 0
     while i < len(kql):
-        match = pattern.search(kql, i)
+        match = _BOOL_FUNCS_RE.search(kql, i)
         if not match:
             break
         open_paren_idx = match.end() - 1
@@ -238,20 +229,10 @@ def _preprocess_bool_funcs(kql: str) -> str:
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
-        following = kql[close_paren_idx + 1:].lstrip()
-        has_comparison = False
-        comp_operators = ["==", "!=", "<=", ">=", "<", ">", "=~"]
-        comp_keywords = ["in", "!in", "has", "contains", "startswith", "endswith"]
-        for op in comp_operators:
-            if following.startswith(op):
-                has_comparison = True
-                break
-        if not has_comparison:
-            for kw in comp_keywords:
-                if _re.match(rf"\b{kw}\b", following, _re.IGNORECASE):
-                    has_comparison = True
-                    break
-        if not has_comparison:
+
+        # Fast regex check for all comparison operators instead of manual prefix loops.
+        # This properly handles `!in\b` without breaking because `!` isn't a word boundary.
+        if not _BOOL_COMP_RE.match(kql, close_paren_idx + 1):
             kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
             i = close_paren_idx + 1 + len(" == true")
         else:
