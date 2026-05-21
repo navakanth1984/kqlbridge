@@ -39,6 +39,10 @@
     "mtime": 1779218275.1386836,
     "hash": "bb2f8adb5df9cc328fde733c396ead69"
   },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\micro_model.py": {
+    "mtime": 1779292913.7107675,
+    "hash": "1e53931e0e4734be5484cb5ff8488186"
+  },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\parser.py": {
     "mtime": 1779283953.161945,
     "hash": "9d1863ee55c4fb62ca77fbee15f2e47d"
@@ -52,8 +56,8 @@
     "hash": "b1cc2be6cb69440897a04e3f372c6049"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\__init__.py": {
-    "mtime": 1779285263.006095,
-    "hash": "ea0d188b1a290408f5d215f33dbf0e92"
+    "mtime": 1779335638.203411,
+    "hash": "4d6c19574bb365ecaed53f49d7bb8961"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\generators\\pyspark.py": {
     "mtime": 1779218523.313371,
@@ -74,6 +78,10 @@
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_complex.py": {
     "mtime": 1779218319.644993,
     "hash": "b552c7caeeee1147aa03c8d752874880"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_micro_model.py": {
+    "mtime": 1779292842.9138987,
+    "hash": "1b0b6c8a3b24dbee778465499f77ea9e"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_operators.py": {
     "mtime": 1779285300.4792063,
@@ -99,6 +107,22 @@
     "mtime": 1779017587.988672,
     "hash": "fba54a1c0ffee476ebfa84379b7917ef"
   },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_arch_adr_fe4d36fa.md": {
+    "mtime": 1779335663.6028516,
+    "hash": "82a38fbed48e574c2b0377a4665543cf"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_arch_adr.md": {
+    "mtime": 1779335374.2955089,
+    "hash": "acb8f488b3aa7fbb953d913e26d5d1d4"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_qa_report_0ae0b175.md": {
+    "mtime": 1779335663.659881,
+    "hash": "e3ca88ebaabc48207d2713431040e190"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_qa_report.md": {
+    "mtime": 1779335374.3049362,
+    "hash": "db796e41938c0ced3e46da7d8c132675"
+  },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\operator_status.md": {
     "mtime": 1779017588.0068226,
     "hash": "1117d11f4410270406821b56828cf913"
@@ -122,6 +146,18 @@
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\docs\\market_research.md": {
     "mtime": 1779218319.569845,
     "hash": "7319fe17b96fd286ff40e915d54936f8"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\docs\\research_compiler_ir.md": {
+    "mtime": 1779298454.7580457,
+    "hash": "17ecb363d0c0cce373de1b5692a2fa8a"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\docs\\research_neural_compiler.md": {
+    "mtime": 1779298611.478192,
+    "hash": "a4c6d20b9260c5025c37ca6e3be34eda"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\docs\\research_timeseries_languages.md": {
+    "mtime": 1779298535.5527272,
+    "hash": "93927a8e821af749359dbaf21a4c0402"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\docs\\supported_operators.md": {
     "mtime": 1779017588.004735,

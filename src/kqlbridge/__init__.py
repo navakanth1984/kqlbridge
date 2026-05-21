@@ -21,10 +21,11 @@ from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 from .generators.pyspark import PySparkGenerator
 
-__version__ = "0.9.2"
-__all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__"]
-
 from .smart import smart_transpile
+from .micro_model import TimeSeriesMicroModel
+
+__version__ = "0.10.0"
+__all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__", "TimeSeriesMicroModel"]
 
 _SPARK_GEN = SparkSQLGenerator()
 _TSQL_GEN = TSQLGenerator()
@@ -62,6 +63,18 @@ def translate(
         return "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
     if "securityevent" in normalized_kql and "extend ishighseverity = eventid == 4625" in normalized_kql:
         return "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
+
+    if "make-series" in normalized_kql:
+        from .micro_model import TimeSeriesMicroModel
+        model = TimeSeriesMicroModel(kql)
+        if target == "spark":
+            return model.to_spark_sql()
+        elif target == "tsql":
+            return model.to_tsql()
+        elif target == "pyspark":
+            return model.to_pyspark()
+        else:
+            raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
 
     try:
         query = parse(kql)
