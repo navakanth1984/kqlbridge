@@ -45,7 +45,7 @@ kqlbridge = "kqlbridge.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-"kqlbridge" = ["grammar/*.lark"]
+"kqlbridge" = ["grammar/*.lark", "default_memory.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
