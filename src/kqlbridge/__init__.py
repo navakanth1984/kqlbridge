@@ -24,7 +24,7 @@ from .generators.pyspark import PySparkGenerator
 from .smart import smart_transpile
 from .micro_model import TimeSeriesMicroModel
 
-__version__ = "0.10.0"
+__version__ = "0.11.0"
 __all__ = ["translate", "smart_transpile", "detect_operators", "is_supported", "check", "__version__", "TimeSeriesMicroModel"]
 
 _SPARK_GEN = SparkSQLGenerator()
