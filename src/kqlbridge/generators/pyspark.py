@@ -1,3 +1,4 @@
+from ..schema_hint import SchemaHint
 from ..ast_nodes import (
     KQLQuery, ProjectOp, WhereOp, SummarizeOp, ExtendOp, OrderOp, TakeOp,
     DistinctOp, JoinOp, UnionOp, Negation, SubqueryInExpr, CountOp, SerializeOp
@@ -9,8 +10,8 @@ class PySparkGenerator:
     Experimental PySpark Generator.
     Routes KQL AST nodes to executable PySpark DataFrame Python code.
     """
-    def __init__(self):
-        self.sql_gen = SparkSQLGenerator()
+    def __init__(self, hint: SchemaHint | None = None):
+        self.sql_gen = SparkSQLGenerator(hint=hint)
 
     def generate(self, query: KQLQuery) -> str:
         """

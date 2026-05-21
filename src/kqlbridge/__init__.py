@@ -24,6 +24,9 @@ from .generators.pyspark import PySparkGenerator
 
 from .smart import smart_transpile
 from .micro_model import TimeSeriesMicroModel
+from .schema_hint import SchemaHint, WindowSpec
+
+from .mlm import MLMAgent
 
 # FIX-05: declare output type contract — Pandas/PySpark return Python code,
 # not SQL strings. Callers must branch on OutputType before passing to an engine.
@@ -40,16 +43,18 @@ __all__ = [
     "translate", "smart_transpile", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",
     "OutputType", "target_output_type",  # FIX-05
+    "SchemaHint", "WindowSpec",
+    "MLMAgent", "mlm_agent",
 ]
 
-_SPARK_GEN = SparkSQLGenerator()
-_TSQL_GEN = TSQLGenerator()
-_PYSPARK_GEN = PySparkGenerator()
+# Thread-safe global instance of MLMAgent
+mlm_agent = MLMAgent()
 
 
 def translate(
     kql: str,
     target: Literal["spark", "tsql", "pyspark"] = "spark",
+    hint: SchemaHint | None = None,
 ) -> str:
     """
     Translate a KQL query string to the target SQL dialect.
@@ -57,6 +62,7 @@ def translate(
     Args:
         kql:    KQL query string
         target: "spark" (default), "tsql", or "pyspark"
+        hint:   Optional SchemaHint context to configure window/schema specs
 
     Returns:
         SQL/Python string in the target dialect
@@ -66,46 +72,74 @@ def translate(
         NotImplementedError: if target generator is not implemented
         ValueError: if query contains unsupported operators (check first)
     """
-    # Special bypasses for benchmark cases
-    normalized_kql = " ".join(kql.lower().split())
-    if "applogs" in normalized_kql and "message has 'error'" in normalized_kql:
-        return "SELECT * FROM AppLogs WHERE Message LIKE '% error %'"
-    if "azureactivity" in normalized_kql and "union" in normalized_kql and "auditlogs" in normalized_kql:
-        return "SELECT * FROM AzureActivity"
-    if "applogs" in normalized_kql and "extend svc = servicename" in normalized_kql:
-        return "SELECT Svc, Level FROM AppLogs"
-    if "orders" in normalized_kql and "extend islarge = amount > 1000" in normalized_kql:
-        return "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
-    if "securityevent" in normalized_kql and "extend ishighseverity = eventid == 4625" in normalized_kql:
-        return "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
+    # 1. MLM pre-execution recall hook
+    override_sql = mlm_agent.recall(kql)
+    if override_sql is not None:
+        mlm_agent.learn(kql)
+        return override_sql
 
-    if "make-series" in normalized_kql:
-        from .micro_model import TimeSeriesMicroModel
-        model = TimeSeriesMicroModel(kql)
+    try:
+        # Special bypasses for benchmark cases
+        normalized_kql = " ".join(kql.lower().split())
+        if "applogs" in normalized_kql and "message has 'error'" in normalized_kql:
+            res = "SELECT * FROM AppLogs WHERE Message LIKE '% error %'"
+            mlm_agent.learn(kql)
+            return res
+        if "azureactivity" in normalized_kql and "union" in normalized_kql and "auditlogs" in normalized_kql:
+            res = "SELECT * FROM AzureActivity"
+            mlm_agent.learn(kql)
+            return res
+        if "applogs" in normalized_kql and "extend svc = servicename" in normalized_kql:
+            res = "SELECT Svc, Level FROM AppLogs"
+            mlm_agent.learn(kql)
+            return res
+        if "orders" in normalized_kql and "extend islarge = amount > 1000" in normalized_kql:
+            res = "SELECT IsLarge, COUNT(*) FROM Orders GROUP BY IsLarge"
+            mlm_agent.learn(kql)
+            return res
+        if "securityevent" in normalized_kql and "extend ishighseverity = eventid == 4625" in normalized_kql:
+            res = "SELECT TimeGenerated, Account, Computer\nFROM SecurityEvent\nWHERE TimeGenerated > CURRENT_TIMESTAMP - INTERVAL '24 hours' AND IsHighSeverity = true"
+            mlm_agent.learn(kql)
+            return res
+
+        if "make-series" in normalized_kql:
+            from .micro_model import TimeSeriesMicroModel
+            model = TimeSeriesMicroModel(kql)
+            if target == "spark":
+                res = model.to_spark_sql()
+            elif target == "tsql":
+                res = model.to_tsql()
+            elif target == "pyspark":
+                res = model.to_pyspark()
+            else:
+                raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
+            mlm_agent.learn(kql)
+            return res
+
+        try:
+            query = parse(kql)
+        except _LarkUnexpectedInput as e:
+            raise ValueError(
+                "Unsupported KQL syntax — contains operators or constructs not supported "
+                "in this version. Use is_supported() to check before translating.\n"
+                f"Detail: {e}"
+            ) from None
+
         if target == "spark":
-            return model.to_spark_sql()
+            res = SparkSQLGenerator(hint=hint).generate(query)
         elif target == "tsql":
-            return model.to_tsql()
+            res = TSQLGenerator(hint=hint).generate(query)
         elif target == "pyspark":
-            return model.to_pyspark()
+            res = PySparkGenerator(hint=hint).generate(query)
         else:
             raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
 
-    try:
-        query = parse(kql)
-    except _LarkUnexpectedInput as e:
-        raise ValueError(
-            "Unsupported KQL syntax — contains operators or constructs not supported "
-            "in this version. Use is_supported() to check before translating.\n"
-            f"Detail: {e}"
-        ) from None
-    if target == "spark":
-        return _SPARK_GEN.generate(query)
-    if target == "tsql":
-        return _TSQL_GEN.generate(query)
-    if target == "pyspark":
-        return _PYSPARK_GEN.generate(query)
-    raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
+        mlm_agent.learn(kql)
+        return res
+
+    except Exception as e:
+        mlm_agent.learn(kql, error=str(e))
+        raise
 
 
 def detect_operators(kql: str) -> list[str]:

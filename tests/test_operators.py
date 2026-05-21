@@ -647,3 +647,87 @@ class TestV09PySpark:
         assert "df = df.limit(5)" in out
 
 
+class TestWindowFunctionsSchemaHint:
+    def test_window_defaults(self):
+        from kqlbridge import translate
+        kql_prev = "AppLogs | serialize | extend prev_level = prev(Level)"
+        kql_next = "AppLogs | serialize | extend next_level = next(Level)"
+        
+        # Test defaults (hint=None)
+        res_prev = translate(kql_prev, target="spark")
+        res_next = translate(kql_next, target="spark")
+        
+        assert "LAG(Level) OVER (ORDER BY (SELECT NULL))" in res_prev
+        assert "LEAD(Level) OVER (ORDER BY (SELECT NULL))" in res_next
+
+    def test_window_partition_only(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        hint = SchemaHint(window_spec=WindowSpec(partition_by=["Computer"]))
+        
+        res = translate(kql, target="spark", hint=hint)
+        assert "LAG(Level) OVER (PARTITION BY Computer ORDER BY (SELECT NULL))" in res
+
+    def test_window_order_only(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        hint = SchemaHint(window_spec=WindowSpec(order_by=["TimeGenerated DESC"]))
+        
+        res = translate(kql, target="spark", hint=hint)
+        assert "LAG(Level) OVER (ORDER BY TimeGenerated DESC)" in res
+
+    def test_window_combined(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        hint = SchemaHint(window_spec=WindowSpec(
+            partition_by=["Computer", "ServiceName"],
+            order_by=["TimeGenerated ASC", "Level DESC"]
+        ))
+        
+        res = translate(kql, target="spark", hint=hint)
+        assert "LAG(Level) OVER (PARTITION BY Computer, ServiceName ORDER BY TimeGenerated ASC, Level DESC)" in res
+
+    def test_window_malformed_lists(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        # Test sparse inputs and empty strings filtering
+        hint = SchemaHint(window_spec=WindowSpec(
+            partition_by=["", None, "Computer"],
+            order_by=[None, "TimeGenerated DESC", ""]
+        ))
+        
+        res = translate(kql, target="spark", hint=hint)
+        assert "LAG(Level) OVER (PARTITION BY Computer ORDER BY TimeGenerated DESC)" in res
+
+    def test_window_variadic_args(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        # prev(Level, offset, default)
+        kql = "AppLogs | serialize | extend prev_level = prev(Level, 2, 'NONE')"
+        hint = SchemaHint(window_spec=WindowSpec(partition_by=["Computer"]))
+        
+        res = translate(kql, target="spark", hint=hint)
+        assert "LAG(Level, 2, 'NONE') OVER (PARTITION BY Computer ORDER BY (SELECT NULL))" in res
+
+    def test_window_tsql_dialect(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        hint = SchemaHint(window_spec=WindowSpec(
+            partition_by=["Computer"],
+            order_by=["TimeGenerated DESC"]
+        ))
+        
+        res = translate(kql, target="tsql", hint=hint)
+        assert "LAG(Level) OVER (PARTITION BY Computer ORDER BY TimeGenerated DESC)" in res
+
+    def test_window_pyspark_dialect(self):
+        from kqlbridge import translate, SchemaHint, WindowSpec
+        kql = "AppLogs | serialize | extend prev_level = prev(Level)"
+        hint = SchemaHint(window_spec=WindowSpec(
+            partition_by=["Computer"],
+            order_by=["TimeGenerated DESC"]
+        ))
+        
+        res = translate(kql, target="pyspark", hint=hint)
+        assert "LAG(Level) OVER (PARTITION BY Computer ORDER BY TimeGenerated DESC)" in res
+
+

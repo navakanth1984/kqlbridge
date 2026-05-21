@@ -15,6 +15,7 @@ Overrides only the 4 methods where T-SQL syntax diverges:
 from __future__ import annotations
 import re
 
+from ..schema_hint import SchemaHint
 from ..ast_nodes import (
     AgoExpr, BinExpr, DatetimeLit, BoolLit, HasAnyExpr, StringLit,
     AggPercentile, AggMakeList, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf,
@@ -43,6 +44,9 @@ class TSQLGenerator(SparkSQLGenerator):
     - TIMESTAMP '...' → CONVERT(datetime, '...')
     - TRUE/FALSE      → 1/0
     """
+
+    def __init__(self, hint: SchemaHint | None = None):
+        super().__init__(hint=hint)
 
     # ─── Override 1: TOP n instead of LIMIT n ────────────────────────────
 

@@ -19,6 +19,7 @@ Human review is REQUIRED on every aggregate operator before accepting it as pass
 
 from __future__ import annotations
 
+from ..schema_hint import SchemaHint
 from ..ast_nodes import (
     KQLQuery, LetBinding,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
@@ -65,9 +66,12 @@ class SparkSQLGenerator:
     Generates Spark SQL from a KQLQuery AST.
 
     Usage:
-        gen = SparkSQLGenerator()
+        gen = SparkSQLGenerator(hint=hint)
         sql = gen.generate(query)
     """
+
+    def __init__(self, hint: SchemaHint | None = None):
+        self.hint = hint
 
     def generate(self, query: KQLQuery) -> str:
         """Entry point. Returns a Spark SQL string."""
@@ -652,7 +656,8 @@ class SparkSQLGenerator:
             "datetime":     lambda a: "TIMESTAMP '{}'".format(a[0].strip("'\"")),
             "datetime_add": lambda a: self._render_datetime_add(a),
             "datetime_diff": lambda a: self._render_datetime_diff(a),
-            "prev":          lambda a: f"LAG({', '.join(a)}) OVER (ORDER BY (SELECT NULL))",
+            "prev":          lambda a: self._render_prev_next("prev", a),
+            "next":          lambda a: self._render_prev_next("next", a),
             "parse_json_path": lambda a: self._render_parse_json_path(a),
             "ipv4_is_private": lambda a: self._render_ipv4_is_private(a),
             "ipv4_is_in_range": lambda a: self._render_ipv4_is_in_range(a),
@@ -894,3 +899,67 @@ class SparkSQLGenerator:
             default_val = self._expr(curr)
             
         return f"CASE {' '.join(branches)} ELSE {default_val} END"
+
+    def _render_prev_next(self, func_name: str, args: list[str]) -> str:
+        sql_func = "LAG" if func_name == "prev" else "LEAD"
+        args_str = ", ".join(args)
+        
+        ws = None
+        if self.hint:
+            if hasattr(self.hint, "window_spec"):
+                ws = self.hint.window_spec
+            elif isinstance(self.hint, dict):
+                ws = self.hint.get("window_spec")
+
+        partition_by = None
+        order_by = None
+        if ws:
+            if hasattr(ws, "partition_by"):
+                partition_by = ws.partition_by
+            elif isinstance(ws, dict):
+                partition_by = ws.get("partition_by")
+                
+            if hasattr(ws, "order_by"):
+                order_by = ws.order_by
+            elif isinstance(ws, dict):
+                order_by = ws.get("order_by")
+        
+        partition_by_clause = ""
+        if partition_by:
+            partition_cols = []
+            if isinstance(partition_by, (list, tuple)):
+                for col in partition_by:
+                    if col is not None:
+                        col_str = str(col).strip()
+                        if col_str:
+                            partition_cols.append(col_str)
+            else:
+                col_str = str(partition_by).strip()
+                if col_str:
+                    partition_cols.append(col_str)
+            if partition_cols:
+                partition_by_clause = f"PARTITION BY {', '.join(partition_cols)}"
+                
+        order_by_clause = "ORDER BY (SELECT NULL)"
+        if order_by:
+            order_cols = []
+            if isinstance(order_by, (list, tuple)):
+                for col in order_by:
+                    if col is not None:
+                        col_str = str(col).strip()
+                        if col_str:
+                            order_cols.append(col_str)
+            else:
+                col_str = str(order_by).strip()
+                if col_str:
+                    order_cols.append(col_str)
+            if order_cols:
+                order_by_clause = f"ORDER BY {', '.join(order_cols)}"
+                
+        over_parts = []
+        if partition_by_clause:
+            over_parts.append(partition_by_clause)
+        over_parts.append(order_by_clause)
+        
+        over_clause = " ".join(over_parts)
+        return f"{sql_func}({args_str}) OVER ({over_clause})"

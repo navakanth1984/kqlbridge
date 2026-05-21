@@ -134,6 +134,86 @@ def _version(args: argparse.Namespace) -> int:
     return 0
 
 
+def _mlm(args: argparse.Namespace) -> int:
+    from kqlbridge import mlm_agent
+    
+    subcmd = args.mlm_command
+    if subcmd == "status":
+        tel = mlm_agent.memory.get("telemetry", {})
+        print("KQLBridge MLM Agent Status:")
+        print(f"  Memory path        : {mlm_agent.memory_path}")
+        print(f"  Total translations : {tel.get('total_translations', 0)}")
+        print(f"  Success count      : {tel.get('success_count', 0)}")
+        print(f"  Failures recorded  : {len(tel.get('failures', {}))}")
+        print(f"  Active overrides   : {len(mlm_agent.memory.get('overrides', {}))}")
+        print(f"  Active BML rules   : {len(mlm_agent.memory.get('rules', []))}")
+        
+        failures = tel.get('failures', {})
+        if failures:
+            print("\nRecorded Failures:")
+            for query, info in failures.items():
+                print(f"  - Query: {query}")
+                print(f"    Count: {info.get('count', 0)}")
+                print(f"    Error: {info.get('error', '')}")
+                
+        overrides = mlm_agent.memory.get("overrides", {})
+        if overrides:
+            print("\nActive Overrides:")
+            for kql, sql in overrides.items():
+                print(f"  - KQL: {kql}")
+                print(f"    SQL: {sql}")
+
+        rules = mlm_agent.memory.get("rules", [])
+        if rules:
+            print("\nActive Bridge Meta-Language Rules:")
+            for rule in rules:
+                print(f"  - Pattern: {rule['pattern']}")
+                print(f"    Mapping: {rule['mapping']}")
+                
+        return 0
+
+    elif subcmd == "override":
+        kql = args.kql
+        sql = args.sql
+        mlm_agent.learn(kql, fix_sql=sql)
+        print(f"✓ Registered static override for query:\n  KQL: {kql}\n  SQL: {sql}")
+        return 0
+
+    elif subcmd == "rule":
+        pattern = args.pattern
+        mapping = args.mapping
+        mlm_agent.register_rule(pattern, mapping)
+        print(f"✓ Registered dynamic BML rule:\n  Pattern: {pattern}\n  Mapping: {mapping}")
+        return 0
+
+    elif subcmd == "clear":
+        mlm_agent.clear()
+        print("✓ MLM memory and telemetries successfully cleared.")
+        return 0
+
+    elif subcmd == "suggest":
+        kql = args.kql
+        failures = mlm_agent.memory.get("telemetry", {}).get("failures", {})
+        norm_kql = " ".join(kql.strip().split())
+        error_msg = failures.get(norm_kql, {}).get("error", "Unknown transpilation gap")
+        
+        print(f"Analyzing transpilation gap for query: {kql}")
+        print(f"Error context: {error_msg}")
+        print("Querying AI suggestion engine...")
+        
+        suggested_sql = mlm_agent.suggest_fix_via_ai(kql, error_msg)
+        if suggested_sql:
+            print("\nAI Suggested SQL Transpilation:")
+            print(f"  {suggested_sql}")
+            print("\nWould you like to register this override? Run:")
+            print(f"  kqlbridge mlm override {args.kql!r} {suggested_sql!r}")
+        else:
+            print("\n✗ AI Suggestion engine failed to resolve this query.")
+        return 0
+
+    return 1
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
         prog="kqlbridge",
@@ -174,10 +254,44 @@ def main() -> None:
     p_ver = sub.add_parser("version", help="Show version")
     p_ver.set_defaults(func=_version)
 
+    # mlm
+    p_mlm = sub.add_parser("mlm", help="Manage the Micro Language Model (MLM) Agent")
+    mlm_sub = p_mlm.add_subparsers(dest="mlm_command", metavar="<mlm-command>")
+
+    # mlm status
+    p_mlm_status = mlm_sub.add_parser("status", help="Print MLM memory diagnostics and recorded failures")
+    p_mlm_status.set_defaults(func=_mlm)
+
+    # mlm override
+    p_mlm_override = mlm_sub.add_parser("override", help="Manually register an exact query translation override")
+    p_mlm_override.add_argument("kql", help="Target KQL query string")
+    p_mlm_override.add_argument("sql", help="Target SQL query string")
+    p_mlm_override.set_defaults(func=_mlm)
+
+    # mlm rule
+    p_mlm_rule = mlm_sub.add_parser("rule", help="Register a dynamic Bridge Meta-Language (BML) pattern rule")
+    p_mlm_rule.add_argument("pattern", help="Bridge Meta-Language pattern template (e.g. 'T | custom({col})')")
+    p_mlm_rule.add_argument("mapping", help="Bridge Meta-Language SQL mapping template (e.g. 'SELECT {col} FROM T')")
+    p_mlm_rule.set_defaults(func=_mlm)
+
+    # mlm clear
+    p_mlm_clear = mlm_sub.add_parser("clear", help="Clear all recorded failures, overrides, and telemetries")
+    p_mlm_clear.set_defaults(func=_mlm)
+
+    # mlm suggest
+    p_mlm_suggest = mlm_sub.add_parser("suggest", help="Leverage AI analysis to suggest an override for a failed query")
+    p_mlm_suggest.add_argument("kql", help="Target KQL query string that failed translation")
+    p_mlm_suggest.set_defaults(func=_mlm)
+
     args = parser.parse_args()
 
     if args.command is None:
         parser.print_help()
+        sys.exit(0)
+
+    # Make sure subcommands also have default func if needed, or if main command handles routing
+    if not hasattr(args, "func"):
+        p_mlm.print_help()
         sys.exit(0)
 
     sys.exit(args.func(args))
