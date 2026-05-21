@@ -41,42 +41,30 @@ def test_mlm_telemetry_and_rules(tmp_path):
     assert agent.memory["telemetry"]["total_translations"] == 0
 
 
-def test_global_translate_integration(tmp_path):
+def test_global_translate_integration():
     """Verify translate() uses the global mlm_agent for recall, logging, and correction."""
-    # Temporarily point global mlm_agent's memory file to a temp file to isolate test side-effects
-    orig_path = mlm_agent.memory_path
-    temp_mem = os.path.join(tmp_path, "global_test_mem.json")
-    mlm_agent.memory_path = temp_mem
-    mlm_agent.clear()
+    kql_invalid = "AppLogs | this_op_will_crash_the_parser_totally"
     
-    try:
-        kql_invalid = "AppLogs | this_op_will_crash_the_parser_totally"
-        
-        # 1. Verify invalid KQL raises standard transpiler error and logs telemetry
-        with pytest.raises(ValueError) as excinfo:
-            translate(kql_invalid)
-        
-        assert "Unsupported KQL syntax" in str(excinfo.value)
-        assert kql_invalid in mlm_agent.memory["telemetry"]["failures"]
-        assert mlm_agent.memory["telemetry"]["failures"][kql_invalid]["count"] == 1
-        
-        # 2. Register static override for the invalid KQL and confirm translate() intercepts and bypasses
-        mlm_agent.learn(kql_invalid, fix_sql="SELECT * FROM AppLogs WHERE Intercepted = true")
-        
-        intercepted_sql = translate(kql_invalid)
-        assert intercepted_sql == "SELECT * FROM AppLogs WHERE Intercepted = true"
-        assert mlm_agent.memory["telemetry"]["success_count"] == 1
-        
-        # 3. Register a BML rule on the global agent and verify transparent translation
-        mlm_agent.register_rule(
-            pattern="AppLogs | process_tag({tag})",
-            mapping="SELECT * FROM AppLogs WHERE Tags LIKE '%{tag}%'"
-        )
-        
-        res = translate("AppLogs | process_tag(critical_bug)")
-        assert res == "SELECT * FROM AppLogs WHERE Tags LIKE '%critical_bug%'"
-        
-    finally:
-        # Revert global mlm_agent memory path to normal
-        mlm_agent.memory_path = orig_path
-        mlm_agent.load_memory()
+    # 1. Verify invalid KQL raises standard transpiler error and logs telemetry
+    with pytest.raises(ValueError) as excinfo:
+        translate(kql_invalid)
+    
+    assert "Unsupported KQL syntax" in str(excinfo.value)
+    assert kql_invalid in mlm_agent.memory["telemetry"]["failures"]
+    assert mlm_agent.memory["telemetry"]["failures"][kql_invalid]["count"] == 1
+    
+    # 2. Register static override for the invalid KQL and confirm translate() intercepts and bypasses
+    mlm_agent.learn(kql_invalid, fix_sql="SELECT * FROM AppLogs WHERE Intercepted = true")
+    
+    intercepted_sql = translate(kql_invalid)
+    assert intercepted_sql == "SELECT * FROM AppLogs WHERE Intercepted = true"
+    assert mlm_agent.memory["telemetry"]["success_count"] == 1
+    
+    # 3. Register a BML rule on the global agent and verify transparent translation
+    mlm_agent.register_rule(
+        pattern="AppLogs | process_tag({tag})",
+        mapping="SELECT * FROM AppLogs WHERE Tags LIKE '%{tag}%'"
+    )
+    
+    res = translate("AppLogs | process_tag(critical_bug)")
+    assert res == "SELECT * FROM AppLogs WHERE Tags LIKE '%critical_bug%'"

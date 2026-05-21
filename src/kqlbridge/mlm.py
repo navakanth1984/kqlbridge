@@ -16,8 +16,13 @@ class MLMAgent:
     
     def __init__(self, memory_path: Optional[str] = None):
         if memory_path is None:
-            # Place in user's home directory to persist across project rebuilds
-            self.memory_path = os.path.join(os.path.expanduser("~"), ".kqlbridge_memory.json")
+            # Check environment variable first to allow sandboxing in tests
+            env_path = os.environ.get("KQLBRIDGE_MEMORY_PATH")
+            if env_path:
+                self.memory_path = env_path
+            else:
+                # Place in user's home directory to persist across project rebuilds
+                self.memory_path = os.path.join(os.path.expanduser("~"), ".kqlbridge_memory.json")
         else:
             self.memory_path = memory_path
             
@@ -57,7 +62,9 @@ class MLMAgent:
                     data = json.load(f)
                     # Merge loaded data into baseline structures defensively
                     self.memory["overrides"].update(data.get("overrides", {}))
-                    self.memory["rules"] = data.get("rules", [])
+                    for rule in data.get("rules", []):
+                        if rule not in self.memory["rules"]:
+                            self.memory["rules"].append(rule)
                     
                     loaded_tel = data.get("telemetry", {})
                     self.memory["telemetry"]["failures"].update(loaded_tel.get("failures", {}))

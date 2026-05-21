@@ -1,5 +1,5 @@
 """
-GPS S — Stress sweep on kqlbridge v0.11.1
+GPS S — Stress sweep on kqlbridge v0.11.2
 Four scenarios: standard, edge, overload, adversarial
 Pass criterion: all assertions green, no exceptions outside expected guards
 """
@@ -7,7 +7,9 @@ import time, gc, sys, traceback, concurrent.futures, statistics
 import kqlbridge
 from kqlbridge import translate, smart_transpile, detect_operators, is_supported, TimeSeriesMicroModel
 
-assert kqlbridge.__version__ == "0.11.2", f"Wrong version: {kqlbridge.__version__}"
+def test_version_pin():
+    """Verify library version is exactly v0.11.2."""
+    assert kqlbridge.__version__ == "0.11.2", f"Wrong version: {kqlbridge.__version__}"
 
 results = []
 
@@ -179,6 +181,7 @@ def test_s17_window_fn_tsql_emitter():
 
 
 def main():
+    run("S-STD-00  version pin check exactly v0.11.2", test_version_pin)
     run("S-STD-01  datetime preprocessor ×500 T-SQL queries", test_s01_datetime_fix_under_load)
     run("S-STD-02  all window fns have OVER() clause", test_s02_row_number_over_all_window_fns)
     run("S-STD-03  make-series API consistency", test_s03_make_series_api_consistency)
@@ -200,7 +203,7 @@ def main():
     # ── REPORT ────────────────────────────────────────────────────────────────────
     print()
     print("=" * 72)
-    print(f"  GPS S — kqlbridge v0.11.1 stress sweep")
+    print(f"  GPS S — kqlbridge v0.11.2 stress sweep")
     print("=" * 72)
     passed = sum(1 for r in results if r[1] == "PASS")
     failed = sum(1 for r in results if r[1] == "FAIL")

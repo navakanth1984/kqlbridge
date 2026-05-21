@@ -1,7 +1,7 @@
 """
-kqlbridge v0.11.0 — GPS-governed pytest suite
+kqlbridge v0.11.2 — GPS-governed pytest suite
 QA Engineer + Developer/Architect dual-role
-Live tests against PyPI kqlbridge==0.11.0
+Live tests against kqlbridge==0.11.2
 """
 import pytest
 import re
@@ -19,7 +19,7 @@ def test_version_pin():
     """GPS P: eval oracle must run against a known version. Never skip."""
     assert kqlbridge.__version__ == "0.11.2", (
         f"Wrong version: {kqlbridge.__version__!r}. "
-        "These tests are calibrated for v0.11.0 only."
+        "These tests are calibrated for v0.11.2 only."
     )
 
 # ═══════════════════════════════════════════════════════
