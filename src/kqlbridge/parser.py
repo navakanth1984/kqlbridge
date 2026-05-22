@@ -19,62 +19,21 @@ from pathlib import Path
 from lark import Lark, Tree, Token
 
 from .ast_nodes import (
-    KQLQuery,
-    LetBinding,
-    PipeOp,
+    KQLQuery, LetBinding, PipeOp,
     # Operators
-    WhereOp,
-    ProjectOp,
-    SummarizeOp,
-    OrderOp,
-    TakeOp,
-    DistinctOp,
-    ExtendOp,
-    JoinOp,
-    UnionOp,
-    CountOp,
-    SerializeOp,
+    WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
+    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
     # Aggregations
-    AggCount,
-    AggSum,
-    AggAvg,
-    AggMin,
-    AggMax,
-    AggDCount,
-    AggCountIf,
-    AggSumIf,
-    AggAvgIf,
-    AggMaxIf,
-    AggMinIf,
-    AggDCountIf,
-    AggPercentile,
-    AggMakeList,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
     # Groupby
-    BinGroup,
-    PlainGroup,
+    BinGroup, PlainGroup,
     # Expressions
-    ColumnRef,
-    StringLit,
-    IntLit,
-    FloatLit,
-    BoolLit,
-    AgoExpr,
-    BinExpr,
-    FuncCall,
-    BinaryOp,
+    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
+    FuncCall, BinaryOp,
     # Bool expressions
-    Comparison,
-    InExpr,
-    StringOp,
-    NullCheck,
-    LogicalOp,
-    Negation,
-    HasAnyExpr,
+    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
     # Order
-    OrderItem,
-    DatetimeLit,
-    IffExpr,
-    SubqueryInExpr,
+    OrderItem, DatetimeLit, IffExpr, SubqueryInExpr,
 )
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
@@ -82,7 +41,6 @@ _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
 # Optimization: Lazily load the Lark parser to significantly improve module import time.
 # The Lark parser initialization takes ~50-100ms, which is unnecessary if we are only importing.
 _parser = None
-
 
 def get_parser() -> Lark:
     global _parser
@@ -93,7 +51,6 @@ def get_parser() -> Lark:
             ambiguity="resolve",
         )
     return _parser
-
 
 # ─── TIMEUNIT MAPPING ────────────────────────────────────────────────────────
 # KQL timespan unit → SQL INTERVAL unit string
@@ -108,69 +65,43 @@ _TIMEUNIT_MAP = {
 
 # KQL keywords that must be lowercased before parsing (case-insensitive in spec)
 _KQL_KEYWORDS = {
-    "where",
-    "project",
-    "summarize",
-    "order",
-    "sort",
-    "by",
-    "take",
-    "limit",
-    "distinct",
-    "extend",
-    "join",
-    "union",
-    "count",
-    "let",
-    "and",
-    "or",
-    "not",
-    "in",
-    "has",
-    "contains",
-    "startswith",
-    "endswith",
-    "matches",
-    "regex",
-    "asc",
-    "desc",
-    "kind",
-    "inner",
-    "leftouter",
-    "rightouter",
-    "fullouter",
-    "on",
-    "true",
-    "false",
-    "ago",
-    "bin",
-    "sum",
-    "avg",
-    "min",
-    "max",
-    "dcount",
-    "countif",
-    "isnotnull",
-    "isnull",
+    "where", "project", "summarize", "order", "sort", "by", "take", "limit",
+    "distinct", "extend", "join", "union", "count", "let",
+    "and", "or", "not", "in", "has", "contains", "startswith", "endswith",
+    "matches", "regex", "asc", "desc", "kind", "inner", "leftouter",
+    "rightouter", "fullouter", "on", "true", "false", "ago", "bin",
+    "sum", "avg", "min", "max", "dcount", "countif", "isnotnull", "isnull",
 }
 
 
-# Optimization: Pre-compile string and word matching regex.
-# Replaces O(N) python-level looping with optimized C-level regex substitution.
-_NORMALIZE_RE = _re.compile(r'("[^"]*"|\'[^\']*\')|([A-Za-z_][A-Za-z0-9_.]*)')
-
-
-def _normalize_replacer(match: _re.Match) -> str:
-    if match.group(1) is not None:
-        return match.group(1)
-    word = match.group(2)
-    lower_word = word.lower()
-    return lower_word if lower_word in _KQL_KEYWORDS else word
-
+# Optimization: Pre-compile word matching regex.
+# Using match with a start position parameter (`_WORD_RE.match(kql, i)`)
+# avoids O(N^2) string slicing `kql[i:]` on long queries.
+_WORD_RE = _re.compile(r'[A-Za-z_][A-Za-z0-9_.]*')
 
 def _normalize_keywords(kql: str) -> str:
     """Lowercase KQL keywords while preserving quoted string content."""
-    return _NORMALIZE_RE.sub(_normalize_replacer, kql)
+    result = []
+    i = 0
+    kql_len = len(kql)
+    while i < kql_len:
+        if kql[i] in ('"', "'"):
+            q = kql[i]
+            j = i + 1
+            while j < kql_len and kql[j] != q:
+                j += 1
+            result.append(kql[i:j + 1])
+            i = j + 1
+        else:
+            m = _WORD_RE.match(kql, i)
+            if m:
+                word = m.group()
+                result.append(word.lower() if word.lower() in _KQL_KEYWORDS else word)
+                i = m.end()
+            else:
+                result.append(kql[i])
+                i += 1
+    return ''.join(result)
 
 
 def _split_case_args(arg_str: str) -> list[str]:
@@ -191,13 +122,13 @@ def _split_case_args(arg_str: str) -> list[str]:
             current.append(c)
         elif in_single_quote or in_double_quote:
             current.append(c)
-        elif c == "(":
+        elif c == '(':
             paren_depth += 1
             current.append(c)
-        elif c == ")":
+        elif c == ')':
             paren_depth -= 1
             current.append(c)
-        elif c == "," and paren_depth == 0:
+        elif c == ',' and paren_depth == 0:
             args.append("".join(current).strip())
             current = []
         else:
@@ -206,7 +137,6 @@ def _split_case_args(arg_str: str) -> list[str]:
     if current:
         args.append("".join(current).strip())
     return args
-
 
 def _build_iff_chain(args: list[str]) -> str:
     if len(args) == 0:
@@ -219,7 +149,6 @@ def _build_iff_chain(args: list[str]) -> str:
     val = args[1]
     rest = args[2:]
     return f"iff({cond}, {val}, {_build_iff_chain(rest)})"
-
 
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
@@ -245,9 +174,9 @@ def _preprocess_case(kql: str) -> str:
                 in_double_quote = not in_double_quote
             elif in_single_quote or in_double_quote:
                 continue
-            elif c == "(":
+            elif c == '(':
                 paren_depth += 1
-            elif c == ")":
+            elif c == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
                     close_paren_idx = i
@@ -256,45 +185,34 @@ def _preprocess_case(kql: str) -> str:
         if close_paren_idx == -1:
             break
 
-        arg_str = kql[open_paren_idx + 1 : close_paren_idx]
+        arg_str = kql[open_paren_idx + 1:close_paren_idx]
         arg_str_rewritten = _preprocess_case(arg_str)
         args = _split_case_args(arg_str_rewritten)
         iff_chain = _build_iff_chain(args)
 
-        kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1 :]
+        kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
 
     return kql
-
 
 def _preprocess_json(kql: str) -> str:
     return _re.sub(
         r"(?i)\bparse_json\(\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\)\.([a-zA-Z0-9_.]+)",
         r"parse_json_path(\1, '\2')",
-        kql,
+        kql
     )
-
 
 def _preprocess_mv_expand(kql: str) -> str:
     return _re.sub(
         r"(?i)\|\s*mv-expand\s+([a-zA-Z_][a-zA-Z0-9_.]*)",
         r"| extend _mv_expand = mv_expand_fn(\1)",
-        kql,
+        kql
     )
 
-
-_BOOL_FUNCS_RE = _re.compile(
-    r"\b(ipv4_is_private|ipv4_is_in_range)\s*\(", _re.IGNORECASE
-)
-_BOOL_COMP_RE = _re.compile(
-    r"\s*(?:==|!=|<=|>=|<|>|=~|(?i:in|has|contains|startswith|endswith)\b|!in\b)",
-    _re.IGNORECASE,
-)
-
-
 def _preprocess_bool_funcs(kql: str) -> str:
+    pattern = _re.compile(r"\b(ipv4_is_private|ipv4_is_in_range)\s*\(", _re.IGNORECASE)
     i = 0
     while i < len(kql):
-        match = _BOOL_FUNCS_RE.search(kql, i)
+        match = pattern.search(kql, i)
         if not match:
             break
         open_paren_idx = match.end() - 1
@@ -310,9 +228,9 @@ def _preprocess_bool_funcs(kql: str) -> str:
                 in_double_quote = not in_double_quote
             elif in_single_quote or in_double_quote:
                 continue
-            elif c == "(":
+            elif c == '(':
                 paren_depth += 1
-            elif c == ")":
+            elif c == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
                     close_paren_idx = j
@@ -320,16 +238,25 @@ def _preprocess_bool_funcs(kql: str) -> str:
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
-
-        # Fast regex check for all comparison operators instead of manual prefix loops.
-        # This properly handles `!in\b` without breaking because `!` isn't a word boundary.
-        if not _BOOL_COMP_RE.match(kql, close_paren_idx + 1):
-            kql = kql[: close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1 :]
+        following = kql[close_paren_idx + 1:].lstrip()
+        has_comparison = False
+        comp_operators = ["==", "!=", "<=", ">=", "<", ">", "=~"]
+        comp_keywords = ["in", "!in", "has", "contains", "startswith", "endswith"]
+        for op in comp_operators:
+            if following.startswith(op):
+                has_comparison = True
+                break
+        if not has_comparison:
+            for kw in comp_keywords:
+                if _re.match(rf"\b{kw}\b", following, _re.IGNORECASE):
+                    has_comparison = True
+                    break
+        if not has_comparison:
+            kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
             i = close_paren_idx + 1 + len(" == true")
         else:
             i = close_paren_idx + 1
     return kql
-
 
 def parse(kql: str) -> KQLQuery:
     """
@@ -348,8 +275,8 @@ def parse(kql: str) -> KQLQuery:
     return _build_query(tree)
 
 
-# ─── TOP-LEVEL BUILDER ───────────────────────────────────────────────────────
 
+# ─── TOP-LEVEL BUILDER ───────────────────────────────────────────────────────
 
 def _build_query(tree: Tree) -> KQLQuery:
     let_bindings = []
@@ -361,11 +288,9 @@ def _build_query(tree: Tree) -> KQLQuery:
         if isinstance(child, Tree):
             if child.data == "let_stmt":
                 binding = _build_let(child)
-                if (
-                    binding.value.table in scalar_let_names
-                    and not binding.value.pipes
-                    and not hasattr(binding.value, "scalar_expr")
-                ):
+                if (binding.value.table in scalar_let_names
+                        and not binding.value.pipes
+                        and not hasattr(binding.value, "scalar_expr")):
                     ref_name = binding.value.table
                     binding.value.table = "__scalar__"
                     binding.value.scalar_expr = ColumnRef(name=ref_name)
@@ -420,21 +345,20 @@ def _build_let(tree: Tree) -> LetBinding:
 
 # ─── PIPE OPERATORS ──────────────────────────────────────────────────────────
 
-
 def _build_pipe_op(tree: Tree) -> PipeOp:
     inner = tree.children[0]
     dispatch = {
-        "where_op": _build_where,
-        "project_op": _build_project,
-        "summarize_op": _build_summarize,
-        "order_op": _build_order,
-        "take_op": _build_take,
-        "distinct_op": _build_distinct,
-        "extend_op": _build_extend,
-        "join_op": _build_join,
-        "union_op": _build_union,
-        "count_op": lambda _: CountOp(),
-        "serialize_op": lambda _: SerializeOp(),
+        "where_op":      _build_where,
+        "project_op":    _build_project,
+        "summarize_op":  _build_summarize,
+        "order_op":      _build_order,
+        "take_op":       _build_take,
+        "distinct_op":   _build_distinct,
+        "extend_op":     _build_extend,
+        "join_op":       _build_join,
+        "union_op":      _build_union,
+        "count_op":      lambda _: CountOp(),
+        "serialize_op":  lambda _: SerializeOp(),
     }
     builder = dispatch.get(inner.data)
     if builder is None:
@@ -538,52 +462,26 @@ def _build_agg_item(tree: Tree):
 
 def _build_agg_func(tree: Tree, alias):
     dispatch = {
-        "agg_count": lambda t, a: AggCount(alias=a),
-        "agg_sum": lambda t, a: AggSum(col=_build_expr(t.children[0]), alias=a),
-        "agg_avg": lambda t, a: AggAvg(col=_build_expr(t.children[0]), alias=a),
-        "agg_min": lambda t, a: AggMin(col=_build_expr(t.children[0]), alias=a),
-        "agg_max": lambda t, a: AggMax(col=_build_expr(t.children[0]), alias=a),
-        "agg_dcount": lambda t, a: AggDCount(col=_build_expr(t.children[0]), alias=a),
-        "agg_countif": lambda t, a: AggCountIf(
-            condition=_build_bool_expr(t.children[0]), alias=a
-        ),
-        "agg_sumif": lambda t, a: AggSumIf(
-            col=_build_expr(t.children[0]),
-            condition=_build_bool_expr(t.children[1]),
-            alias=a,
-        ),
-        "agg_avgif": lambda t, a: AggAvgIf(
-            col=_build_expr(t.children[0]),
-            condition=_build_bool_expr(t.children[1]),
-            alias=a,
-        ),
-        "agg_maxif": lambda t, a: AggMaxIf(
-            col=_build_expr(t.children[0]),
-            condition=_build_bool_expr(t.children[1]),
-            alias=a,
-        ),
-        "agg_minif": lambda t, a: AggMinIf(
-            col=_build_expr(t.children[0]),
-            condition=_build_bool_expr(t.children[1]),
-            alias=a,
-        ),
-        "agg_dcountif": lambda t, a: AggDCountIf(
-            col=_build_expr(t.children[0]),
-            condition=_build_bool_expr(t.children[1]),
-            alias=a,
-        ),
+        "agg_count":   lambda t, a: AggCount(alias=a),
+        "agg_sum":     lambda t, a: AggSum(col=_build_expr(t.children[0]), alias=a),
+        "agg_avg":     lambda t, a: AggAvg(col=_build_expr(t.children[0]), alias=a),
+        "agg_min":     lambda t, a: AggMin(col=_build_expr(t.children[0]), alias=a),
+        "agg_max":     lambda t, a: AggMax(col=_build_expr(t.children[0]), alias=a),
+        "agg_dcount":  lambda t, a: AggDCount(col=_build_expr(t.children[0]), alias=a),
+        "agg_countif": lambda t, a: AggCountIf(condition=_build_bool_expr(t.children[0]), alias=a),
+        "agg_sumif":    lambda t, a: AggSumIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_avgif":    lambda t, a: AggAvgIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_maxif":    lambda t, a: AggMaxIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_minif":    lambda t, a: AggMinIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
+        "agg_dcountif": lambda t, a: AggDCountIf(col=_build_expr(t.children[0]), condition=_build_bool_expr(t.children[1]), alias=a),
         "agg_bin": lambda t, a: AggCount(alias=a),
         "agg_percentile": lambda t, a: AggPercentile(
-            col=_build_expr(t.children[0]),
-            percentile=_build_expr(t.children[1]),
-            alias=a,
+            col=_build_expr(t.children[0]), percentile=_build_expr(t.children[1]), alias=a
         ),
         "agg_make_list": lambda t, a: AggMakeList(
             col=_build_expr(t.children[0]), alias=a
         ),
-        "agg_stdev": lambda t, a: AggAvg(
-            col=FuncCall(name="stddev", args=[_build_expr(t.children[0])]), alias=a
-        ),
+        "agg_stdev": lambda t, a: AggAvg(col=FuncCall(name="stddev", args=[_build_expr(t.children[0])]), alias=a),
     }
     builder = dispatch.get(tree.data)
     if builder is None:
@@ -662,9 +560,7 @@ def _build_join(tree: Tree) -> JoinOp:
                 right_query = KQLQuery(table=right_table, pipes=[])
             elif child.data == "pipe_op":
                 if right_query is None:
-                    raise ValueError(
-                        "join_op has no right-side table expression before pipe_op"
-                    )
+                    raise ValueError("join_op has no right-side table expression before pipe_op")
                 op = _build_pipe_op(child)
                 if hasattr(op, "_implicit_extends"):
                     right_query.pipes.append(ExtendOp(assignments=op._implicit_extends))
@@ -681,15 +577,15 @@ def _build_join(tree: Tree) -> JoinOp:
 
 def _build_union(tree: Tree) -> UnionOp:
     union_tables = tree.children[0]  # union_tables Tree
-    tables = []  # simple table names
-    subqueries = {}  # {table_name: KQLQuery} for subquery items
+    tables = []       # simple table names
+    subqueries = {}   # {table_name: KQLQuery} for subquery items
 
     for item in union_tables.children:
         if not isinstance(item, Tree):
             continue
-        if item.data == "union_table_name":
+        if item.data == 'union_table_name':
             tables.append(str(item.children[0]))
-        elif item.data == "union_table_subquery":
+        elif item.data == 'union_table_subquery':
             ref = item.children[0]  # table_ref_expr
             sub = _build_table_ref(ref)
             # Use the subquery table name as key
@@ -700,7 +596,6 @@ def _build_union(tree: Tree) -> UnionOp:
 
 
 # ─── BOOLEAN EXPRESSIONS ─────────────────────────────────────────────────────
-
 
 def _build_bool_expr(tree) -> object:
     if isinstance(tree, Token):
@@ -730,30 +625,26 @@ def _build_bool_expr(tree) -> object:
 
     if tree.data == "in_expr":
         col = _build_expr(tree.children[0])
-        values = [
-            _build_expr(v) for v in tree.children[1].children if isinstance(v, Tree)
-        ]
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=False)
 
     if tree.data == "not_in_expr":
         col = _build_expr(tree.children[0])
-        values = [
-            _build_expr(v) for v in tree.children[1].children if isinstance(v, Tree)
-        ]
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True)
 
     if tree.data == "in_ci_expr":
         col = _build_expr(tree.children[0])
-        values = [
-            _build_expr(v) for v in tree.children[1].children if isinstance(v, Tree)
-        ]
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=False, case_insensitive=True)
 
     if tree.data == "not_in_ci_expr":
         col = _build_expr(tree.children[0])
-        values = [
-            _build_expr(v) for v in tree.children[1].children if isinstance(v, Tree)
-        ]
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
         return InExpr(col=col, values=values, negated=True, case_insensitive=True)
 
     if tree.data == "subquery_in_expr":
@@ -772,25 +663,16 @@ def _build_bool_expr(tree) -> object:
         col = _build_expr(tree.children[0])
         ref = tree.children[1]
         subquery = _build_table_ref(ref)
-        return SubqueryInExpr(
-            col=col, subquery=subquery, negated=False, case_insensitive=True
-        )
+        return SubqueryInExpr(col=col, subquery=subquery, negated=False, case_insensitive=True)
 
     if tree.data == "subquery_not_in_ci_expr":
         col = _build_expr(tree.children[0])
         ref = tree.children[1]
         subquery = _build_table_ref(ref)
-        return SubqueryInExpr(
-            col=col, subquery=subquery, negated=True, case_insensitive=True
-        )
+        return SubqueryInExpr(col=col, subquery=subquery, negated=True, case_insensitive=True)
 
-    if tree.data in (
-        "has_expr",
-        "contains_expr",
-        "startswith_expr",
-        "endswith_expr",
-        "regex_expr",
-    ):
+    if tree.data in ("has_expr", "contains_expr", "startswith_expr",
+                     "endswith_expr", "regex_expr"):
         op_name = tree.data.replace("_expr", "").replace("_", " ")
         col = _build_expr(tree.children[0])
         value = _strip_quotes(str(tree.children[1]))
@@ -798,9 +680,8 @@ def _build_bool_expr(tree) -> object:
 
     if tree.data == "has_any_expr":
         col = _build_expr(tree.children[0])
-        values = [
-            _build_expr(v) for v in tree.children[1].children if isinstance(v, Tree)
-        ]
+        values = [_build_expr(v) for v in tree.children[1].children
+                  if isinstance(v, Tree)]
         return HasAnyExpr(col=col, values=values)
 
     if tree.data == "between_expr":
@@ -811,7 +692,7 @@ def _build_bool_expr(tree) -> object:
         return LogicalOp(
             left=Comparison(left=col, op=">=", right=start),
             op="and",
-            right=Comparison(left=col, op="<=", right=end),
+            right=Comparison(left=col, op="<=", right=end)
         )
 
     if tree.data == "isnotnull_expr":
@@ -822,19 +703,13 @@ def _build_bool_expr(tree) -> object:
 
     if tree.data == "isnotempty_expr":
         col_expr = _build_expr(tree.children[0])
-        return LogicalOp(
-            left=NullCheck(col=col_expr, is_null=False),
-            op="and",
-            right=Comparison(left=col_expr, op="!=", right=StringLit(value="")),
-        )
+        return LogicalOp(left=NullCheck(col=col_expr, is_null=False), op="and",
+                         right=Comparison(left=col_expr, op="!=", right=StringLit(value="")))
 
     if tree.data == "isempty_expr":
         col_expr = _build_expr(tree.children[0])
-        return LogicalOp(
-            left=NullCheck(col=col_expr, is_null=True),
-            op="or",
-            right=Comparison(left=col_expr, op="==", right=StringLit(value="")),
-        )
+        return LogicalOp(left=NullCheck(col=col_expr, is_null=True), op="or",
+                         right=Comparison(left=col_expr, op="==", right=StringLit(value="")))
 
     if len(tree.children) == 1:
         return _build_bool_expr(tree.children[0])
@@ -843,7 +718,6 @@ def _build_bool_expr(tree) -> object:
 
 
 # ─── SCALAR EXPRESSIONS ──────────────────────────────────────────────────────
-
 
 def _build_expr(tree) -> object:
     if isinstance(tree, Token):
@@ -863,7 +737,8 @@ def _build_expr(tree) -> object:
 
     if tree.data == "func_call":
         name = str(tree.children[0])
-        args = [_build_expr(c) for c in tree.children[1:] if isinstance(c, Tree)]
+        args = [_build_expr(c) for c in tree.children[1:]
+                if isinstance(c, Tree)]
         return FuncCall(name=name, args=args)
 
     if tree.data in ("add", "sub", "mul", "div"):
@@ -917,17 +792,12 @@ def _token_to_expr(token: Token) -> object:
 
 # ─── HELPERS ─────────────────────────────────────────────────────────────────
 
-
 def _build_table_ref(tree: Tree) -> object:
     """Build a KQLQuery from a table_ref_expr tree (used in let and in-subquery)."""
     table = str(tree.children[0])
-    pipes = [
-        _build_pipe_op(c)
-        for c in tree.children[1:]
-        if isinstance(c, Tree) and c.data == "pipe_op"
-    ]
+    pipes = [_build_pipe_op(c) for c in tree.children[1:]
+             if isinstance(c, Tree) and c.data == "pipe_op"]
     return KQLQuery(table=table, pipes=pipes, let_bindings=[])
-
 
 def _build_timespan(tree: Tree) -> tuple[int, str]:
     """Returns (amount: int, kql_unit: str) e.g. (24, 'h')"""
