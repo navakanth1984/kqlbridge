@@ -46,7 +46,7 @@ def target_output_type(target: str) -> OutputType:
     """Return the OutputType for a given translate() target string."""
     return OutputType.PYTHON if target in ("pandas", "pyspark") else OutputType.SQL
 
-__version__ = "0.11.2"  # patched: FIX-01 through FIX-05
+__version__ = "0.11.3"  # patched: FIX-01 through FIX-05 and True Bool Suffix Bug
 __all__ = [
     "translate", "smart_transpile", "smart_analyze", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",

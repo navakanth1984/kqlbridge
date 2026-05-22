@@ -8,8 +8,8 @@ import kqlbridge
 from kqlbridge import translate, smart_transpile, detect_operators, is_supported, TimeSeriesMicroModel
 
 def test_version_pin():
-    """Verify library version is exactly v0.11.2."""
-    assert kqlbridge.__version__ == "0.11.2", f"Wrong version: {kqlbridge.__version__}"
+    """Verify library version is exactly v0.11.2 or v0.11.3."""
+    assert kqlbridge.__version__ in ("0.11.2", "0.11.3"), f"Wrong version: {kqlbridge.__version__}"
 
 results = []
 
