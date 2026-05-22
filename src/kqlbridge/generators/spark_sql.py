@@ -9,7 +9,7 @@ from __future__ import annotations
 import ipaddress
 from ..schema_hint import SchemaHint
 from ..ast_nodes import (
-    KQLQuery, LetBinding,
+    KQLQuery,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
     DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
     AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
@@ -39,22 +39,21 @@ class SparkSQLGenerator:
                 self._scalar_bindings[binding.name] = binding.value.scalar_expr
             else:
                 non_scalar_bindings.append(binding)
-        ctes = self._build_ctes(non_scalar_bindings)
-        body = self._build_body(query)
-        if ctes:
-            return f"WITH {', '.join(ctes)}\n{body}"
-        return body
 
-    def _build_ctes(self, bindings):
-        ctes = []
-        for binding in bindings:
-            sub_sql = self._build_body(binding.value)
-            ctes.append(f"{binding.name} AS (\n  {sub_sql}\n)")
-        return ctes
+        if non_scalar_bindings:
+            cte_parts = []
+            for b in non_scalar_bindings:
+                sub_sql = self.generate(b.value)
+                cte_parts.append(f"{b.name} AS (\n{sub_sql}\n)")
+            cte_sql = "WITH " + ",\n".join(cte_parts)
+            body_sql = self._build_body(query)
+            return f"{cte_sql}\n{body_sql}"
+
+        return self._build_body(query)
 
     def _build_body(self, query: KQLQuery) -> str:
         table = query.table
-        self._current_base_table = query.table
+        self._current_base_table = table
         select_cols = ["*"]
         where_clauses = []
         group_by = []
@@ -68,8 +67,13 @@ class SparkSQLGenerator:
                 if summarize_active:
                     inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
                     table = "(\n" + inner_sql + "\n) _filtered"
-                    select_cols = ["*"]; where_clauses = [self._where(op)]
-                    group_by = []; order = ""; limit = ""; distinct = False; summarize_active = False
+                    select_cols = ["*"]
+                    where_clauses = [self._where(op)]
+                    group_by = []
+                    order = ""
+                    limit = ""
+                    distinct = False
+                    summarize_active = False
                 else:
                     where_clauses.append(self._where(op))
 
@@ -81,7 +85,12 @@ class SparkSQLGenerator:
                 if summarize_active:
                     inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
                     table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]; where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False
+                    select_cols = ["*"]
+                    where_clauses = []
+                    group_by = []
+                    order = ""
+                    limit = ""
+                    distinct = False
                 select_cols, group_by = self._summarize(op)
                 summarize_active = True
 
@@ -100,12 +109,19 @@ class SparkSQLGenerator:
                 if summarize_active:
                     inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
                     table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]; where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False; summarize_active = False
+                    select_cols = ["*"]
+                    where_clauses = []
+                    group_by = []
+                    order = ""
+                    limit = ""
+                    distinct = False
+                    summarize_active = False
 
                 mv_expand_assignment = None
                 for alias, expr in op.assignments:
                     if alias == "_mv_expand" and isinstance(expr, FuncCall) and expr.name == "mv_expand_fn":
-                        mv_expand_assignment = expr; break
+                        mv_expand_assignment = expr
+                        break
                 if mv_expand_assignment:
                     self._mv_expand_col = self._expr(mv_expand_assignment.args[0])
                 else:
@@ -118,24 +134,39 @@ class SparkSQLGenerator:
                     if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
                         inner_sql = self._assemble(select_cols, table, where_clauses, [], "", "", False)
                         table = "(\n" + inner_sql + "\n) _extended"
-                        select_cols = ["*"]; where_clauses = []
+                        select_cols = ["*"]
+                        where_clauses = []
 
             elif isinstance(op, JoinOp):
                 if summarize_active:
                     inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
                     table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]; where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False; summarize_active = False
+                    select_cols = ["*"]
+                    where_clauses = []
+                    group_by = []
+                    order = ""
+                    limit = ""
+                    distinct = False
+                    summarize_active = False
                 join_sql = self._join(table, op, where_clauses)
-                table = join_sql; select_cols = ["*"]
+                table = join_sql
+                select_cols = ["*"]
 
             elif isinstance(op, UnionOp):
                 if summarize_active:
                     inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
                     table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]; where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False; summarize_active = False
+                    select_cols = ["*"]
+                    where_clauses = []
+                    group_by = []
+                    order = ""
+                    limit = ""
+                    distinct = False
+                    summarize_active = False
                 union_sql = self._union(table, op)
                 if union_sql != table:
-                    table = union_sql; select_cols = ["*"]
+                    table = union_sql
+                    select_cols = ["*"]
                     remaining = query.pipes[idx + 1:]
                     if not remaining:
                         return union_sql
@@ -170,7 +201,8 @@ class SparkSQLGenerator:
         return self._bool_expr(op.condition)
 
     def _summarize(self, op: SummarizeOp):
-        group_by_cols = []; group_by_exprs = []
+        group_by_cols = []
+        group_by_exprs = []
         for gb in op.group_by:
             if isinstance(gb, BinGroup):
                 col_sql = self._expr(gb.col)
@@ -186,21 +218,30 @@ class SparkSQLGenerator:
 
     def _agg(self, agg) -> str:
         alias_suffix = f" AS {agg.alias}" if getattr(agg, "alias", None) else ""
-        if isinstance(agg, AggCount): return f"COUNT(*){alias_suffix}"
-        if isinstance(agg, AggSum): return f"SUM({self._expr(agg.col)}){alias_suffix}"
-        if isinstance(agg, AggAvg): return f"AVG({self._expr(agg.col)}){alias_suffix}"
-        if isinstance(agg, AggMin): return f"MIN({self._expr(agg.col)}){alias_suffix}"
-        if isinstance(agg, AggMax): return f"MAX({self._expr(agg.col)}){alias_suffix}"
-        if isinstance(agg, AggDCount): return f"COUNT(DISTINCT {self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggCount):
+            return f"COUNT(*){alias_suffix}"
+        if isinstance(agg, AggSum):
+            return f"SUM({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggAvg):
+            return f"AVG({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggMin):
+            return f"MIN({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggMax):
+            return f"MAX({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggDCount):
+            return f"COUNT(DISTINCT {self._expr(agg.col)}){alias_suffix}"
         if isinstance(agg, AggCountIf):
             cond = self._bool_expr(agg.condition)
             return f"COUNT(CASE WHEN {cond} THEN 1 END){alias_suffix}"
         if isinstance(agg, AggPercentile):
             pct = self._expr(agg.percentile)
-            try: pct_expr = str(float(pct) / 100.0)
-            except: pct_expr = f"{pct} / 100.0"
+            try:
+                pct_expr = str(float(pct) / 100.0)
+            except (ValueError, TypeError):
+                pct_expr = f"{pct} / 100.0"
             return f"approx_percentile({self._expr(agg.col)}, {pct_expr}){alias_suffix}"
-        if isinstance(agg, AggMakeList): return f"collect_list({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggMakeList):
+            return f"collect_list({self._expr(agg.col)}){alias_suffix}"
         if isinstance(agg, AggSumIf):
             return f"SUM(CASE WHEN {self._bool_expr(agg.condition)} THEN {self._expr(agg.col)} END){alias_suffix}"
         if isinstance(agg, AggAvgIf):
@@ -248,10 +289,12 @@ class SparkSQLGenerator:
         return f"{left_table}\n{join_kw} {right_expr} ON {on_clause}"
 
     def _union(self, table, op: UnionOp) -> str:
-        if not op.tables: return table
+        if not op.tables:
+            return table
         subqueries = op.subqueries or {}
         def _item_sql(t):
-            if t in subqueries: return self.generate(subqueries[t])
+            if t in subqueries:
+                return self.generate(subqueries[t])
             return f"SELECT * FROM {t}"
         if "UNION ALL" in table:
             new_parts = ["UNION ALL\n" + _item_sql(t) for t in op.tables]
@@ -273,10 +316,14 @@ class SparkSQLGenerator:
             if getattr(self, "_scalar_bindings", None) and expr.name in self._scalar_bindings:
                 return self._expr(self._scalar_bindings[expr.name])
             return expr.name
-        if isinstance(expr, StringLit): return f"'{expr.value}'"
-        if isinstance(expr, IntLit): return str(expr.value)
-        if isinstance(expr, FloatLit): return str(expr.value)
-        if isinstance(expr, BoolLit): return "TRUE" if expr.value else "FALSE"
+        if isinstance(expr, StringLit):
+            return f"'{expr.value}'"
+        if isinstance(expr, IntLit):
+            return str(expr.value)
+        if isinstance(expr, FloatLit):
+            return str(expr.value)
+        if isinstance(expr, BoolLit):
+            return "TRUE" if expr.value else "FALSE"
         if isinstance(expr, AgoExpr):
             unit = _INTERVAL_UNIT.get(expr.unit, expr.unit)
             return f"CURRENT_TIMESTAMP - INTERVAL '{expr.amount} {unit}'"
@@ -289,11 +336,13 @@ class SparkSQLGenerator:
                 return f"(LOWER({self._expr(expr.left)}) = LOWER({self._expr(expr.right)}))"
             op_map = {"==":"=","=~":"=","!=":"!=","<":"<",">":">","<=":"<=",">=":">="}
             return f"({self._expr(expr.left)} {op_map.get(expr.op, expr.op)} {self._expr(expr.right)})"
-        if isinstance(expr, FuncCall): return self._func_call(expr)
+        if isinstance(expr, FuncCall):
+            return self._func_call(expr)
         if isinstance(expr, DatetimeLit):
             inner = expr.raw.replace("datetime(","").rstrip(")").strip("'\"")
             return f"TIMESTAMP '{inner}'"
-        if isinstance(expr, str): return expr
+        if isinstance(expr, str):
+            return expr
         if isinstance(expr, IffExpr):
             branches = []
             curr = expr
@@ -413,7 +462,8 @@ class SparkSQLGenerator:
         return f"{sql_func}({func_args_str}) OVER ({over_clause})"
 
     def _render_case(self, args):
-        if len(args) < 3: return f"CASE WHEN {', '.join(args)} END"
+        if len(args) < 3:
+            return f"CASE WHEN {', '.join(args)} END"
         branches = [f"WHEN {args[i]} THEN {args[i+1]}" for i in range(0, len(args)-1, 2)]
         return f"CASE {' '.join(branches)} ELSE {args[-1]} END"
 
@@ -438,18 +488,21 @@ class SparkSQLGenerator:
 
     def _bool_expr(self, expr) -> str:
         if isinstance(expr, Comparison):
-            left = self._expr(expr.left); right = self._expr(expr.right)
+            left = self._expr(expr.left)
+            right = self._expr(expr.right)
             is_right_true = (
                 (isinstance(expr.right, BoolLit) and expr.right.value is True) or
                 (isinstance(expr.right, ColumnRef) and expr.right.name.lower() == "true")
             )
             if expr.op == "==" and is_right_true and isinstance(expr.left, FuncCall):
                 return left
-            if expr.op == "=~": return f"LOWER({left}) = LOWER({right})"
+            if expr.op == "=~":
+                return f"LOWER({left}) = LOWER({right})"
             op = _COMP_OP_MAP.get(expr.op, expr.op)
             return f"{left} {op} {right}"
         if isinstance(expr, InExpr):
-            col = self._expr(expr.col); not_kw = "NOT " if expr.negated else ""
+            col = self._expr(expr.col)
+            not_kw = "NOT " if expr.negated else ""
             if getattr(expr, "case_insensitive", False):
                 col = f"LOWER({col})"
                 values = ", ".join(f"LOWER({self._expr(v)})" for v in expr.values)
@@ -457,7 +510,8 @@ class SparkSQLGenerator:
                 values = ", ".join(self._expr(v) for v in expr.values)
             return f"{col} {not_kw}IN ({values})"
         if isinstance(expr, SubqueryInExpr):
-            col = self._expr(expr.col); not_kw = "NOT " if expr.negated else ""
+            col = self._expr(expr.col)
+            not_kw = "NOT " if expr.negated else ""
             inner_sql = self.generate(expr.subquery)
             if getattr(expr, "case_insensitive", False):
                 return f"LOWER({col}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
@@ -476,7 +530,8 @@ class SparkSQLGenerator:
             col = self._expr(expr.col)
             return f"{col} IS NULL" if expr.is_null else f"{col} IS NOT NULL"
         if isinstance(expr, LogicalOp):
-            left = self._bool_expr(expr.left); right = self._bool_expr(expr.right)
+            left = self._bool_expr(expr.left)
+            right = self._bool_expr(expr.right)
             return f"({left} {expr.op.upper()} {right})"
         if isinstance(expr, Negation):
             return f"NOT ({self._bool_expr(expr.expr)})"
