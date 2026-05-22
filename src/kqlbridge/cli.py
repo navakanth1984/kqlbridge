@@ -52,10 +52,13 @@ def _check(args: argparse.Namespace) -> int:
         ops = detect_operators(kql)
         print("✗ Unsupported")
         print(f"  Operators detected : {', '.join(ops) if ops else 'none'}")
-        print("  Reason             : query uses unsupported operators or invalid syntax")
+        print(
+            "  Reason             : query uses unsupported operators or invalid syntax"
+        )
         return 1
 
     from kqlbridge import check
+
     result = check(kql)
     ops = detect_operators(kql)
 
@@ -67,9 +70,9 @@ def _check(args: argparse.Namespace) -> int:
     return 0
 
 
-
 def _lint(args) -> int:
     from kqlbridge.lint import lint
+
     kql = args.kql
     result = lint(kql)
 
@@ -77,7 +80,9 @@ def _lint(args) -> int:
         print("✓ CLEAN — no semantic drift detected")
         return 0
 
-    print(f"⚠  SEMANTIC DRIFT DETECTED — {len(result.issues)} issue(s)  [risk: {result.risk}]")
+    print(
+        f"⚠  SEMANTIC DRIFT DETECTED — {len(result.issues)} issue(s)  [risk: {result.risk}]"
+    )
     print()
     for i, issue in enumerate(result.issues, 1):
         print(f"[{issue.rule_id}] {issue.severity} — {issue.operator}")
@@ -89,10 +94,10 @@ def _lint(args) -> int:
     return 1
 
 
-
 def _explain(args) -> int:
     from kqlbridge.explain import explain
     import sys
+
     if getattr(args, "tsql", False):
         target = "tsql"
     elif getattr(args, "pyspark", False):
@@ -112,11 +117,29 @@ def _explain(args) -> int:
 
 def _operators(args: argparse.Namespace) -> int:
     supported = [
-        "where", "project", "summarize", "order by", "sort by",
-        "take", "limit", "distinct", "extend", "join",
-        "union", "count", "let", "ago()", "bin()",
-        "and / or / not", "in", "has", "contains",
-        "startswith", "endswith", "isnotnull", "isnull",
+        "where",
+        "project",
+        "summarize",
+        "order by",
+        "sort by",
+        "take",
+        "limit",
+        "distinct",
+        "extend",
+        "join",
+        "union",
+        "count",
+        "let",
+        "ago()",
+        "bin()",
+        "and / or / not",
+        "in",
+        "has",
+        "contains",
+        "startswith",
+        "endswith",
+        "isnotnull",
+        "isnull",
     ]
     print("KQLBridge v0.1 — supported operators:")
     for op in supported:
@@ -126,6 +149,7 @@ def _operators(args: argparse.Namespace) -> int:
 
 def _version(args: argparse.Namespace) -> int:
     from importlib.metadata import version, PackageNotFoundError
+
     try:
         v = version("kqlbridge")
     except PackageNotFoundError:
@@ -144,8 +168,12 @@ def main() -> None:
     # translate
     p_translate = sub.add_parser("translate", help="Translate KQL to SQL/Python")
     p_translate.add_argument("kql", help="KQL query string")
-    p_translate.add_argument("--tsql", action="store_true", help="Output T-SQL instead of Spark SQL")
-    p_translate.add_argument("--pyspark", action="store_true", help="Output PySpark DataFrame Python code")
+    p_translate.add_argument(
+        "--tsql", action="store_true", help="Output T-SQL instead of Spark SQL"
+    )
+    p_translate.add_argument(
+        "--pyspark", action="store_true", help="Output PySpark DataFrame Python code"
+    )
     p_translate.set_defaults(func=_translate)
 
     # check
@@ -154,13 +182,17 @@ def main() -> None:
     p_check.set_defaults(func=_check)
 
     # operators
-    p_explain = sub.add_parser("explain",
-        help="Translate KQL with inline annotations explaining every decision")
+    p_explain = sub.add_parser(
+        "explain",
+        help="Translate KQL with inline annotations explaining every decision",
+    )
     p_explain.add_argument("kql", help="KQL query string")
-    p_explain.add_argument("--tsql", action="store_true",
-        help="Explain T-SQL output instead of Spark SQL")
-    p_explain.add_argument("--pyspark", action="store_true",
-        help="Explain PySpark DataFrame Python code")
+    p_explain.add_argument(
+        "--tsql", action="store_true", help="Explain T-SQL output instead of Spark SQL"
+    )
+    p_explain.add_argument(
+        "--pyspark", action="store_true", help="Explain PySpark DataFrame Python code"
+    )
     p_explain.set_defaults(func=_explain)
 
     p_lint = sub.add_parser("lint", help="Detect semantic drift in AI-generated KQL")

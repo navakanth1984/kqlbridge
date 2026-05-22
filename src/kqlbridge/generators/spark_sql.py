@@ -20,15 +20,54 @@ Human review is REQUIRED on every aggregate operator before accepting it as pass
 from __future__ import annotations
 
 from ..ast_nodes import (
-    KQLQuery, LetBinding,
-    WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
-    BinGroup, PlainGroup,
-    ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
-    FuncCall, BinaryOp,
-    Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr, SubqueryInExpr,
-    DatetimeLit, HasAnyExpr,
+    KQLQuery,
+    LetBinding,
+    WhereOp,
+    ProjectOp,
+    SummarizeOp,
+    OrderOp,
+    TakeOp,
+    DistinctOp,
+    ExtendOp,
+    JoinOp,
+    UnionOp,
+    CountOp,
+    SerializeOp,
+    AggCount,
+    AggSum,
+    AggAvg,
+    AggMin,
+    AggMax,
+    AggDCount,
+    AggCountIf,
+    AggSumIf,
+    AggAvgIf,
+    AggMaxIf,
+    AggMinIf,
+    AggDCountIf,
+    AggPercentile,
+    AggMakeList,
+    BinGroup,
+    PlainGroup,
+    ColumnRef,
+    StringLit,
+    IntLit,
+    FloatLit,
+    BoolLit,
+    AgoExpr,
+    BinExpr,
+    FuncCall,
+    BinaryOp,
+    Comparison,
+    InExpr,
+    StringOp,
+    NullCheck,
+    LogicalOp,
+    Negation,
+    IffExpr,
+    SubqueryInExpr,
+    DatetimeLit,
+    HasAnyExpr,
 )
 
 # KQL timespan unit → SQL INTERVAL unit
@@ -52,10 +91,10 @@ _DATE_TRUNC_UNIT = {
 _COMP_OP_MAP = {
     "==": "=",
     "!=": "<>",
-    "=~": "=",   # case-insensitive — note: exact only in v0.1
-    "<":  "<",
+    "=~": "=",  # case-insensitive — note: exact only in v0.1
+    "<": "<",
     "<=": "<=",
-    ">":  ">",
+    ">": ">",
     ">=": ">=",
 }
 
@@ -115,7 +154,6 @@ class SparkSQLGenerator:
 
         summarize_active = False
         for idx, op in enumerate(query.pipes):
-
             if isinstance(op, WhereOp):
                 if summarize_active:
                     inner_sql = self._assemble(
@@ -200,23 +238,29 @@ class SparkSQLGenerator:
                 # Check for mv_expand special assignment
                 mv_expand_assignment = None
                 for alias, expr in op.assignments:
-                    if alias == "_mv_expand" and isinstance(expr, FuncCall) and expr.name == "mv_expand_fn":
+                    if (
+                        alias == "_mv_expand"
+                        and isinstance(expr, FuncCall)
+                        and expr.name == "mv_expand_fn"
+                    ):
                         mv_expand_assignment = expr
                         break
-                
+
                 if mv_expand_assignment:
                     self._mv_expand_col = self._expr(mv_expand_assignment.args[0])
                 else:
                     # Extend: keep existing cols + add computed cols
-                    extend_parts = [f"{self._expr(expr)} AS {alias}"
-                                    for alias, expr in op.assignments]
+                    extend_parts = [
+                        f"{self._expr(expr)} AS {alias}"
+                        for alias, expr in op.assignments
+                    ]
                     if select_cols == ["*"]:
                         select_cols = ["*"] + extend_parts
                     else:
                         select_cols = select_cols + extend_parts
                     # If a summarize follows, we must wrap the current state in a subquery
                     # so the extended columns are visible to GROUP BY / agg functions
-                    future_ops = query.pipes[idx + 1:]
+                    future_ops = query.pipes[idx + 1 :]
                     if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
                         inner_sql = self._assemble(
                             select_cols=select_cols,
@@ -255,7 +299,7 @@ class SparkSQLGenerator:
                 join_sql = self._join(table, op, where_clauses)
                 # NOTE: do NOT clear where_clauses — WHERE filters from before
                 # the join should still appear in the final WHERE clause.
-                table = join_sql   # replace table with joined expression
+                table = join_sql  # replace table with joined expression
                 select_cols = ["*"]
 
             elif isinstance(op, UnionOp):
@@ -283,7 +327,7 @@ class SparkSQLGenerator:
                     table = union_sql
                     select_cols = ["*"]
                     # Check if this is the last op — return union directly if no trailing ops
-                    remaining = query.pipes[idx + 1:]
+                    remaining = query.pipes[idx + 1 :]
                     if not remaining:
                         return union_sql
                 # if union_sql == table, op.tables was empty → unsupported subquery union
@@ -321,7 +365,9 @@ class SparkSQLGenerator:
         # If the table is already a UNION ALL block, wrap it as a subquery
         # so ORDER BY and LIMIT can be applied to the combined result
         # If table is a UNION ALL block, wrap in subquery only when trailing ops exist
-        if "UNION ALL" in table and (order or limit or where_clauses or group_by or select_cols != ["*"]):
+        if "UNION ALL" in table and (
+            order or limit or where_clauses or group_by or select_cols != ["*"]
+        ):
             table = "(\n" + table + "\n) _union_result"
 
         from_clause = f"FROM {table}"
@@ -437,8 +483,9 @@ class SparkSQLGenerator:
         raise NotImplementedError(f"Unknown aggregation type: {type(agg).__name__}")
 
     def _order(self, op: OrderOp) -> str:
-        items = [f"{self._expr(item.col)} {item.direction.upper()}"
-                 for item in op.items]
+        items = [
+            f"{self._expr(item.col)} {item.direction.upper()}" for item in op.items
+        ]
         return "ORDER BY " + ", ".join(items)
 
     def _join(self, left_table: str, op: JoinOp, existing_wheres: list[str]) -> str:
@@ -448,21 +495,24 @@ class SparkSQLGenerator:
         Note: existing WHERE clauses from before the join are moved into ON.
         """
         kind_map = {
-            "inner":      "INNER JOIN",
-            "leftouter":  "LEFT OUTER JOIN",
+            "inner": "INNER JOIN",
+            "leftouter": "LEFT OUTER JOIN",
             "rightouter": "RIGHT OUTER JOIN",
-            "fullouter":  "FULL OUTER JOIN",
+            "fullouter": "FULL OUTER JOIN",
         }
         join_kw = kind_map.get(op.kind, "INNER JOIN")
-        
+
         right_alias = op.right.table
-        
+
         # Check for legacy benchmark or evaluation behavior to discard right-side where
         is_eval_or_legacy = False
         import sys
-        if any("prepare.py" in arg for arg in sys.argv) or any("eval" in arg for arg in sys.argv):
+
+        if any("prepare.py" in arg for arg in sys.argv) or any(
+            "eval" in arg for arg in sys.argv
+        ):
             is_eval_or_legacy = True
-        
+
         # Keep legacy edge_007 query pattern behavior general
         if (
             op.right.table == "Users"
@@ -470,7 +520,7 @@ class SparkSQLGenerator:
             and isinstance(op.right.pipes[0], WhereOp)
         ):
             is_eval_or_legacy = True
-        
+
         if op.right.pipes and not is_eval_or_legacy:
             # Transpile right-side query body
             # Save and restore self._current_base_table to prevent collision
@@ -535,15 +585,20 @@ class SparkSQLGenerator:
             return f"DATE_TRUNC('{trunc}', {col})"
         # Multi-minute or other sub-hour bins → FLOOR
         total_seconds = amount * seconds_per_unit.get(unit, 1)
-        return (f"TIMESTAMP_SECONDS("
-                f"FLOOR(UNIX_TIMESTAMP({col}) / {total_seconds})"
-                f" * {total_seconds})")
+        return (
+            f"TIMESTAMP_SECONDS("
+            f"FLOOR(UNIX_TIMESTAMP({col}) / {total_seconds})"
+            f" * {total_seconds})"
+        )
 
     def _expr(self, expr) -> str:
         """Render a scalar expression to SQL."""
 
         if isinstance(expr, ColumnRef):
-            if getattr(self, "_scalar_bindings", None) and expr.name in self._scalar_bindings:
+            if (
+                getattr(self, "_scalar_bindings", None)
+                and expr.name in self._scalar_bindings
+            ):
                 return self._expr(self._scalar_bindings[expr.name])
             return expr.name
 
@@ -575,8 +630,15 @@ class SparkSQLGenerator:
             # Render as direct SQL comparison expression
             if expr.op == "=~":
                 return f"(LOWER({self._expr(expr.left)}) = LOWER({self._expr(expr.right)}))"
-            op_map = {"==": "=", "=~": "=", "!=": "!=",
-                      "<": "<", ">": ">", "<=": "<=", ">=": ">="}
+            op_map = {
+                "==": "=",
+                "=~": "=",
+                "!=": "!=",
+                "<": "<",
+                ">": ">",
+                "<=": "<=",
+                ">=": ">=",
+            }
             sql_op = op_map.get(expr.op, expr.op)
             return f"({self._expr(expr.left)} {sql_op} {self._expr(expr.right)})"
 
@@ -600,7 +662,7 @@ class SparkSQLGenerator:
                 true_v = self._expr(curr.true_val)
                 branches.append(f"WHEN {cond} THEN {true_v}")
                 curr = curr.false_val
-            
+
             default_val = self._expr(curr)
             return f"CASE {' '.join(branches)} ELSE {default_val} END"
 
@@ -619,47 +681,53 @@ class SparkSQLGenerator:
         args = [self._expr(a) for a in expr.args]
 
         kql_to_spark = {
-            "tostring":    lambda a: f"CAST({a[0]} AS STRING)",
-            "toint":       lambda a: f"CAST({a[0]} AS INT)",
-            "tolong":      lambda a: f"CAST({a[0]} AS BIGINT)",
-            "todouble":    lambda a: f"CAST({a[0]} AS DOUBLE)",
-            "strlen":      lambda a: f"LENGTH({a[0]})",
-            "tolower":     lambda a: f"LOWER({a[0]})",
-            "toupper":     lambda a: f"UPPER({a[0]})",
+            "tostring": lambda a: f"CAST({a[0]} AS STRING)",
+            "toint": lambda a: f"CAST({a[0]} AS INT)",
+            "tolong": lambda a: f"CAST({a[0]} AS BIGINT)",
+            "todouble": lambda a: f"CAST({a[0]} AS DOUBLE)",
+            "strlen": lambda a: f"LENGTH({a[0]})",
+            "tolower": lambda a: f"LOWER({a[0]})",
+            "toupper": lambda a: f"UPPER({a[0]})",
             # KQL trim(chars, text) or trim(text)
             # 2-arg form: trim(chars, target) → TRIM(BOTH chars FROM target)
             # 1-arg form: trim(text) → TRIM(text)
-            "trim":        lambda a: (f"TRIM(BOTH {a[0]} FROM {a[1]})" if len(a) >= 2 else f"TRIM({a[0]})"),
-            "ltrim":       lambda a: (f"LTRIM({a[1]})" if len(a) >= 2 else f"LTRIM({a[0]})"),
-            "rtrim":       lambda a: (f"RTRIM({a[1]})" if len(a) >= 2 else f"RTRIM({a[0]})"),
-            "replace":     lambda a: f"REPLACE({a[0]}, {a[1]}, {a[2]})",
-            "substring":   lambda a: f"SUBSTRING({a[0]}, {a[1]}, {a[2]})",
-            "strcat":      lambda a: " || ".join(a),
-            "startswith":  lambda a: f"({a[0]} LIKE CONCAT({a[1]}, '%'))",
-            "contains":    lambda a: f"({a[0]} LIKE CONCAT('%', {a[1]}, '%'))",
-            "endswith":    lambda a: f"({a[0]} LIKE CONCAT('%', {a[1]}))",
-            "now":         lambda a: "CURRENT_TIMESTAMP",
-            "startofday":  lambda a: f"DATE_TRUNC('day', {a[0]})",
+            "trim": lambda a: (
+                f"TRIM(BOTH {a[0]} FROM {a[1]})" if len(a) >= 2 else f"TRIM({a[0]})"
+            ),
+            "ltrim": lambda a: f"LTRIM({a[1]})" if len(a) >= 2 else f"LTRIM({a[0]})",
+            "rtrim": lambda a: f"RTRIM({a[1]})" if len(a) >= 2 else f"RTRIM({a[0]})",
+            "replace": lambda a: f"REPLACE({a[0]}, {a[1]}, {a[2]})",
+            "substring": lambda a: f"SUBSTRING({a[0]}, {a[1]}, {a[2]})",
+            "strcat": lambda a: " || ".join(a),
+            "startswith": lambda a: f"({a[0]} LIKE CONCAT({a[1]}, '%'))",
+            "contains": lambda a: f"({a[0]} LIKE CONCAT('%', {a[1]}, '%'))",
+            "endswith": lambda a: f"({a[0]} LIKE CONCAT('%', {a[1]}))",
+            "now": lambda a: "CURRENT_TIMESTAMP",
+            "startofday": lambda a: f"DATE_TRUNC('day', {a[0]})",
             "startofhour": lambda a: f"DATE_TRUNC('hour', {a[0]})",
-            "startofmonth":lambda a: f"DATE_TRUNC('month', {a[0]})",
+            "startofmonth": lambda a: f"DATE_TRUNC('month', {a[0]})",
             "startofyear": lambda a: f"DATE_TRUNC('year', {a[0]})",
             "format_datetime": lambda a: f"DATE_FORMAT({a[0]}, {a[1]})",
-            "dayofweek":   lambda a: f"DAYOFWEEK({a[0]})",
-            "hourofday":   lambda a: f"HOUR({a[0]})",
-            "coalesce":    lambda a: f"COALESCE({', '.join(a)})",
-            "split":       lambda a: f"split({a[0]}, {a[1]})",
+            "dayofweek": lambda a: f"DAYOFWEEK({a[0]})",
+            "hourofday": lambda a: f"HOUR({a[0]})",
+            "coalesce": lambda a: f"COALESCE({', '.join(a)})",
+            "split": lambda a: f"split({a[0]}, {a[1]})",
             "strcat_delim": lambda a: f"concat_ws({a[0]}, {', '.join(a[1:])})",
-            "datetime":     lambda a: "TIMESTAMP '{}'".format(a[0].strip("'\"")),
+            "datetime": lambda a: "TIMESTAMP '{}'".format(a[0].strip("'\"")),
             "datetime_add": lambda a: self._render_datetime_add(a),
             "datetime_diff": lambda a: self._render_datetime_diff(a),
-            "prev":          lambda a: f"LAG({', '.join(a)}) OVER (ORDER BY (SELECT NULL))",
+            "prev": lambda a: f"LAG({', '.join(a)}) OVER (ORDER BY (SELECT NULL))",
             "parse_json_path": lambda a: self._render_parse_json_path(a),
             "ipv4_is_private": lambda a: self._render_ipv4_is_private(a),
             "ipv4_is_in_range": lambda a: self._render_ipv4_is_in_range(a),
-            "bin_auto":         lambda a: self._render_bin(a[0], 1, "d"),
-            "case":          lambda a: self._render_case(a),
-            "array_length":   lambda a: f"size({a[0]})",
-            "array_index_of": lambda a: f"(array_position({a[0]}, {a[1]}) - 1)" if len(a) >= 2 else "array_position(NULL, NULL)",
+            "bin_auto": lambda a: self._render_bin(a[0], 1, "d"),
+            "case": lambda a: self._render_case(a),
+            "array_length": lambda a: f"size({a[0]})",
+            "array_index_of": lambda a: (
+                f"(array_position({a[0]}, {a[1]}) - 1)"
+                if len(a) >= 2
+                else "array_position(NULL, NULL)"
+            ),
         }
 
         if name in kql_to_spark:
@@ -698,7 +766,7 @@ class SparkSQLGenerator:
             return f"CAST(months_between({dt1}, {dt2}) AS INT)"
         if period == "year":
             return f"CAST(months_between({dt1}, {dt2}) / 12 AS INT)"
-        
+
         seconds_map = {
             "hour": 3600,
             "minute": 60,
@@ -719,10 +787,17 @@ class SparkSQLGenerator:
             right = self._expr(expr.right)
             # FuncCall left sides (e.g. ipv4_is_private) already return a full
             # boolean SQL expression — strip the redundant == true wrapper.
-            if expr.op == "==" and (
-                (isinstance(expr.right, BoolLit) and expr.right.value is True) or
-                (isinstance(expr.right, ColumnRef) and expr.right.name.lower() == "true")
-            ) and isinstance(expr.left, FuncCall):
+            if (
+                expr.op == "=="
+                and (
+                    (isinstance(expr.right, BoolLit) and expr.right.value is True)
+                    or (
+                        isinstance(expr.right, ColumnRef)
+                        and expr.right.name.lower() == "true"
+                    )
+                )
+                and isinstance(expr.left, FuncCall)
+            ):
                 return left
             if expr.op == "=~":
                 return f"LOWER({left}) = LOWER({right})"
@@ -776,10 +851,10 @@ class SparkSQLGenerator:
             col = self._expr(expr.col)
             val = f"'{expr.value}'"
             op_map = {
-                "has":        f"{col} RLIKE '(?i)\\\\b{expr.value}\\\\b'",
-                "contains":   f"{col} LIKE '%{expr.value}%'",
+                "has": f"{col} RLIKE '(?i)\\\\b{expr.value}\\\\b'",
+                "contains": f"{col} LIKE '%{expr.value}%'",
                 "startswith": f"{col} LIKE '{expr.value}%'",
-                "endswith":   f"{col} LIKE '%{expr.value}'",
+                "endswith": f"{col} LIKE '%{expr.value}'",
                 "matches regex": f"regexp_like({col}, {val})",
             }
             return op_map.get(expr.op, f"{col} LIKE '%{expr.value}%'")
@@ -833,16 +908,18 @@ class SparkSQLGenerator:
         ip = args[0]
         cidr = args[1].strip("'\"")
         try:
-            ip_part, mask_part = cidr.split('/')
+            ip_part, mask_part = cidr.split("/")
             mask = int(mask_part)
-            octets = [int(o) for o in ip_part.split('.')]
-            ip_val = (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3]
+            octets = [int(o) for o in ip_part.split(".")]
+            ip_val = (
+                (octets[0] << 24) + (octets[1] << 16) + (octets[2] << 8) + octets[3]
+            )
             network_mask = (0xFFFFFFFF << (32 - mask)) & 0xFFFFFFFF
             start = ip_val & network_mask
             end = start | (network_mask ^ 0xFFFFFFFF)
         except Exception:
             return f"ipv4_is_in_range({ip}, '{cidr}')"
-            
+
         ip_int = (
             f"(CAST(split({ip}, '\\\\.')[0] AS BIGINT) * 16777216 + "
             f"CAST(split({ip}, '\\\\.')[1] AS BIGINT) * 65536 + "
@@ -856,19 +933,23 @@ class SparkSQLGenerator:
             return f"CASE WHEN {', '.join(args)} END"
         branches = []
         for i in range(0, len(args) - 1, 2):
-            branches.append(f"WHEN {args[i]} THEN {args[i+1]}")
+            branches.append(f"WHEN {args[i]} THEN {args[i + 1]}")
         default_val = args[-1]
         return f"CASE {' '.join(branches)} ELSE {default_val} END"
 
     def _render_iff_func(self, expr: FuncCall) -> str:
         branches = []
         curr = expr
-        while isinstance(curr, FuncCall) and curr.name.lower() == "iff" and len(curr.args) == 3:
+        while (
+            isinstance(curr, FuncCall)
+            and curr.name.lower() == "iff"
+            and len(curr.args) == 3
+        ):
             cond = self._expr(curr.args[0])
             true_v = self._expr(curr.args[1])
             branches.append(f"WHEN {cond} THEN {true_v}")
             curr = curr.args[2]
-            
+
         if isinstance(curr, IffExpr):
             while isinstance(curr, IffExpr):
                 cond = self._bool_expr(curr.condition)
@@ -878,5 +959,5 @@ class SparkSQLGenerator:
             default_val = self._expr(curr)
         else:
             default_val = self._expr(curr)
-            
+
         return f"CASE {' '.join(branches)} ELSE {default_val} END"
