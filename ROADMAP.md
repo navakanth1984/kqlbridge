@@ -1,83 +1,167 @@
-# KQLBridge Roadmap — v0.7.1 Delivered → v0.8.0 Next
+# KQLBridge Consolidated Architecture & Strategic Roadmap
 
-This roadmap tracks the evolution of KQLBridge from its current stable **v0.7.1** release through the **v0.8.0** community milestone.
-
----
-
-## ✅ Milestone v0.7.0 — Completed & Released (May 2026)
-
-Full SOC Threat Hunting feature set shipped:
-
-* [x] `parse_json(col).field` → `get_json_object` (Spark) / `JSON_VALUE` (T-SQL)
-* [x] `mv-expand col` → `LATERAL VIEW explode` (Spark) / `CROSS APPLY OPENJSON` (T-SQL)
-* [x] `case(c1,v1,c2,v2,...,default)` → flat `CASE WHEN ... END` (both)
-* [x] `ipv4_is_private(ip)` → RFC 1918 big-integer BETWEEN checks (both)
-* [x] `ipv4_is_in_range(ip, cidr)` → dynamic CIDR-to-integer BETWEEN (both)
-* [x] `has_any()` → RLIKE word-boundary (Spark) / LIKE chain (T-SQL)
-* [x] `percentile()` / `percentiles()` → `approx_percentile` / `PERCENTILE_CONT`
-* [x] `make_list()` → `collect_list` (Spark) / `STRING_AGG` (T-SQL)
-* [x] `serialize` + `prev()` → `LAG() OVER (ORDER BY (SELECT NULL))`
+This document serves as the authoritative blueprint for KQLBridge's evolution from a query transpiler into a thread-safe, compiler-grade query interoperability, validation, optimization, and portability platform.
 
 ---
 
-## ✅ Milestone v0.7.1 — Patch Released (May 2026)
+## ➔ Phase 1 Retrospective (Complete)
 
-Critical correctness fix landed as a targeted patch:
+Phase 1 successfully established the core compiler-grade foundations without breaking backward compatibility:
 
-* [x] **Boolean comparison fix:** Surgical `== true` stripping — only applied to `FuncCall`
-  left-hand sides (which already emit native boolean SQL). `ColumnRef == true` comparisons
-  now correctly render as `= TRUE` (satisfying the locked benchmark oracle).
-* [x] **PySpark SOC test:** `test_soc_threat_hunting_pyspark` validates `parse_json`, `case`,
-  and `ipv4_is_private` through `PySparkGenerator`, with `= true` suffix regression guard.
-* [x] **Score:** 78/78 unit tests · 120/120 eval (100%)
-
----
-
-## ✅ Milestone v0.8.0 — Completed & Released (May 2026)
-
-Full array manipulation, casting, formatting, and case-insensitive comparison support:
-
-* [x] **`format_datetime(col, format)`**: Fully implemented for Spark SQL (`DATE_FORMAT`) and T-SQL (`FORMAT`).
-* [x] **Explicit Casting**: Standardized translation for `tostring`, `toint`, `tolong`, and `todouble` across dialects.
-* [x] **Array Operations**: Robust indexing support via `array_length` and `array_index_of` with correct KQL 0-based indexing mappings.
-* [x] **Case-Insensitive List membership (`in~`, `!in~`)**: Grammar and generator capabilities fully integrated for both literal sets and subqueries.
-* [x] **Score:** 81/81 unit tests (100% success) · Published to PyPI and Test PyPI.
+*   **Thread-Safe Translation Memory:** Synchronized cache lookups and rules mapping inside `memory.py` using `threading.Lock`.
+*   **Four-Tier Capability Registry:** Declarative operator mappings across dialects (`NATIVE`, `EMULATED`, `PARTIAL`, `UNSUPPORTED`) via the `CapabilityLevel` Enum.
+*   **Plugin Framework:** Extensible visitor overrides using the `@register_renderer(node_type, dialect)` and `@register_optimizer` decorators.
+*   **Non-Mutating AST Optimizer:** Deep-copy isolated optimizer pipeline (`ASTOptimizer`) applying rule-based optimization passes.
+*   **Lineage-Aware Predicate Safety:** Validated column lineage blocks across `extend`, `project aliases`, `summarize aliases`, and `join-generated columns` to prevent unsafe predicate pushdowns.
+*   **Verification:** Complete suite of 343 tests passing with a 100% success rate under parallel thread stress contention.
 
 ---
 
-## 🚀 Milestone v0.9.0 — Planned (Next Release)
+## ➔ Strategic Direction: Front-End Architecture Pipeline
 
-Based on community roadmap priorities, the following items are scheduled for the next development iteration:
+The platform is transitioning to a multi-stage semantic compilation pipeline:
 
-### 1. Multi-Line `let` + Scalar Expression Chaining
-- **Pain Point:** Analysts define multiple scalar `let` bindings that reference each other.
-  ```kql
-  let threshold = 100;
-  let lookback = ago(7d);
-  Events | where Count > threshold and TimeGenerated > lookback
-  ```
-- **Target:** Inline-substitute all scalar lets sequentially before final SQL emission.
-
-### 2. `summarize ... by bin_auto(TimeGenerated)` — Auto-Bin Detection
-- **Pain Point:** Power BI + Azure Monitor dashboards use `bin_auto` for adaptive time granularity.
-- **Target:** Detect query time range and emit an appropriate `DATE_TRUNC` / `FLOOR` bin size.
+```text
+KQL Query Input
+       ↓
+  Lark Parser
+       ↓
+   Typed AST
+       ↓
+Scope Resolution   <-- Spawns Lexical Scope Stack
+       ↓
+Alpha Renaming     <-- Rewrites variables to compiler-safe names (__kqlbridge_sym_N)
+       ↓
+Constant Folding   <-- Resolves static expressions (e.g., let threshold = 10)
+       ↓
+  Semantic IR      <-- Core semantic intermediates (Phases 2A/2B/2C)
+       ↓
+  IR Optimizer     <-- Lineage-safe semantic optimization passes
+       ↓
+Target Generator   <-- Dialect code generation (DuckDB, Postgres, Snowflake, etc.)
+       ↓
+Dialect Target SQL
+```
 
 ---
 
-## 🛠 Implementation Cadence (v0.9)
+## ➔ Core Front-End Specifications
 
-1. **Let substitution compiler pass**: Build inline parser pass in `src/kqlbridge/parser.py`.
-2. **Auto-bin interval resolver**: Implement fallback resolution based on active query context.
-3. **Benchmark additions**: Add nested let binding edge-cases to `tests/eval/benchmark.json`.
+### 1. Scope Resolution
+Resolves identifiers to their correct declaring scope and symbol classification.
+
+#### Scope Types
+```python
+class ScopeType(Enum):
+    GLOBAL = "GLOBAL"          # Outer let bindings
+    PIPELINE = "PIPELINE"      # Sequential pipe operators (extend, project)
+    SUBQUERY = "SUBQUERY"      # Relational subquery boundaries (joins, unions)
+    AGGREGATE = "AGGREGATE"    # Aggregation boundary scopes
+```
+
+#### Symbol Kinds
+```python
+class SymbolKind(Enum):
+    LET = "LET"                # Explicit scalar/tabular let declarations
+    COLUMN = "COLUMN"          # Transient physical or generated columns
+    AGGREGATE = "AGGREGATE"    # Aggregate metrics (e.g., count(), sum())
+    PARAMETER = "PARAMETER"    # Query/engine parameters
+    FUNCTION = "FUNCTION"      # Native or user-defined function mappings
+```
+
+#### Symbol Metadata tracking
+```python
+class SymbolInfo:
+    def __init__(self):
+        self.name: str = ""              # Original identifier
+        self.unique_name: str = ""       # Compiler-generated non-colliding name
+        self.symbol_kind: SymbolKind = SymbolKind.COLUMN
+        self.scope_depth: int = 0
+        self.origin_scope: SymbolTable = None
+        self.origin_node: ASTNode = None # AST node where the symbol was defined
+        self.derived_from: list[str] = []# Ancestor column lineage tracking
+```
+*Tracking origin metadata enables execution validation, lineage audits, and diagnostics logging via `explain_semantic()`.*
 
 ---
 
-## 📦 Release Criteria (v0.9.0)
+### 2. Lexical Scope Rules
 
-| Gate | Requirement |
-|---|---|
-| Unit tests | 95+ tests, 100% pass |
-| Eval oracle | 140/140+ (new cases added) |
-| Python support | 3.10, 3.11, 3.12, 3.13 |
-| PyPI publish | `pip install kqlbridge==0.9.0` |
+*   **Rule 1: Let Inheritance:** Nested subqueries may resolve and inherit read-only `LET` bindings declared in parent scopes.
+*   **Rule 2: Column Isolation:** Nested subqueries are strictly isolated from the parent pipeline's active `COLUMN` scope to prevent leaking outer query column names into the subquery context.
+*   **Rule 3: Aggregate Boundaries:** Operators like `summarize` discard the active column namespace, creating an `AGGREGATE` scope boundary. Aggregation-generated columns behave differently from normal columns under pushdown rules.
+*   **Rule 4: Correlated Subqueries:** Defer implementation during Phase 2. All correlated subquery patterns are marked and rejected as `CapabilityLevel.UNSUPPORTED`.
 
+---
+
+### 3. Alpha Renaming (Symbol Uniqueness)
+To guarantee that compiler-inlined or translated variables never collide with user column names, shadowed identifiers are renamed to compiler-safe unique keys:
+```text
+__kqlbridge_sym_1
+__kqlbridge_sym_2
+```
+
+---
+
+### 4. Constant Folding
+Static and scalar variables (e.g., `let threshold = 10; ... where Count > threshold`) are folded and substituted early. This ensures:
+*   Simpler Semantic IR structures.
+*   More efficient optimization passes.
+*   Faster target-dialect execution times.
+
+---
+
+## ➔ Upcoming Milestone Roadmap
+
+```mermaid
+gantt
+    title KQLBridge Execution Roadmap
+    dateFormat  YYYY-MM-DD
+    section v0.9 (Scoping & Folding)
+    Scope Stack & Symbol Table       :active, 2026-05-22, 2026-06-05
+    Alpha Renaming Pass              :active, 2026-06-05, 2026-06-15
+    Constant Folding Compiler Pass   :active, 2026-06-15, 2026-06-25
+    section Phase 2 (Semantic IR)
+    Phase 2A (Core Primitives)       :2026-06-25, 2026-07-10
+    Phase 2B (Relational Ops)        :2026-07-10, 2026-07-20
+    Phase 2C (Advanced Ops)          :2026-07-20, 2026-08-01
+    section v1.0 (Verification & DuckDB)
+    DuckDB Dialect Emitter           :2026-08-01, 2026-08-15
+    Execution Verification Harness   :2026-08-15, 2026-08-30
+    explain_semantic() Integration   :2026-08-30, 2026-09-10
+    section v1.1+ (Dialect Expansion)
+    Postgres Dialect                 :2026-09-10, 2026-09-30
+    OptimizationReport Telemetry     :2026-09-30, 2026-10-10
+    Snowflake Dialect                :2026-10-10, 2026-10-30
+    BigQuery Dialect                 :2026-10-30, 2026-11-20
+```
+
+---
+
+### 🛠 Milestone v0.9.0 — Let Chaining, Scoping, and Folding
+*   **Lexical Scoping:** Implement `ScopeManager` and `SymbolTable` to resolve scopes stack-wise.
+*   **Alpha Renaming:** Add compiler-safe variable generation (`__kqlbridge_sym_N`) for all shadowed identifiers.
+*   **Constant Folding:** Evaluate and substitute static bindings sequentially before AST emission.
+
+### 🛠 Phase 2 — Semantic IR Rollout
+To prevent architectural bloat, the Semantic IR is introduced in three decoupled phases:
+*   **Phase 2A:** Core query primitives: `SemanticQuery`, `SemanticFilter`, `SemanticProjection`, `SemanticAggregate`.
+*   **Phase 2B:** Relational operations: `SemanticJoin`, `SemanticUnion`.
+*   **Phase 2C:** Advanced database abstractions: `SemanticWindow`, `SemanticTimeSeries`, `SemanticJson`.
+
+### 🛠 Milestone v1.0.0 — DuckDB & Execution Verification
+*   **DuckDB Dialect:** Lightweight, fast in-memory execution target.
+*   **Execution Verification Harness:** `verify(kql, generated_sql)` pipeline evaluating outputs between a reference KQL system and a local DuckDB target.
+*   **`explain_semantic()`:** Diagnostics pass tracing the full AST-to-IR-to-SQL transformation.
+
+### 🛠 Milestone v1.1+ — Dialect Expansion & Optimization Reports
+*   **PostgreSQL, Snowflake, and BigQuery Support:** Production-grade dialect generation.
+*   **`OptimizationReport` Telemetry:** Collect and expose filters-merged, predicates-pushed, and joins-rewritten counters.
+
+---
+
+## ❌ Deferred Work (Non-Priority)
+To protect compiler-grade stability and correctness, the following abstractions are explicitly out-of-scope for the near-term roadmap:
+*   AI query translation / Agentic rewriting pipelines.
+*   LLM-based query generation.
+*   Vector search abstractions.

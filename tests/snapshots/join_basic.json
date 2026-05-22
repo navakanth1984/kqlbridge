@@ -1,0 +1,36 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 1,
+  "steps": [
+    {
+      "type": "SemanticJoin",
+      "right_query": {
+        "type": "SemanticQuery",
+        "source": "DeviceNetworkEvents",
+        "source_table": "DeviceNetworkEvents",
+        "step_count": 0,
+        "steps": [],
+        "ctes": {},
+        "pipeline_state": {}
+      },
+      "kind": "inner",
+      "conditions": [
+        {
+          "type": "SemanticJoinCondition",
+          "left_symbol_id": 1,
+          "right_symbol_id": 1,
+          "left_col": "DeviceId",
+          "right_col": "DeviceId",
+          "operator": "=="
+        }
+      ],
+      "on_keys": [
+        "DeviceId"
+      ]
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

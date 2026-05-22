@@ -1,0 +1,48 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 2,
+  "steps": [
+    {
+      "type": "SemanticUnion",
+      "tables": [
+        "HoneypotHits"
+      ],
+      "inputs": [
+        {
+          "type": "SemanticQuery",
+          "source": "HoneypotHits",
+          "source_table": "HoneypotHits",
+          "step_count": 0,
+          "steps": [],
+          "ctes": {},
+          "pipeline_state": {}
+        }
+      ],
+      "mappings": []
+    },
+    {
+      "type": "SemanticProjection",
+      "items": [
+        {
+          "type": "ProjectionItem",
+          "alias": "source_ip",
+          "expression": {
+            "type": "SemanticColumnRef",
+            "name": "source_ip",
+            "symbol_id": 1
+          },
+          "symbol_id": 1,
+          "derived_from": [
+            1
+          ],
+          "origin_node_type": "ProjectOp"
+        }
+      ],
+      "is_extend_only": false
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

@@ -1,0 +1,51 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 1,
+  "steps": [
+    {
+      "type": "SemanticAggregate",
+      "aggregations": [
+        {
+          "type": "AggregateItem",
+          "alias": "count_",
+          "function_name": "count",
+          "arguments": [],
+          "symbol_id": 3,
+          "derived_from": [],
+          "origin_node_type": "AggCount",
+          "is_distinct": false
+        }
+      ],
+      "group_by": [
+        {
+          "type": "ProjectionItem",
+          "alias": "TimeGenerated",
+          "expression": {
+            "type": "SemanticFunctionCall",
+            "name": "bin",
+            "arguments": [
+              {
+                "type": "SemanticColumnRef",
+                "name": "TimeGenerated",
+                "symbol_id": 1
+              },
+              {
+                "type": "SemanticLiteral",
+                "value": "1h"
+              }
+            ]
+          },
+          "symbol_id": 2,
+          "derived_from": [
+            1
+          ],
+          "origin_node_type": "BinGroup"
+        }
+      ]
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

@@ -1,0 +1,60 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 2,
+  "steps": [
+    {
+      "type": "SemanticFilter",
+      "predicate": {
+        "type": "SemanticComparison",
+        "left": {
+          "type": "SemanticColumnRef",
+          "name": "Level",
+          "symbol_id": 1
+        },
+        "op": "==",
+        "right": {
+          "type": "SemanticLiteral",
+          "value": "Error"
+        }
+      }
+    },
+    {
+      "type": "SemanticProjection",
+      "items": [
+        {
+          "type": "ProjectionItem",
+          "alias": "Level",
+          "expression": {
+            "type": "SemanticColumnRef",
+            "name": "Level",
+            "symbol_id": 3
+          },
+          "symbol_id": 3,
+          "derived_from": [
+            3
+          ],
+          "origin_node_type": "ProjectOp"
+        },
+        {
+          "type": "ProjectionItem",
+          "alias": "Message",
+          "expression": {
+            "type": "SemanticColumnRef",
+            "name": "Message",
+            "symbol_id": 2
+          },
+          "symbol_id": 2,
+          "derived_from": [
+            2
+          ],
+          "origin_node_type": "ProjectOp"
+        }
+      ],
+      "is_extend_only": false
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

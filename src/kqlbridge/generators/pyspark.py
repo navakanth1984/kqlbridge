@@ -12,6 +12,8 @@ class PySparkGenerator:
     """
     def __init__(self, hint: SchemaHint | None = None):
         self.sql_gen = SparkSQLGenerator(hint=hint)
+        self.dialect = "pyspark"
+        self.sql_gen.dialect = "pyspark"
 
     def generate(self, query: KQLQuery) -> str:
         """
@@ -83,6 +85,16 @@ class PySparkGenerator:
             lines.append(f"{df_name} = spark.table('{query.table}')")
         
         for pipe in query.pipes:
+            from ..plugins import get_renderer
+            custom_renderer = get_renderer(type(pipe), "pyspark")
+            if custom_renderer:
+                res_line = custom_renderer(self, pipe, df_name)
+                if isinstance(res_line, list):
+                    lines.extend(res_line)
+                else:
+                    lines.append(f"{df_name} = {res_line}")
+                continue
+
             if isinstance(pipe, WhereOp):
                 subqueries = self._extract_subqueries(pipe.condition)
                 

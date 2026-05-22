@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-05-22T18:21:00.565241+00:00",
+  "gate_status": {
+    "validator_snapshots": true,
+    "tier1": true,
+    "tier2": true,
+    "tier3": true,
+    "phase3b_complete": true
+  },
+  "tier1": {
+    "total": 25,
+    "passing": 25,
+    "failing": 0,
+    "rate": 100.0,
+    "categories": {}
+  },
+  "tier2": {
+    "total": 10,
+    "passing": 10,
+    "failing": 0,
+    "rate": 100.0,
+    "categories": {}
+  },
+  "tier3": {
+    "total": 119,
+    "passing": 119,
+    "failing": 0,
+    "rate": 100.0,
+    "categories": {}
+  },
+  "all_categories": {},
+  "failing_ids": {
+    "tier1": [],
+    "tier2": [],
+    "tier3": []
+  }
+}

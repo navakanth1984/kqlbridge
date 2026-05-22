@@ -22,11 +22,19 @@ from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 from .generators.pyspark import PySparkGenerator
 
-from .smart import smart_transpile
+from .smart import smart_transpile, smart_analyze
 from .micro_model import TimeSeriesMicroModel
 from .schema_hint import SchemaHint, WindowSpec
 
-from .mlm import MLMAgent
+from .memory import TranslationMemory
+from .registry import (
+    CapabilityLevel, SUPPORT_MATRIX, get_capability_level,
+    is_operator_supported, get_supported_dialects
+)
+from .plugins import (
+    register_renderer, register_optimizer, register_operator, register_function
+)
+from .optimizer import ASTOptimizer, OptimizationRule
 
 # FIX-05: declare output type contract — Pandas/PySpark return Python code,
 # not SQL strings. Callers must branch on OutputType before passing to an engine.
@@ -40,21 +48,53 @@ def target_output_type(target: str) -> OutputType:
 
 __version__ = "0.11.2"  # patched: FIX-01 through FIX-05
 __all__ = [
-    "translate", "smart_transpile", "detect_operators", "is_supported",
+    "translate", "smart_transpile", "smart_analyze", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",
     "OutputType", "target_output_type",  # FIX-05
     "SchemaHint", "WindowSpec",
+    "TranslationMemory", "translation_memory",
     "MLMAgent", "mlm_agent",
+    "CapabilityLevel", "SUPPORT_MATRIX", "get_capability_level",
+    "is_operator_supported", "get_supported_dialects",
+    "register_renderer", "register_optimizer", "register_operator", "register_function",
+    "ASTOptimizer", "OptimizationRule",
 ]
 
-# Thread-safe global instance of MLMAgent
-mlm_agent = MLMAgent()
+# Thread-safe global instance of TranslationMemory
+translation_memory = TranslationMemory()
+mlm_agent = translation_memory
+MLMAgent = TranslationMemory
+
+
+
+def normalize_hint(hint: SchemaHint | dict | None) -> SchemaHint | None:
+    if hint is None:
+        return None
+    if isinstance(hint, SchemaHint):
+        return hint
+    if isinstance(hint, dict):
+        ws_val = hint.get("window_spec")
+        ws = None
+        if isinstance(ws_val, dict):
+            ws = WindowSpec(
+                partition_by=ws_val.get("partition_by"),
+                order_by=ws_val.get("order_by")
+            )
+        elif isinstance(ws_val, WindowSpec):
+            ws = ws_val
+        
+        return SchemaHint(
+            window_spec=ws,
+            json_fields=hint.get("json_fields"),
+            target_dialect=hint.get("target_dialect")
+        )
+    return None
 
 
 def translate(
     kql: str,
     target: Literal["spark", "tsql", "pyspark"] = "spark",
-    hint: SchemaHint | None = None,
+    hint: SchemaHint | dict | None = None,
 ) -> str:
     """
     Translate a KQL query string to the target SQL dialect.
@@ -72,10 +112,12 @@ def translate(
         NotImplementedError: if target generator is not implemented
         ValueError: if query contains unsupported operators (check first)
     """
-    # 1. MLM pre-execution recall hook
-    override_sql = mlm_agent.recall(kql)
+    hint = normalize_hint(hint)
+
+    # 1. Translation Memory pre-execution recall hook
+    override_sql = translation_memory.recall(kql)
     if override_sql is not None:
-        mlm_agent.learn(kql)
+        translation_memory.learn(kql)
         return override_sql
 
     try:
@@ -92,11 +134,29 @@ def translate(
                 res = model.to_pyspark()
             else:
                 raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
-            mlm_agent.learn(kql)
+            translation_memory.learn(kql)
             return res
 
         try:
             query = parse(kql)
+            from .scoping import ScopeManager
+            from .passes.alpha_renaming import AlphaRenamer
+            from .passes.constant_folding import ConstantFolder
+            
+            scope_manager = ScopeManager()
+            query = AlphaRenamer(scope_manager).rename_query(query)
+            query = ConstantFolder(scope_manager).fold_query(query)
+            
+            from .optimizer import ASTOptimizer
+            query = ASTOptimizer().optimize(query)
+            
+            # Dry-run Semantic IR validation pass
+            try:
+                from .ir import to_semantic_ir, validate_ir
+                ir_query = to_semantic_ir(query, scope_manager.current_scope)
+                validate_ir(ir_query)
+            except Exception as ir_err:
+                raise ValueError(f"Dry-run Semantic IR validation failed: {ir_err}") from ir_err
         except _LarkUnexpectedInput as e:
             raise ValueError(
                 "Unsupported KQL syntax — contains operators or constructs not supported "
@@ -105,7 +165,8 @@ def translate(
             ) from None
 
         if target == "spark":
-            res = SparkSQLGenerator(hint=hint).generate(query)
+            from .ir.emitters.spark_ir import IRSparkSQLGenerator
+            res = IRSparkSQLGenerator(hint=hint).emit(ir_query)
         elif target == "tsql":
             res = TSQLGenerator(hint=hint).generate(query)
         elif target == "pyspark":
@@ -113,11 +174,11 @@ def translate(
         else:
             raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
 
-        mlm_agent.learn(kql)
+        translation_memory.learn(kql)
         return res
 
     except Exception as e:
-        mlm_agent.learn(kql, error=str(e))
+        translation_memory.learn(kql, error=str(e))
         raise
 
 

@@ -1,0 +1,26 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 1,
+  "steps": [
+    {
+      "type": "SemanticFilter",
+      "predicate": {
+        "type": "SemanticComparison",
+        "left": {
+          "type": "SemanticColumnRef",
+          "name": "Level",
+          "symbol_id": 1
+        },
+        "op": "==",
+        "right": {
+          "type": "SemanticLiteral",
+          "value": "Error"
+        }
+      }
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

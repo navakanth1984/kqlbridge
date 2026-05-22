@@ -47,6 +47,7 @@ class TSQLGenerator(SparkSQLGenerator):
 
     def __init__(self, hint: SchemaHint | None = None):
         super().__init__(hint=hint)
+        self.dialect = "tsql"
 
     # ─── Override 1: TOP n instead of LIMIT n ────────────────────────────
 
@@ -204,7 +205,48 @@ class TSQLGenerator(SparkSQLGenerator):
         if name == "array_index_of":
             val = args[1] if len(args) >= 2 else "NULL"
             return f"COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON({args[0]}) WHERE [value] = {val}), -1)"
+        # Window functions: prev/next → LAG/LEAD, row_number/rank/dense_rank → ROW_NUMBER/RANK/DENSE_RANK
+        if name in ("prev", "next", "row_number", "rank", "dense_rank", "ntile", "percent_rank", "cume_dist"):
+            return self._render_window_func(name, args)
         return super()._func_call(expr)
+
+    def _render_window_func(self, name: str, args: list[str]) -> str:
+        func_map = {
+            "prev": "LAG",
+            "next": "LEAD",
+            "row_number": "ROW_NUMBER",
+            "rank": "RANK",
+            "dense_rank": "DENSE_RANK",
+            "percent_rank": "PERCENT_RANK",
+            "cume_dist": "CUME_DIST",
+            "ntile": "NTILE"
+        }
+        sql_func = func_map.get(name, name.upper())
+        if name in ("row_number", "rank", "dense_rank", "percent_rank", "cume_dist"):
+            func_args_str = ""
+        else:
+            func_args_str = ", ".join(args)
+
+        over_parts = []
+        hint = getattr(self, "hint", None)
+        ws = getattr(hint, "window_spec", None) if hint else None
+
+        if ws and getattr(ws, "partition_by", None):
+            pb_cols = [c for c in ws.partition_by if c]
+            if pb_cols:
+                over_parts.append(f"PARTITION BY {', '.join(pb_cols)}")
+
+        if ws and getattr(ws, "order_by", None):
+            ob_cols = [c for c in ws.order_by if c]
+            if ob_cols:
+                over_parts.append(f"ORDER BY {', '.join(ob_cols)}")
+            else:
+                over_parts.append("ORDER BY (SELECT NULL)")
+        else:
+            over_parts.append("ORDER BY (SELECT NULL)")
+
+        over_clause = " ".join(over_parts)
+        return f"{sql_func}({func_args_str}) OVER ({over_clause})"
 
     def _bool_expr(self, expr) -> str:
         if isinstance(expr, HasAnyExpr):

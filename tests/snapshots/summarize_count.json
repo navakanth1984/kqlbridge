@@ -1,0 +1,41 @@
+{
+  "type": "SemanticQuery",
+  "source": "SecurityEvents",
+  "source_table": "SecurityEvents",
+  "step_count": 1,
+  "steps": [
+    {
+      "type": "SemanticAggregate",
+      "aggregations": [
+        {
+          "type": "AggregateItem",
+          "alias": "events",
+          "function_name": "count",
+          "arguments": [],
+          "symbol_id": 3,
+          "derived_from": [],
+          "origin_node_type": "AggCount",
+          "is_distinct": false
+        }
+      ],
+      "group_by": [
+        {
+          "type": "ProjectionItem",
+          "alias": "source_ip",
+          "expression": {
+            "type": "SemanticColumnRef",
+            "name": "source_ip",
+            "symbol_id": 1
+          },
+          "symbol_id": 2,
+          "derived_from": [
+            1
+          ],
+          "origin_node_type": "PlainGroup"
+        }
+      ]
+    }
+  ],
+  "ctes": {},
+  "pipeline_state": {}
+}

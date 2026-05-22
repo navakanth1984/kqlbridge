@@ -1,0 +1,478 @@
+[
+  {
+    "id": "std_001",
+    "kql": "AppLogs | where Level == 'Error' | summarize count() by ServiceName"
+  },
+  {
+    "id": "std_002",
+    "kql": "AppLogs | where TimeGenerated > ago(24h) | project Message, Level"
+  },
+  {
+    "id": "std_003",
+    "kql": "AppLogs | project Message, Level, ServiceName"
+  },
+  {
+    "id": "std_004",
+    "kql": "AppLogs | where Level == 'Error' | take 100"
+  },
+  {
+    "id": "std_005",
+    "kql": "AppLogs | count"
+  },
+  {
+    "id": "std_006",
+    "kql": "Orders | summarize total = sum(Amount) by Region"
+  },
+  {
+    "id": "std_007",
+    "kql": "Orders | summarize avg_amount = avg(Amount) by Region"
+  },
+  {
+    "id": "std_008",
+    "kql": "AppLogs | order by TimeGenerated desc"
+  },
+  {
+    "id": "std_009",
+    "kql": "AppLogs | sort by Level asc"
+  },
+  {
+    "id": "std_010",
+    "kql": "AppLogs | distinct Level"
+  },
+  {
+    "id": "std_011",
+    "kql": "AppLogs | extend ErrorCode = 500"
+  },
+  {
+    "id": "std_012",
+    "kql": "AppLogs | where Level == 'Error' and Region == 'east'"
+  },
+  {
+    "id": "std_013",
+    "kql": "AppLogs | where Level == 'Error' or Level == 'Warning'"
+  },
+  {
+    "id": "std_014",
+    "kql": "AppLogs | summarize max_time = max(TimeGenerated)"
+  },
+  {
+    "id": "std_015",
+    "kql": "AppLogs | summarize min_time = min(TimeGenerated)"
+  },
+  {
+    "id": "std_016",
+    "kql": "AppLogs | where Level == 'Error' | order by TimeGenerated desc | take 50"
+  },
+  {
+    "id": "std_017",
+    "kql": "AppLogs | limit 20"
+  },
+  {
+    "id": "std_018",
+    "kql": "AppLogs | where TimeGenerated > ago(7d)"
+  },
+  {
+    "id": "std_019",
+    "kql": "AppLogs | where TimeGenerated > ago(30m)"
+  },
+  {
+    "id": "std_020",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1h)"
+  },
+  {
+    "id": "std_021",
+    "kql": "AppLogs | union ErrorLogs"
+  },
+  {
+    "id": "std_022",
+    "kql": "AppLogs | join (Users) on UserId"
+  },
+  {
+    "id": "std_023",
+    "kql": "AppLogs | where Level != 'Debug'"
+  },
+  {
+    "id": "std_024",
+    "kql": "AppLogs | where Duration > 1000"
+  },
+  {
+    "id": "std_025",
+    "kql": "AppLogs | project Message, Level | order by Level asc"
+  },
+  {
+    "id": "std_026",
+    "kql": "AppLogs | summarize count()"
+  },
+  {
+    "id": "std_027",
+    "kql": "Orders | summarize total = sum(Amount), n = count() by Region"
+  },
+  {
+    "id": "std_028",
+    "kql": "AppLogs | where Message contains 'timeout'"
+  },
+  {
+    "id": "std_029",
+    "kql": "AppLogs | where ServiceName startswith 'web'"
+  },
+  {
+    "id": "std_030",
+    "kql": "AppLogs | where Level in ('Error', 'Warning', 'Critical')"
+  },
+  {
+    "id": "std_031",
+    "kql": "AppLogs | extend ShortMsg = substring(Message, 0, 100)"
+  },
+  {
+    "id": "std_032",
+    "kql": "AppLogs | where isnotnull(UserId)"
+  },
+  {
+    "id": "std_033",
+    "kql": "AppLogs | where isnull(Region)"
+  },
+  {
+    "id": "std_034",
+    "kql": "AppLogs | distinct Level, ServiceName"
+  },
+  {
+    "id": "std_035",
+    "kql": "AppLogs | order by Level asc, TimeGenerated desc"
+  },
+  {
+    "id": "std_036",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1d)"
+  },
+  {
+    "id": "std_037",
+    "kql": "AppLogs | where Level == 'Error' | project Message, ServiceName | take 10"
+  },
+  {
+    "id": "std_038",
+    "kql": "AppLogs | summarize unique_users = dcount(UserId) by Region"
+  },
+  {
+    "id": "std_039",
+    "kql": "AppLogs | extend MsgUpper = toupper(Message)"
+  },
+  {
+    "id": "std_040",
+    "kql": "AppLogs | where Level !in ('Debug', 'Info')"
+  },
+  {
+    "id": "std_041",
+    "kql": "AppLogs | join kind=leftouter (Users) on UserId"
+  },
+  {
+    "id": "std_042",
+    "kql": "T1 | union T2, T3"
+  },
+  {
+    "id": "std_043",
+    "kql": "Orders | where Status == 'active' | summarize total = sum(Amount) by Region | order by total desc"
+  },
+  {
+    "id": "std_044",
+    "kql": "AppLogs | where TimeGenerated > ago(300s)"
+  },
+  {
+    "id": "std_045",
+    "kql": "AppLogs | where ServiceName endswith '.svc'"
+  },
+  {
+    "id": "std_046",
+    "kql": "AppLogs | extend ErrorFlag = 1, Region2 = tolower(Region)"
+  },
+  {
+    "id": "std_047",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | take 5"
+  },
+  {
+    "id": "std_048",
+    "kql": "AppLogs | where Level == 'Error' | project Message, TimeGenerated"
+  },
+  {
+    "id": "std_049",
+    "kql": "AppLogs"
+  },
+  {
+    "id": "std_050",
+    "kql": "AppLogs | where Score > 0.95"
+  },
+  {
+    "id": "std_051",
+    "kql": "AppLogs | where Region == 'east' | distinct ServiceName"
+  },
+  {
+    "id": "std_052",
+    "kql": "AppLogs | where Level == 'Error' | summarize count() by bin(TimeGenerated, 1h)"
+  },
+  {
+    "id": "std_053",
+    "kql": "AppLogs | extend LevelLower = tolower(Level) | where LevelLower == 'error'"
+  },
+  {
+    "id": "std_054",
+    "kql": "Orders | join (Customers) on CustomerId, Region"
+  },
+  {
+    "id": "std_055",
+    "kql": "AppLogs | where TimeGenerated > ago(1d) | summarize count() by bin(TimeGenerated, 1h)"
+  },
+  {
+    "id": "std_056",
+    "kql": "AppLogs | project Level, Region | distinct Level, Region"
+  },
+  {
+    "id": "std_057",
+    "kql": "AppLogs | summarize count() by Level, ServiceName"
+  },
+  {
+    "id": "std_058",
+    "kql": "AppLogs | where IsActive == true"
+  },
+  {
+    "id": "std_059",
+    "kql": "AppLogs | where Level == 'Error' | count"
+  },
+  {
+    "id": "std_060",
+    "kql": "AppLogs | summarize maxDur = max(Duration), minDur = min(Duration) by ServiceName"
+  },
+  {
+    "id": "std_061",
+    "kql": "Orders | extend Total = Price * Quantity"
+  },
+  {
+    "id": "std_062",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | order by n desc | take 10"
+  },
+  {
+    "id": "std_063",
+    "kql": "AppLogs | where not Level == 'Debug'"
+  },
+  {
+    "id": "std_064",
+    "kql": "AppLogs | where Duration <= 500"
+  },
+  {
+    "id": "std_065",
+    "kql": "Orders | summarize avg_price = avg(Price)"
+  },
+  {
+    "id": "std_066",
+    "kql": "AppLogs | where Message has 'error'"
+  },
+  {
+    "id": "std_067",
+    "kql": "AppLogs | project Message"
+  },
+  {
+    "id": "std_068",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 1m)"
+  },
+  {
+    "id": "std_069",
+    "kql": "AppLogs | where TimeGenerated > ago(1h) | project Message, Level | order by Level"
+  },
+  {
+    "id": "std_070",
+    "kql": "AppLogs | where Level == 'Error' | join (Users) on UserId"
+  },
+  {
+    "id": "edge_001",
+    "kql": "let errors = AppLogs | where Level == 'Error'; errors | summarize count() by ServiceName"
+  },
+  {
+    "id": "edge_002",
+    "kql": "let errors = AppLogs | where Level == 'Error'; let summary = errors | summarize count() by ServiceName; summary | order by count_ desc"
+  },
+  {
+    "id": "edge_004",
+    "kql": "AppLogs | summarize count() by bin(TimeGenerated, 5m)"
+  },
+  {
+    "id": "edge_005",
+    "kql": "Orders | summarize cnt = count(), total = sum(Amount), avg_val = avg(Amount) by Region"
+  },
+  {
+    "id": "edge_006",
+    "kql": "AppLogs | where (Level == 'Error' or Level == 'Critical') and Region != 'west'"
+  },
+  {
+    "id": "edge_007",
+    "kql": "AppLogs | join (Users | where IsActive == true) on UserId"
+  },
+  {
+    "id": "edge_008",
+    "kql": "AppLogs | extend Svc = ServiceName | project Svc, Level"
+  },
+  {
+    "id": "edge_009",
+    "kql": "AppLogs | distinct *"
+  },
+  {
+    "id": "edge_010",
+    "kql": "AppLogs | summarize count() by Level, ServiceName, Region"
+  },
+  {
+    "id": "edge_011",
+    "kql": "AppLogs | where Level == 'Error' | extend IsError = true"
+  },
+  {
+    "id": "edge_012",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by bin(TimeGenerated, 1h) | order by TimeGenerated asc"
+  },
+  {
+    "id": "edge_013",
+    "kql": "AppLogs | where StatusCode in (200, 201, 204)"
+  },
+  {
+    "id": "edge_014",
+    "kql": "AppLogs | join kind=inner (Users) on UserId"
+  },
+  {
+    "id": "edge_015",
+    "kql": "AppLogs | summarize unique_sessions = dcount(SessionId) by ServiceName"
+  },
+  {
+    "id": "edge_016",
+    "kql": "Orders | extend IsLarge = Amount > 1000 | summarize count() by IsLarge"
+  },
+  {
+    "id": "edge_017",
+    "kql": "AppLogs | where Level == 'Error' or Level == 'Warning' or Level == 'Critical'"
+  },
+  {
+    "id": "edge_018",
+    "kql": "AppLogs | where TimeGenerated > ago(7d) | summarize count() by bin(TimeGenerated, 1d)"
+  },
+  {
+    "id": "edge_019",
+    "kql": "AppLogs | summarize n = count() by ServiceName | project ServiceName, n"
+  },
+  {
+    "id": "edge_020",
+    "kql": "let active = Users | where IsActive == true; AppLogs | join (active) on UserId"
+  },
+  {
+    "id": "adv_001",
+    "kql": "AppLogs  |  where   Level  ==  'Error'  |  take  10"
+  },
+  {
+    "id": "adv_002",
+    "kql": "AppLogs | WHERE Level == 'Error' | TAKE 10"
+  },
+  {
+    "id": "adv_003",
+    "kql": "AppLogs | Where Level == 'Error' | Take 10"
+  },
+  {
+    "id": "adv_004",
+    "kql": "AppLogs | where Level == 'Error' | project Message"
+  },
+  {
+    "id": "adv_005",
+    "kql": "AppLogs | where Level == 'Error' | where Duration > 500"
+  },
+  {
+    "id": "adv_006",
+    "kql": "AppLogs | sort by TimeGenerated desc | take 5"
+  },
+  {
+    "id": "adv_007",
+    "kql": "AppLogs | where Level == \"Error\""
+  },
+  {
+    "id": "adv_008",
+    "kql": "AppLogs | where (Level == 'Error' and (Duration > 500 or Region == 'east'))"
+  },
+  {
+    "id": "adv_009",
+    "kql": "AppLogs | summarize count() by ServiceName"
+  },
+  {
+    "id": "adv_010",
+    "kql": "AppLogs | where Level == 'Error' | summarize n = count() by ServiceName | order by n desc | take 3"
+  },
+  {
+    "id": "sentinel_001",
+    "kql": "SecurityEvent | where TimeGenerated > ago(24h) | where EventID == 4625 | project TimeGenerated, Account, Computer, IpAddress"
+  },
+  {
+    "id": "sentinel_002",
+    "kql": "SecurityEvent | where EventID == 4625 | summarize FailedLogons=count() by Account | order by FailedLogons desc | take 10"
+  },
+  {
+    "id": "sentinel_003",
+    "kql": "SigninLogs | where TimeGenerated > ago(7d) | where ResultType != 0 | summarize FailedSignins=count() by Location | order by FailedSignins desc"
+  },
+  {
+    "id": "sentinel_004",
+    "kql": "SigninLogs | where RiskLevelDuringSignIn == \"high\" | distinct UserPrincipalName, Location, AppDisplayName"
+  },
+  {
+    "id": "sentinel_005",
+    "kql": "AzureActivity | where TimeGenerated > ago(24h) | summarize OperationCount=count() by Caller, OperationNameValue | order by OperationCount desc"
+  },
+  {
+    "id": "sentinel_006",
+    "kql": "Heartbeat | where TimeGenerated > ago(1h) | summarize HeartbeatCount=count() by Computer | order by HeartbeatCount desc"
+  },
+  {
+    "id": "sentinel_007",
+    "kql": "Heartbeat | where TimeGenerated > ago(24h) | summarize count() by bin(TimeGenerated, 1h) | order by TimeGenerated asc"
+  },
+  {
+    "id": "sentinel_008",
+    "kql": "OfficeActivity | where Operation == \"FileAccessed\" | summarize FileCount=count() by UserId | order by FileCount desc | take 20"
+  },
+  {
+    "id": "sentinel_009",
+    "kql": "CommonSecurityLog | where TimeGenerated > ago(24h) | summarize EventCount=count() by LogSeverity | order by EventCount desc"
+  },
+  {
+    "id": "sentinel_010",
+    "kql": "AuditLogs | where TimeGenerated > ago(7d) | summarize count() by Category, OperationName | order by count_ desc | take 25"
+  },
+  {
+    "id": "sentinel_011",
+    "kql": "SecurityEvent | where EventID == 4624 | where TimeGenerated > ago(1h) | project TimeGenerated, Account, LogonType, Computer, IpAddress | take 50"
+  },
+  {
+    "id": "sentinel_012",
+    "kql": "AzureActivity | where TimeGenerated > ago(7d) | where ActivityStatusValue == \"Failure\" | summarize FailureCount=count() by OperationNameValue, Caller"
+  },
+  {
+    "id": "sentinel_013",
+    "kql": "SigninLogs | where TimeGenerated > ago(7d) | summarize SigninCount=count() by AppDisplayName, bin(TimeGenerated, 1d)"
+  },
+  {
+    "id": "sentinel_014",
+    "kql": "SecurityEvent | where TimeGenerated > ago(24h) | extend IsHighSeverity = EventID == 4625 | where IsHighSeverity == true | project TimeGenerated, Account, Computer"
+  },
+  {
+    "id": "sentinel_015",
+    "kql": "CommonSecurityLog | where TimeGenerated > ago(24h) | distinct DeviceVendor, DeviceProduct, SourceIP"
+  },
+  {
+    "id": "sentinel_016",
+    "kql": "let FailedLogons = SecurityEvent | where EventID == 4625 | where TimeGenerated > ago(24h); FailedLogons | summarize count() by Account | order by count_ desc"
+  },
+  {
+    "id": "sentinel_017",
+    "kql": "StormEvents | where StartTime > ago(30d) | summarize EventCount=count() by State, EventType | order by EventCount desc | take 20"
+  },
+  {
+    "id": "sentinel_018",
+    "kql": "StormEvents | summarize TotalDamage=sum(DamageProperty), Events=count() by State | order by TotalDamage desc | take 10"
+  },
+  {
+    "id": "sentinel_019",
+    "kql": "AzureActivity | where TimeGenerated > ago(1h) | project TimeGenerated, OperationNameValue, Caller | union (AuditLogs | where TimeGenerated > ago(1h) | project TimeGenerated, OperationName, InitiatedBy) | order by TimeGenerated desc"
+  },
+  {
+    "id": "sentinel_020",
+    "kql": "Heartbeat | where TimeGenerated > ago(1h) | project Computer, OSType | join kind=inner (SecurityEvent | where EventID == 4625 | project Computer, Account) on Computer | distinct Computer, OSType, Account"
+  }
+]
