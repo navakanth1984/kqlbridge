@@ -1,5 +1,6 @@
 import pytest
-import pandas as pd
+pd = pytest.importorskip("pandas")
+pytest.importorskip("duckdb")
 from kqlbridge.verify import verify, VerificationResult
 
 def test_duckdb_local_verify():

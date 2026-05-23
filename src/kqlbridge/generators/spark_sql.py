@@ -8,6 +8,7 @@ AGENT MODIFIABLE — primary v0.1 generator.
 from __future__ import annotations
 import ipaddress
 from ..schema_hint import SchemaHint
+from ..options import CompilerOptions
 from ..ast_nodes import (
     KQLQuery,
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
@@ -29,7 +30,6 @@ _COMP_OP_MAP = {"==":"=","!=":"<>","=~":"=","<":"<","<=":"<=",">":">",">=":">="}
 class SparkSQLGenerator:
     def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False, options: CompilerOptions | None = None):
         self.hint = hint
-        from kqlbridge.options import CompilerOptions
         self.options = options if options is not None else CompilerOptions(oracle_parity=oracle_parity)
         self.oracle_parity = self.options.oracle_parity
 
