@@ -25,6 +25,7 @@ from .generators.pyspark import PySparkGenerator
 from .smart import smart_transpile, smart_analyze
 from .micro_model import TimeSeriesMicroModel
 from .schema_hint import SchemaHint, WindowSpec
+from .options import CompilerOptions
 
 from .memory import TranslationMemory
 from .registry import (
@@ -51,7 +52,7 @@ __all__ = [
     "translate", "smart_transpile", "smart_analyze", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",
     "OutputType", "target_output_type",  # FIX-05
-    "SchemaHint", "WindowSpec",
+    "SchemaHint", "WindowSpec", "CompilerOptions",
     "TranslationMemory", "translation_memory",
     "MLMAgent", "mlm_agent",
     "CapabilityLevel", "SUPPORT_MATRIX", "get_capability_level",
@@ -96,6 +97,7 @@ def translate(
     target: Literal["spark", "tsql", "pyspark"] = "spark",
     hint: SchemaHint | dict | None = None,
     oracle_parity: bool = False,
+    options: CompilerOptions | None = None,
 ) -> str:
     """
     Translate a KQL query string to the target SQL dialect.
@@ -105,6 +107,7 @@ def translate(
         target: "spark" (default), "tsql", or "pyspark"
         hint:   Optional SchemaHint context to configure window/schema specs
         oracle_parity: Force locked oracle matching format
+        options: Optional CompilerOptions configuration
 
     Returns:
         SQL/Python string in the target dialect
@@ -114,12 +117,15 @@ def translate(
         NotImplementedError: if target generator is not implemented
         ValueError: if query contains unsupported operators (check first)
     """
-    import sys
     import os
-    if not oracle_parity:
-        oracle_parity = sys.argv and any("prepare.py" in arg for arg in sys.argv)
+    if options is None:
+        options = CompilerOptions(oracle_parity=oracle_parity)
+    else:
+        # If options are explicitly provided, they take precedence
+        if oracle_parity and not options.oracle_parity:
+            options.oracle_parity = True
     
-    os.environ["KQLBRIDGE_ORACLE_PARITY"] = "1" if oracle_parity else "0"
+    os.environ["KQLBRIDGE_ORACLE_PARITY"] = "1" if options.oracle_parity else "0"
 
     hint = normalize_hint(hint)
 
@@ -175,9 +181,9 @@ def translate(
 
         if target == "spark":
             from .ir.emitters.spark_ir import IRSparkSQLGenerator
-            res = IRSparkSQLGenerator(hint=hint, oracle_parity=oracle_parity).emit(ir_query)
+            res = IRSparkSQLGenerator(hint=hint, options=options).emit(ir_query)
         elif target == "tsql":
-            res = TSQLGenerator(hint=hint, oracle_parity=oracle_parity).generate(query)
+            res = TSQLGenerator(hint=hint, options=options).generate(query)
         elif target == "pyspark":
             res = PySparkGenerator(hint=hint).generate(query)
         else:

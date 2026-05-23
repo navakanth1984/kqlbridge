@@ -45,8 +45,8 @@ class TSQLGenerator(SparkSQLGenerator):
     - TRUE/FALSE      → 1/0
     """
 
-    def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False):
-        super().__init__(hint=hint, oracle_parity=oracle_parity)
+    def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False, options: CompilerOptions | None = None):
+        super().__init__(hint=hint, oracle_parity=oracle_parity, options=options)
         self.dialect = "tsql"
 
     # ─── Override 1: TOP n instead of LIMIT n ────────────────────────────

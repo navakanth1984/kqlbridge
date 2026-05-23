@@ -27,9 +27,11 @@ _COMP_OP_MAP = {"==":"=","!=":"<>","=~":"=","<":"<","<=":"<=",">":">",">=":">="}
 
 
 class SparkSQLGenerator:
-    def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False):
+    def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False, options: CompilerOptions | None = None):
         self.hint = hint
-        self.oracle_parity = oracle_parity
+        from kqlbridge.options import CompilerOptions
+        self.options = options if options is not None else CompilerOptions(oracle_parity=oracle_parity)
+        self.oracle_parity = self.options.oracle_parity
 
     def generate(self, query: KQLQuery) -> str:
         self._scalar_bindings = {}
