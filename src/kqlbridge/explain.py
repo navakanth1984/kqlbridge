@@ -401,7 +401,7 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
     Translate KQL and return a structured semantic lineage report.
     """
     from .parser import parse
-    from .scoping import ScopeManager, SymbolInfo
+    from .scoping import ScopeManager, SymbolInfo, SymbolKind
     from .passes.alpha_renaming import AlphaRenamer
     from .passes.constant_folding import ConstantFolder
     from .optimizer import ASTOptimizer
@@ -424,6 +424,7 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
 
     # 3. Walk IR and construct global registry mapping symbol_id to definition nodes
     registry: dict[int, dict[str, Any]] = {}
+    registry_ctes: dict[str, SemanticQuery] = {}
 
     def lookup_name_recursive(table: Any, name: str) -> Any:
         curr = table
@@ -458,8 +459,9 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
         if not node:
             return
         if isinstance(node, SemanticQuery):
-            # Walk CTEs
-            for cte in node.ctes.values():
+            # Walk CTEs and register them
+            for name, cte in node.ctes.items():
+                registry_ctes[name] = cte
                 walk_ir(cte)
             # Walk source if subquery
             if isinstance(node.source, SemanticQuery):
@@ -468,22 +470,38 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
                 for src in node.source:
                     if isinstance(src, SemanticQuery):
                         walk_ir(src)
+            
+            # Bridge CTE boundaries
+            cte_query = None
+            if isinstance(node.source, str) and node.source in registry_ctes:
+                cte_query = registry_ctes[node.source]
+
             # Register scope symbols
             curr = node.symbol_table
             while curr is not None:
                 for sym in curr.symbols.values():
                     origin = type(sym.origin_node).__name__ if sym.origin_node is not None else "None"
                     if sym.symbol_id not in registry:
+                        deps = list(sym.derived_from) if sym.derived_from else []
+                        if cte_query and sym.symbol_kind == SymbolKind.COLUMN:
+                            cte_sym = lookup_name_recursive(cte_query.symbol_table, sym.name)
+                            if cte_sym:
+                                deps.append(cte_sym.symbol_id)
                         registry[sym.symbol_id] = {
                             "name": sym.name,
                             "origin_node": origin,
                             "origin_scope": sym.scope_depth,
-                            "dependencies": sym.derived_from if sym.derived_from else []
+                            "dependencies": deps
                         }
                     elif registry[sym.symbol_id]["origin_node"] == "None" and origin != "None":
                         registry[sym.symbol_id]["origin_node"] = origin
-                        if sym.derived_from:
-                            registry[sym.symbol_id]["dependencies"] = sym.derived_from
+                        deps = list(sym.derived_from) if sym.derived_from else []
+                        if cte_query and sym.symbol_kind == SymbolKind.COLUMN:
+                            cte_sym = lookup_name_recursive(cte_query.symbol_table, sym.name)
+                            if cte_sym:
+                                deps.append(cte_sym.symbol_id)
+                        if deps:
+                            registry[sym.symbol_id]["dependencies"] = deps
                 curr = curr.parent
             # Walk query steps
             for step in node.steps:
@@ -596,7 +614,11 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
             next_visited = path_visited | {sym_id}
             for dep_id in derived_from:
                 if dep_id != sym_id:
-                    deps.append(build_lineage_node(dep_id, next_visited))
+                    child = build_lineage_node(dep_id, next_visited)
+                    if child.name == name:
+                        deps.extend(child.dependencies)
+                    else:
+                        deps.append(child)
 
         return SymbolLineageNode(
             name=name,
