@@ -44,8 +44,8 @@
     "hash": "968d853ed7d44638336041ebd28a180b"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\explain.py": {
-    "mtime": 1779523511.4533072,
-    "hash": "c8bc720cae29570f8528e46c720b5d04"
+    "mtime": 1779524063.1615002,
+    "hash": "c3e148cc6a37efc46fcc45b0436aae9a"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\lint.py": {
     "mtime": 1779218275.1386836,
@@ -239,6 +239,10 @@
     "mtime": 1779523348.480669,
     "hash": "1d8cc4282e6fb2fe4e0494abf6a53be4"
   },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_explain_semantic_stress.py": {
+    "mtime": 1779524073.612704,
+    "hash": "3dde451c764eb4332c73026d18dc8933"
+  },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_extreme_stress.py": {
     "mtime": 1779365201.5703816,
     "hash": "ff1fb780c0ccbdc4681a3c613c446cc8"
@@ -356,7 +360,7 @@
     "hash": "fba54a1c0ffee476ebfa84379b7917ef"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_arch_adr_fe4d36fa.md": {
-    "mtime": 1779523739.7692206,
+    "mtime": 1779524328.7503304,
     "hash": "82a38fbed48e574c2b0377a4665543cf"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_arch_adr.md": {
@@ -364,7 +368,7 @@
     "hash": "5cd16cf35c6b52268835d5a1258ddf7c"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_qa_report_0ae0b175.md": {
-    "mtime": 1779523739.8976338,
+    "mtime": 1779524328.836913,
     "hash": "e3ca88ebaabc48207d2713431040e190"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_qa_report.md": {
