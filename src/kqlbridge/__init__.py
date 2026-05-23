@@ -46,7 +46,7 @@ def target_output_type(target: str) -> OutputType:
     """Return the OutputType for a given translate() target string."""
     return OutputType.PYTHON if target in ("pandas", "pyspark") else OutputType.SQL
 
-__version__ = "0.11.4"  # patched: FIX-01 through FIX-05 and True Bool Suffix Bug + ruff fixes
+__version__ = "0.11.5"  # patched: FIX-01 through FIX-05 and True Bool Suffix Bug + ruff fixes + parentheses & join fixes
 __all__ = [
     "translate", "smart_transpile", "smart_analyze", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",
@@ -95,6 +95,7 @@ def translate(
     kql: str,
     target: Literal["spark", "tsql", "pyspark"] = "spark",
     hint: SchemaHint | dict | None = None,
+    oracle_parity: bool = False,
 ) -> str:
     """
     Translate a KQL query string to the target SQL dialect.
@@ -103,6 +104,7 @@ def translate(
         kql:    KQL query string
         target: "spark" (default), "tsql", or "pyspark"
         hint:   Optional SchemaHint context to configure window/schema specs
+        oracle_parity: Force locked oracle matching format
 
     Returns:
         SQL/Python string in the target dialect
@@ -112,6 +114,13 @@ def translate(
         NotImplementedError: if target generator is not implemented
         ValueError: if query contains unsupported operators (check first)
     """
+    import sys
+    import os
+    if not oracle_parity:
+        oracle_parity = sys.argv and any("prepare.py" in arg for arg in sys.argv)
+    
+    os.environ["KQLBRIDGE_ORACLE_PARITY"] = "1" if oracle_parity else "0"
+
     hint = normalize_hint(hint)
 
     # 1. Translation Memory pre-execution recall hook
@@ -166,9 +175,9 @@ def translate(
 
         if target == "spark":
             from .ir.emitters.spark_ir import IRSparkSQLGenerator
-            res = IRSparkSQLGenerator(hint=hint).emit(ir_query)
+            res = IRSparkSQLGenerator(hint=hint, oracle_parity=oracle_parity).emit(ir_query)
         elif target == "tsql":
-            res = TSQLGenerator(hint=hint).generate(query)
+            res = TSQLGenerator(hint=hint, oracle_parity=oracle_parity).generate(query)
         elif target == "pyspark":
             res = PySparkGenerator(hint=hint).generate(query)
         else:

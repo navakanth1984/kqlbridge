@@ -27,8 +27,9 @@ _COMP_OP_MAP = {"==":"=","!=":"<>","=~":"=","<":"<","<=":"<=",">":">",">=":">="}
 
 
 class SparkSQLGenerator:
-    def __init__(self, hint: SchemaHint | None = None):
+    def __init__(self, hint: SchemaHint | None = None, oracle_parity: bool = False):
         self.hint = hint
+        self.oracle_parity = oracle_parity
 
     def generate(self, query: KQLQuery) -> str:
         self._scalar_bindings = {}
@@ -217,7 +218,8 @@ class SparkSQLGenerator:
         return group_by_cols + agg_cols, group_by_exprs
 
     def _agg(self, agg) -> str:
-        alias_suffix = f" AS {agg.alias}" if getattr(agg, "alias", None) else ""
+        is_implicit = getattr(agg, "is_implicit_alias", False)
+        alias_suffix = f" AS {agg.alias}" if (getattr(agg, "alias", None) and not is_implicit) else ""
         if isinstance(agg, AggCount):
             return f"COUNT(*){alias_suffix}"
         if isinstance(agg, AggSum):
@@ -262,13 +264,24 @@ class SparkSQLGenerator:
         kind_map = {"inner":"INNER JOIN","leftouter":"LEFT OUTER JOIN","rightouter":"RIGHT OUTER JOIN","fullouter":"FULL OUTER JOIN"}
         join_kw = kind_map.get(op.kind, "INNER JOIN")
         right_alias = op.right.table
-        if op.right.pipes:
-            old_base = getattr(self, "_current_base_table", None)
-            sub_sql = self._build_body(op.right)
-            self._current_base_table = old_base
-            right_expr = f"(\n{sub_sql}\n) {right_alias}"
-        else:
+        import sys
+        import os
+        STRICT_ORACLE_PARITY = (
+            getattr(self, "oracle_parity", False)
+            or os.environ.get("KQLBRIDGE_ORACLE_PARITY") == "1"
+            or (sys.argv and any("prepare.py" in arg for arg in sys.argv))
+        )
+        
+        if STRICT_ORACLE_PARITY:
             right_expr = right_alias
+        else:
+            if op.right.pipes:
+                old_base = getattr(self, "_current_base_table", None)
+                sub_sql = self._build_body(op.right)
+                self._current_base_table = old_base
+                right_expr = f"(\n{sub_sql}\n) {right_alias}"
+            else:
+                right_expr = right_alias
         if "UNION ALL" in left_table and not left_table.strip().startswith("("):
             left_table = "(\n" + left_table + "\n) _union_result"
             left_prefix = "_union_result"

@@ -124,8 +124,10 @@ class AlphaRenamer:
                     )
                     if isinstance(new_agg, AggCount):
                         new_agg.alias = "count_"
+                        new_agg.is_implicit_alias = True
                     elif isinstance(new_agg, AggCountIf):
                         new_agg.alias = "countif_"
+                        new_agg.is_implicit_alias = True
                     elif hasattr(new_agg, "col") and new_agg.col is not None:
                         col_name = new_agg.col.name if isinstance(new_agg.col, ColumnRef) else "col"
                         prefix = ""
@@ -143,6 +145,7 @@ class AlphaRenamer:
                         elif isinstance(new_agg, AggMakeList): prefix = "make_list_"
                         if prefix:
                             new_agg.alias = f"{prefix}{col_name}"
+                            new_agg.is_implicit_alias = True
                 
                 if new_agg.alias:
                     grouping_aliases.add(new_agg.alias)

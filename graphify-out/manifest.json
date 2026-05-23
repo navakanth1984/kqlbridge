@@ -92,20 +92,20 @@
     "hash": "ab9b62c2a3f958c8c0c3e8cd95664e36"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\__init__.py": {
-    "mtime": 1779485853.5292583,
-    "hash": "b6d74e225082c701da7c94df057b0f0a"
+    "mtime": 1779503033.4301908,
+    "hash": "b5f5daa499c76e3d2503ba767fbd8f1e"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\generators\\pyspark.py": {
     "mtime": 1779421214.132353,
     "hash": "7171e085ed11aac5e3e7251b1dfea67a"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\generators\\spark_sql.py": {
-    "mtime": 1779485772.8822403,
-    "hash": "b6c2ea9453523d87343dc4999e78d7f7"
+    "mtime": 1779503046.883464,
+    "hash": "fa5157ede4beb94134f59fd8657229a9"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\generators\\tsql.py": {
-    "mtime": 1779473269.9233708,
-    "hash": "9f0fc76b7945796dfed92d3e62339a75"
+    "mtime": 1779503118.440343,
+    "hash": "755f9a1879a6f3a96cb3bf5e33f19e27"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\generators\\__init__.py": {
     "mtime": 1779017588.0168686,
@@ -120,8 +120,8 @@
     "hash": "bc96e8ae32fdb9158af09a6f2983885c"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\ir\\transformer.py": {
-    "mtime": 1779473568.9179757,
-    "hash": "68ed0bedcb4aa16e8f77d0c090e090b6"
+    "mtime": 1779503297.5660276,
+    "hash": "c978820a69469cee369b41ddd5acc776"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\ir\\validator.py": {
     "mtime": 1779472974.1157987,
@@ -136,8 +136,8 @@
     "hash": "8785ab98cf99317d35ee6e13742b8b77"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\ir\\emitters\\spark_ir.py": {
-    "mtime": 1779473408.1235633,
-    "hash": "9899354fd009c757318581e812c08aaa"
+    "mtime": 1779503301.8362782,
+    "hash": "42594cfdcbad30bb5c9b85b2718945fb"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\ir\\emitters\\tsql_ir.py": {
     "mtime": 1779467700.0949962,
@@ -160,8 +160,8 @@
     "hash": "c5be6571e76f6cc02b36232c798cf791"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\optimizer\\rules\\merge_filters.py": {
-    "mtime": 1779421370.8738792,
-    "hash": "f9395de91ec0b1ab5de97de68ca1a728"
+    "mtime": 1779503367.115033,
+    "hash": "412f385494b6decf13d4c305e903be99"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\optimizer\\rules\\predicate_pushdown.py": {
     "mtime": 1779421373.0075285,
@@ -172,8 +172,8 @@
     "hash": "0b510ca78549ebff206e9013ec538a96"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\passes\\alpha_renaming.py": {
-    "mtime": 1779431548.6730213,
-    "hash": "e78e4c82e4763a01f38ada2c582fcacd"
+    "mtime": 1779502907.050034,
+    "hash": "1c349ae156490ac56af6092802495d40"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\src\\kqlbridge\\passes\\constant_folding.py": {
     "mtime": 1779431278.7868223,
@@ -226,6 +226,10 @@
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_gps_s_v0111.py": {
     "mtime": 1779485858.5848196,
     "hash": "c1aaca6f701304c6910cad07334bb25d"
+  },
+  "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_join_preservation_guardrail.py": {
+    "mtime": 1779503305.1709354,
+    "hash": "6ddd1e42b802b4a98603cb31b66458eb"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\tests\\test_kqlbridge_v0111.py": {
     "mtime": 1779485861.2159917,
@@ -316,7 +320,7 @@
     "hash": "fba54a1c0ffee476ebfa84379b7917ef"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_arch_adr_fe4d36fa.md": {
-    "mtime": 1779486280.5824535,
+    "mtime": 1779503453.569052,
     "hash": "82a38fbed48e574c2b0377a4665543cf"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_arch_adr.md": {
@@ -324,7 +328,7 @@
     "hash": "5cd16cf35c6b52268835d5a1258ddf7c"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\graphify-out\\converted\\kqlbridge_qa_report_0ae0b175.md": {
-    "mtime": 1779486280.6497386,
+    "mtime": 1779503453.6348882,
     "hash": "e3ca88ebaabc48207d2713431040e190"
   },
   "C:\\Users\\navka\\navakanth001\\kqlbridge\\kqlbridge_qa_report.md": {

@@ -91,7 +91,9 @@ class ASTToIRTransformer:
         outer_pipeline_state = self.pipeline_state
         self.pipeline_state = {}
 
+        outer_ctes = getattr(self, "_current_ctes", None)
         ctes: Dict[str, SemanticQuery] = {}
+        self._current_ctes = ctes
         scalar_bindings: Dict[str, Any] = {}
         
         # 1. Transform CTE bindings recursively
@@ -134,6 +136,7 @@ class ASTToIRTransformer:
             query_id=id(query),
             scalar_bindings=scalar_bindings
         )
+        self._current_ctes = outer_ctes
         return sq
 
     def visit_op(self, op: Any) -> Optional[SemanticIRNode]:
@@ -346,6 +349,13 @@ class ASTToIRTransformer:
                     right_col=key,
                     operator="=="
                 ))
+                
+            right_alias = op.right.table
+            
+            # In standard mode, we do NOT hoist right-side join subqueries to CTEs.
+            # We keep them inline (just like legacy SparkSQLGenerator) to ensure perfect 
+            # backward compatibility, identical SQL output format, and 100% convergence.
+            # Thus, we do not register right_query into the CTE registry here.
                 
             return SemanticJoin(
                 right_query=right_query,

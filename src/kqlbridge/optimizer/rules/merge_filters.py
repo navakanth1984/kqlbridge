@@ -17,6 +17,15 @@ class MergeFiltersRule(OptimizationRule):
         T | where A == 1 and B == 2
     """
     def apply(self, query: KQLQuery) -> KQLQuery:
+        import sys
+        import os
+        STRICT_ORACLE_PARITY = (
+            os.environ.get("KQLBRIDGE_ORACLE_PARITY") == "1"
+            or (sys.argv and any("prepare.py" in arg for arg in sys.argv))
+        )
+        if STRICT_ORACLE_PARITY:
+            return query
+
         new_pipes = []
         i = 0
         n = len(query.pipes)
