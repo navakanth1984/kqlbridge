@@ -125,16 +125,28 @@ def _split_case_args(arg_str: str) -> list[str]:
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
+    """Build a nested iff() chain iteratively (backward evaluation)
+    to prevent RecursionError on deeply nested case inputs."""
     if len(args) == 0:
         return ""
     if len(args) == 1:
         return args[0]
     if len(args) == 2:
         return f"iff({args[0]}, {args[1]}, null)"
-    cond = args[0]
-    val = args[1]
-    rest = args[2:]
-    return f"iff({cond}, {val}, {_build_iff_chain(rest)})"
+
+    if len(args) % 2 != 0:
+        result = args[-1]
+        pairs = args[:-1]
+    else:
+        result = "null"
+        pairs = args
+
+    for i in range(len(pairs) - 2, -1, -2):
+        cond = pairs[i]
+        val = pairs[i+1]
+        result = f"iff({cond}, {val}, {result})"
+
+    return result
 
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
