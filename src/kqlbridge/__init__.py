@@ -17,7 +17,7 @@ from .parser import parse
 from lark.exceptions import UnexpectedInput as _LarkUnexpectedInput
 from .semantic import check as _semantic_check, SemanticResult
 from .lint import lint, LintResult  # noqa: F401 — public API
-from .explain import explain, ExplainResult  # noqa: F401 — public API
+from .explain import explain, ExplainResult, explain_semantic, ExplainSemanticResult, SymbolLineageNode  # noqa: F401 — public API
 from .generators.spark_sql import SparkSQLGenerator
 from .generators.tsql import TSQLGenerator
 from .generators.pyspark import PySparkGenerator
@@ -26,6 +26,7 @@ from .smart import smart_transpile, smart_analyze
 from .micro_model import TimeSeriesMicroModel
 from .schema_hint import SchemaHint, WindowSpec
 from .options import CompilerOptions
+from .verify import verify, VerificationResult
 
 from .memory import TranslationMemory
 from .registry import (
@@ -47,12 +48,14 @@ def target_output_type(target: str) -> OutputType:
     """Return the OutputType for a given translate() target string."""
     return OutputType.PYTHON if target in ("pandas", "pyspark") else OutputType.SQL
 
-__version__ = "0.11.5"  # patched: FIX-01 through FIX-05 and True Bool Suffix Bug + ruff fixes + parentheses & join fixes
+__version__ = "0.12.0"  # bumped for Phase 4 compiler targets and semantic diagnostics release
 __all__ = [
     "translate", "smart_transpile", "smart_analyze", "detect_operators", "is_supported",
     "check", "__version__", "TimeSeriesMicroModel",
     "OutputType", "target_output_type",  # FIX-05
     "SchemaHint", "WindowSpec", "CompilerOptions",
+    "verify", "VerificationResult",
+    "explain_semantic", "ExplainSemanticResult", "SymbolLineageNode",
     "TranslationMemory", "translation_memory",
     "MLMAgent", "mlm_agent",
     "CapabilityLevel", "SUPPORT_MATRIX", "get_capability_level",
@@ -94,7 +97,7 @@ def normalize_hint(hint: SchemaHint | dict | None) -> SchemaHint | None:
 
 def translate(
     kql: str,
-    target: Literal["spark", "tsql", "pyspark"] = "spark",
+    target: Literal["spark", "tsql", "pyspark", "duckdb"] = "spark",
     hint: SchemaHint | dict | None = None,
     oracle_parity: bool = False,
     options: CompilerOptions | None = None,
@@ -183,11 +186,16 @@ def translate(
             from .ir.emitters.spark_ir import IRSparkSQLGenerator
             res = IRSparkSQLGenerator(hint=hint, options=options).emit(ir_query)
         elif target == "tsql":
-            res = TSQLGenerator(hint=hint, options=options).generate(query)
+            from .ir.emitters.tsql_ir import IRTSQLGenerator
+            res = IRTSQLGenerator(hint=hint, options=options).emit(ir_query)
         elif target == "pyspark":
-            res = PySparkGenerator(hint=hint).generate(query)
+            from .ir.emitters.pyspark_ir import IRPySparkGenerator
+            res = IRPySparkGenerator(hint=hint, options=options).emit(ir_query)
+        elif target == "duckdb":
+            from .ir.emitters.duckdb_ir import IRDuckDBGenerator
+            res = IRDuckDBGenerator(hint=hint, options=options).emit(ir_query)
         else:
-            raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', or 'pyspark'.")
+            raise ValueError(f"Unknown target: {target!r}. Use 'spark', 'tsql', 'pyspark', or 'duckdb'.")
 
         translation_memory.learn(kql)
         return res

@@ -1,114 +1,190 @@
 """
 ir/emitters/tsql_ir.py — IR-Driven T-SQL Emitter
 =================================================
-Phase 3C. Reads a SemanticQuery IR envelope and produces T-SQL (SQL Server).
+Reads a SemanticQuery IR envelope and produces T-SQL (SQL Server).
 
-Design (mirrors spark_ir.py pattern):
+Design:
   - Inherits TSQLGenerator for ALL expression/clause rendering.
-  - Overrides ONLY the orchestration layer (_emit_body).
-  - Reads item.alias directly — same alias contract as spark_ir.py.
-
-T-SQL dialect differences from Spark SQL:
-  - Column identifiers: [alias] brackets instead of bare names
-  - LIMIT → TOP N (placed after SELECT, not at end)
-  - COUNT(DISTINCT x) → COUNT(DISTINCT x) (same)
-  - Date functions: DATETRUNC, DATEDIFF, DATEADD (different signatures)
-  - String functions: CHARINDEX instead of LOCATE, etc.
-  - UNION ALL subquery wrapping: same as Spark
-
-Convergence gate (Phase 3C):
-  tests/test_tsql_convergence.py — same harness pattern as Spark Tier 1/2/3.
-  Target: 353/353 before translate(target='tsql') switches to IR path.
-
-Status: SCAFFOLD — not yet convergence-tested.
+  - Inherits IRSparkSQLGenerator for the step walking orchestration (_emit_body).
+  - Overrides T-SQL-specific expression mappings (dates, types, functions, has_any, booleans).
+  - Implements versioned temporal binning dynamically based on sql_server_version.
 """
 
 from __future__ import annotations
-
+import re
 from typing import List, Optional
 
 from ..nodes import (
     SemanticQuery, SemanticFilter, SemanticProjection, ProjectionItem,
     SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
+    SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticComparison,
+    SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
 )
+from ...ast_nodes import ColumnRef, BinExpr, FuncCall, WhereOp
+from ...generators.tsql import TSQLGenerator, _TSQL_DATEADD_UNIT
+from .spark_ir import IRSparkSQLGenerator
 
 
-class IRTSQLGenerator:
+class IRTSQLGenerator(IRSparkSQLGenerator, TSQLGenerator):
     """
-    Emits T-SQL by walking a SemanticQuery IR envelope.
-
-    Phase 3C scaffold. Inherits TSQLGenerator once that class is refactored
-    to expose _assemble() as a separate method (same refactor as spark_sql.py
-    Phase 3A). Until then, this class operates standalone.
-
-    Usage::
-
-        from kqlbridge.ir import to_semantic_ir
-        from kqlbridge.ir.emitters.tsql_ir import IRTSQLGenerator
-        from kqlbridge.parser import parse
-
-        ir = to_semantic_ir(parse("T | where x == 1 | project x"))
-        sql = IRTSQLGenerator().emit(ir)
+    Emits T-SQL (SQL Server) by walking a SemanticQuery IR envelope.
+    Inherits from IRSparkSQLGenerator and TSQLGenerator to reuse query walking
+    while applying T-SQL specific expression and structural overrides.
     """
 
-    def emit(self, ir: SemanticQuery) -> str:
-        """
-        Main entrypoint. CTEs (let bindings) first, then body.
-        T-SQL uses standard WITH ... AS (...) CTE syntax.
-        """
-        ctes = []
-        for cte_name, cte_ir in ir.ctes.items():
-            sub_sql = self._emit_body(cte_ir)
-            ctes.append(f"{cte_name} AS (\n  {sub_sql}\n)")
-
-        body = self._emit_body(ir)
-
-        if ctes:
-            return f"WITH {', '.join(ctes)}\n{body}"
-        return body
-
-    def _emit_body(self, ir: SemanticQuery) -> str:
-        """
-        Walk IR steps. Same structure as IRSparkSQLGenerator._emit_body()
-        with T-SQL dialect overrides applied at assembly time.
-
-        TODO (Phase 3C):
-          - Inherit from TSQLGenerator once _assemble() is extracted
-          - Override only: _render_bin(), _func_call() for TSQL date functions
-          - Expression rendering is 80% identical to Spark — delta is small
-        """
-        raise NotImplementedError(
-            "IRTSQLGenerator._emit_body() is a Phase 3C deliverable.\n"
-            "Current path: TSQLGenerator (AST-based) via translate(use_ir=False).\n"
-            "Prerequisite: refactor TSQLGenerator to expose _assemble() as a "
-            "separate method (same pattern as spark_sql.py Phase 3A refactor)."
-        )
-
-    # ─── T-SQL dialect overrides (stub) ───────────────────────────────────
-
-    def _bracket(self, name: str) -> str:
-        """Wrap identifier in T-SQL brackets: col → [col]"""
-        return f"[{name}]"
-
-    def _top_clause(self, limit: int) -> str:
-        """T-SQL uses TOP N in SELECT position, not LIMIT at end."""
-        return f"TOP {limit}"
+    def __init__(self, hint=None, oracle_parity=False, options=None):
+        # Initialize TSQLGenerator
+        TSQLGenerator.__init__(self, hint=hint, oracle_parity=oracle_parity, options=options)
+        # Store options locally
+        from ...options import CompilerOptions
+        self.options = options if options is not None else CompilerOptions(oracle_parity=oracle_parity)
+        self.oracle_parity = self.options.oracle_parity
 
     def _render_bin(self, col: str, amount: int, unit: str) -> str:
         """
         T-SQL bin() equivalent using DATETRUNC (SQL Server 2022+)
-        or DATEDIFF/DATEADD pattern for older versions.
+        or legacy DATEDIFF/DATEADD pattern for older versions.
         """
-        # Modern SQL Server 2022+: DATETRUNC(hour, col)
-        unit_map = {"d": "day", "h": "hour", "m": "minute", "s": "second"}
-        trunc_unit = unit_map.get(unit)
-        if trunc_unit and amount == 1:
+        if self.options.sql_server_version >= 2022 and amount == 1:
+            trunc_units = {
+                "d": "day",
+                "h": "hour",
+                "m": "minute",
+                "s": "second",
+                "ms": "millisecond",
+            }
+            trunc_unit = trunc_units.get(unit, unit)
             return f"DATETRUNC({trunc_unit}, {col})"
-        # Fallback: DATEDIFF/DATEADD pattern
-        seconds_map = {"d": 86400, "h": 3600, "m": 60, "s": 1}
-        total_seconds = amount * seconds_map.get(unit, 1)
-        return (
-            f"DATEADD(SECOND, "
-            f"(DATEDIFF(SECOND, '1970-01-01', {col}) / {total_seconds}) * {total_seconds}, "
-            f"'1970-01-01')"
-        )
+        
+        # Fallback to TSQLGenerator's DATEADD/DATEDIFF implementation
+        return TSQLGenerator._render_bin(self, col, amount, unit)
+
+    def _expr(self, expr) -> str:
+        if isinstance(expr, SemanticColumnRef):
+            if expr.name.lower() in ("true", "false"):
+                return "1" if expr.name.lower() == "true" else "0"
+            if getattr(self, "_scalar_bindings", None) and expr.name in self._scalar_bindings:
+                return self._expr(self._scalar_bindings[expr.name])
+            return expr.name
+
+        elif isinstance(expr, SemanticLiteral):
+            val = expr.value
+            if isinstance(val, bool):
+                return "1" if val else "0"
+            if isinstance(val, (int, float)):
+                return str(val)
+            if isinstance(val, str):
+                if val.startswith("datetime(") and val.endswith(")"):
+                    inner = val[9:-1].strip("'\"")
+                    return f"CAST('{inner}' AS DATETIME2)"
+                return f"'{val}'"
+            return str(val)
+
+        elif isinstance(expr, SemanticFunctionCall):
+            name = expr.name.lower()
+            args = expr.arguments
+
+            if name == "bin":
+                col_sql = self._expr(args[0])
+                val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+                if m:
+                    amount = int(m.group(1))
+                    unit = m.group(2)
+                else:
+                    amount = 1
+                    unit = "d"
+                return self._render_bin(col_sql, amount, unit)
+
+            elif name == "ago":
+                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+                if m:
+                    amount = int(m.group(1))
+                    unit = m.group(2)
+                else:
+                    amount = 1
+                    unit = "d"
+                tsql_unit = _TSQL_DATEADD_UNIT.get(unit, unit)
+                return f"DATEADD({tsql_unit}, -{amount}, GETDATE())"
+
+            elif name == "datetime":
+                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+                val_clean = str(val_str).strip("'\"")
+                return f"CAST('{val_clean}' AS DATETIME2)"
+
+            elif name == "datetime_add":
+                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+                unit_clean = str(unit_str).strip("'\"").lower()
+                tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
+                amount_sql = self._expr(args[1])
+                dt_sql = self._expr(args[2])
+                return f"DATEADD({tsql_unit}, {amount_sql}, {dt_sql})"
+
+            elif name == "datetime_diff":
+                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+                unit_clean = str(unit_str).strip("'\"").lower()
+                tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
+                dt1_sql = self._expr(args[1])
+                dt2_sql = self._expr(args[2])
+                return f"DATEDIFF({tsql_unit}, {dt2_sql}, {dt1_sql})"
+
+            elif name == "array_index_of":
+                arr_sql = self._expr(args[0])
+                val_sql = self._expr(args[1])
+                return f"COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON({arr_sql}) WHERE [value] = {val_sql}), -1)"
+
+            elif name == "." and len(args) == 2:
+                left_sql = self._expr(args[0])
+                right = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
+                field_name = str(right).strip("'\"")
+                return f"JSON_VALUE({left_sql}, '$.{field_name}')"
+
+            elif name == "parse_json_path":
+                col_sql = self._expr(args[0])
+                field = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+                field_clean = str(field).strip("'\"")
+                return f"JSON_VALUE({col_sql}, '$.{field_clean}')"
+
+            elif name == "tostring":
+                return f"CAST({self._expr(args[0])} AS NVARCHAR(MAX))"
+
+            elif name == "toint":
+                return f"CAST({self._expr(args[0])} AS INT)"
+
+            elif name == "tolong":
+                return f"CAST({self._expr(args[0])} AS BIGINT)"
+
+            elif name == "todouble":
+                return f"CAST({self._expr(args[0])} AS FLOAT)"
+
+            elif name == "has_any":
+                col_sql = self._expr(args[0])
+                parts = []
+                for v in args[1:]:
+                    val_str = v.value if isinstance(v, SemanticLiteral) else self._expr(v).strip("'\"")
+                    parts.append(f"{col_sql} LIKE '%{val_str}%'")
+                return f"({' OR '.join(parts)})"
+
+            elif name == "ipv4_is_private":
+                col_sql = self._expr(args[0])
+                return self._render_ipv4_is_private([col_sql])
+
+            elif name == "ipv4_is_in_range":
+                col_sql = self._expr(args[0])
+                range_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+                range_clean = str(range_str).strip("'\"")
+                return self._render_ipv4_is_in_range([col_sql, f"'{range_clean}'"])
+
+        return IRSparkSQLGenerator._expr(self, expr)
+
+    def _bool_expr(self, expr, is_top_level: bool = False) -> str:
+        if isinstance(expr, SemanticLiteral):
+            if isinstance(expr.value, bool):
+                return "1" if expr.value else "0"
+            return str(expr.value)
+        if isinstance(expr, SemanticColumnRef):
+            if expr.name.lower() in ("true", "false"):
+                return "1" if expr.name.lower() == "true" else "0"
+
+        return IRSparkSQLGenerator._bool_expr(self, expr, is_top_level=is_top_level)

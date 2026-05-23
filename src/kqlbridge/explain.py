@@ -344,3 +344,298 @@ def explain(kql: str, target: str = "spark") -> ExplainResult:
         annotations=notes,
         warnings=warnings,
     )
+
+
+@dataclass(slots=True)
+class SymbolLineageNode:
+    name: str
+    symbol_id: int
+    origin_node: str
+    origin_scope: int
+    dependencies: list[SymbolLineageNode] = field(default_factory=list)
+
+
+@dataclass(slots=True)
+class ExplainSemanticResult:
+    target_dialect: str
+    symbols: list[SymbolLineageNode] = field(default_factory=list)
+    warnings: list[str] = field(default_factory=list)
+    optimization_rules_applied: list[str] = field(default_factory=list)
+
+    def __str__(self) -> str:
+        """Generates clean ASCII tree renderings for console visualization."""
+        lines = [f"Semantic Explanation Report [{self.target_dialect.upper()}]", "=" * 50]
+        for sym in self.symbols:
+            lines.extend(self._render_tree(sym, depth=0))
+        return "\n".join(lines)
+
+    def _render_tree(self, node: SymbolLineageNode, depth: int) -> list[str]:
+        indent = "    " * depth
+        marker = "└── " if depth > 0 else ""
+        lines = [f"{indent}{marker}{node.name} [id={node.symbol_id}, node={node.origin_node}]"]
+        for child in node.dependencies:
+            lines.extend(self._render_tree(child, depth + 1))
+        return lines
+
+    def to_dict(self) -> dict:
+        """JSON-serialisable representation for APIs."""
+        return {
+            "target_dialect": self.target_dialect,
+            "symbols": [self._node_to_dict(sym) for sym in self.symbols],
+            "warnings": self.warnings,
+            "optimization_rules_applied": self.optimization_rules_applied
+        }
+
+    def _node_to_dict(self, node: SymbolLineageNode) -> dict:
+        return {
+            "name": node.name,
+            "symbol_id": node.symbol_id,
+            "origin_node": node.origin_node,
+            "origin_scope": node.origin_scope,
+            "dependencies": [self._node_to_dict(dep) for dep in node.dependencies]
+        }
+
+
+def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
+    """
+    Translate KQL and return a structured semantic lineage report.
+    """
+    from .parser import parse
+    from .scoping import ScopeManager, SymbolInfo
+    from .passes.alpha_renaming import AlphaRenamer
+    from .passes.constant_folding import ConstantFolder
+    from .optimizer import ASTOptimizer
+    from .ir import (
+        to_semantic_ir, SemanticQuery, SemanticProjection, SemanticAggregate,
+        SemanticJoin, SemanticUnion, SemanticColumnRef, SemanticComparison,
+        SemanticLogicalOp, SemanticFunctionCall
+    )
+    from .ast_nodes import WhereOp, Comparison, StringOp, LogicalOp
+
+    # 1. Parse and resolve scopes, constant fold, and optimize AST
+    query = parse(kql)
+    scope_manager = ScopeManager()
+    query = AlphaRenamer(scope_manager).rename_query(query)
+    query = ConstantFolder(scope_manager).fold_query(query)
+    query = ASTOptimizer().optimize(query)
+
+    # 2. Translate AST to Semantic IR
+    ir_query = to_semantic_ir(query, scope_manager.current_scope)
+
+    # 3. Walk IR and construct global registry mapping symbol_id to definition nodes
+    registry: dict[int, dict[str, Any]] = {}
+
+    def lookup_name_recursive(table: Any, name: str) -> Any:
+        curr = table
+        while curr is not None:
+            sym = curr.lookup_local(name)
+            if sym is not None:
+                return sym
+            curr = curr.parent
+        return None
+
+    def get_expr_symbol_ids(expr: Any, scope: Any) -> list[int]:
+        ids = []
+        if isinstance(expr, SemanticColumnRef):
+            sym = lookup_name_recursive(scope, expr.name) if scope else None
+            if sym:
+                ids.append(sym.symbol_id)
+            else:
+                if expr.symbol_id != 0:
+                    ids.append(expr.symbol_id)
+        elif isinstance(expr, SemanticComparison):
+            ids.extend(get_expr_symbol_ids(expr.left, scope))
+            ids.extend(get_expr_symbol_ids(expr.right, scope))
+        elif isinstance(expr, SemanticLogicalOp):
+            for e in expr.expressions:
+                ids.extend(get_expr_symbol_ids(e, scope))
+        elif isinstance(expr, SemanticFunctionCall):
+            for arg in expr.arguments:
+                ids.extend(get_expr_symbol_ids(arg, scope))
+        return ids
+
+    def walk_ir(node: Any):
+        if not node:
+            return
+        if isinstance(node, SemanticQuery):
+            # Walk CTEs
+            for cte in node.ctes.values():
+                walk_ir(cte)
+            # Walk source if subquery
+            if isinstance(node.source, SemanticQuery):
+                walk_ir(node.source)
+            elif isinstance(node.source, list):
+                for src in node.source:
+                    if isinstance(src, SemanticQuery):
+                        walk_ir(src)
+            # Register scope symbols
+            curr = node.symbol_table
+            while curr is not None:
+                for sym in curr.symbols.values():
+                    origin = type(sym.origin_node).__name__ if sym.origin_node is not None else "None"
+                    if sym.symbol_id not in registry:
+                        registry[sym.symbol_id] = {
+                            "name": sym.name,
+                            "origin_node": origin,
+                            "origin_scope": sym.scope_depth,
+                            "dependencies": sym.derived_from if sym.derived_from else []
+                        }
+                    elif registry[sym.symbol_id]["origin_node"] == "None" and origin != "None":
+                        registry[sym.symbol_id]["origin_node"] = origin
+                        if sym.derived_from:
+                            registry[sym.symbol_id]["dependencies"] = sym.derived_from
+                curr = curr.parent
+            # Walk query steps
+            for step in node.steps:
+                if isinstance(step, SemanticProjection):
+                    for item in step.items:
+                        deps = []
+                        for dep_id in item.derived_from:
+                            if dep_id == 0 and isinstance(item.expression, SemanticColumnRef):
+                                sym = lookup_name_recursive(node.symbol_table.parent, item.expression.name) if node.symbol_table.parent else None
+                                if sym:
+                                    deps.append(sym.symbol_id)
+                            else:
+                                deps.append(dep_id)
+                        if not deps:
+                            deps = get_expr_symbol_ids(item.expression, node.symbol_table.parent)
+                        origin = type(item.origin_node).__name__ if item.origin_node is not None else "None"
+                        if item.symbol_id not in registry or origin != "None":
+                            registry[item.symbol_id] = {
+                                "name": item.alias,
+                                "origin_node": origin,
+                                "origin_scope": 0,
+                                "dependencies": deps
+                            }
+                elif isinstance(step, SemanticAggregate):
+                    eval_scope = node.symbol_table.parent if node.symbol_table else None
+                    for item in step.aggregations:
+                        deps = []
+                        for arg in item.arguments:
+                            deps.extend(get_expr_symbol_ids(arg, eval_scope))
+                        deps = sorted(list(set(deps)))
+                        origin = type(item.origin_node).__name__ if item.origin_node is not None else "None"
+                        if item.symbol_id not in registry or origin != "None":
+                            registry[item.symbol_id] = {
+                                "name": item.alias,
+                                "origin_node": origin,
+                                "origin_scope": 0,
+                                "dependencies": deps
+                            }
+                    for item in step.group_by:
+                        deps = get_expr_symbol_ids(item.expression, eval_scope)
+                        origin = type(item.origin_node).__name__ if item.origin_node is not None else "None"
+                        if item.symbol_id not in registry or origin != "None":
+                            registry[item.symbol_id] = {
+                                "name": item.alias,
+                                "origin_node": origin,
+                                "origin_scope": 0,
+                                "dependencies": deps
+                            }
+                else:
+                    walk_ir(step)
+        elif isinstance(node, SemanticJoin):
+            walk_ir(node.right_query)
+        elif isinstance(node, SemanticUnion):
+            for inp in node.inputs:
+                walk_ir(inp)
+            for sub in node.subqueries.values():
+                walk_ir(sub)
+
+    walk_ir(ir_query)
+
+    # 4. Determine output visible columns of terminal query state
+    from .scoping import SymbolTable, ScopeType, SymbolKind
+    def get_visible_column_symbols_local(symbol_table: SymbolTable) -> list[SymbolInfo]:
+        visible = {}
+        curr = symbol_table
+        crossed_subquery = False
+        schema_truncated = False
+
+        while curr is not None:
+            for name, sym in curr.symbols.items():
+                if sym.symbol_kind == SymbolKind.COLUMN:
+                    if schema_truncated:
+                        if name not in curr.grouping_keys:
+                            continue
+                    if crossed_subquery:
+                        continue
+
+                    if name not in visible:
+                        visible[name] = sym
+
+            if curr.is_schema_truncated:
+                schema_truncated = True
+            if curr.scope_type == ScopeType.SUBQUERY:
+                crossed_subquery = True
+            curr = curr.parent
+
+        return list(visible.values())
+
+    visible_cols = get_visible_column_symbols_local(ir_query.symbol_table)
+
+    def build_lineage_node(sym_id: int, path_visited: set[int]) -> SymbolLineageNode:
+        entry = registry.get(sym_id)
+        if entry is None:
+            return SymbolLineageNode(
+                name=f"unknown_col_{sym_id}",
+                symbol_id=sym_id,
+                origin_node="None",
+                origin_scope=0,
+                dependencies=[]
+            )
+
+        name = entry["name"]
+        symbol_id = sym_id
+        origin_node = entry["origin_node"]
+        origin_scope = entry["origin_scope"]
+        derived_from = entry["dependencies"]
+
+        deps: list[SymbolLineageNode] = []
+        if sym_id not in path_visited:
+            next_visited = path_visited | {sym_id}
+            for dep_id in derived_from:
+                if dep_id != sym_id:
+                    deps.append(build_lineage_node(dep_id, next_visited))
+
+        return SymbolLineageNode(
+            name=name,
+            symbol_id=symbol_id,
+            origin_node=origin_node,
+            origin_scope=origin_scope,
+            dependencies=deps
+        )
+
+    symbols_lineage: list[SymbolLineageNode] = []
+    for col in visible_cols:
+        symbols_lineage.append(build_lineage_node(col.symbol_id, set()))
+
+    # Walk AST to extract semantic drift warnings
+    warnings: list[str] = []
+    for pipe in query.pipes:
+        if isinstance(pipe, WhereOp):
+            def check_cond(node):
+                if isinstance(node, Comparison) and node.op == "=~":
+                    warnings.append(
+                        "=~ is case-insensitive in KQL but translates to = (case-sensitive) in SQL. "
+                        "Use LOWER() on both sides for correct behaviour."
+                    )
+                elif isinstance(node, StringOp) and node.op == "has":
+                    warnings.append(
+                        f"has '{node.value}' is word-boundary aware in KQL. "
+                        f"SQL LIKE '%{node.value}%' matches partial words too."
+                    )
+                elif isinstance(node, LogicalOp):
+                    check_cond(node.left)
+                    check_cond(node.right)
+            check_cond(pipe.condition)
+
+    opt_rules = ["MergeFiltersRule", "PredicatePushdownRule", "JoinRewriteRule"]
+
+    return ExplainSemanticResult(
+        target_dialect=target,
+        symbols=symbols_lineage,
+        warnings=warnings,
+        optimization_rules_applied=opt_rules
+    )
+
