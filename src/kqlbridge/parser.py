@@ -90,38 +90,27 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
+_CASE_TOKEN_RE = _re.compile(r"'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"|\(|\)|,")
+
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
-    current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
+    last_idx = 0
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
+    for match in _CASE_TOKEN_RE.finditer(arg_str):
+        token = match.group(0)
+        if token == '(':
             paren_depth += 1
-            current.append(c)
-        elif c == ')':
+        elif token == ')':
             paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+        elif token == ',' and paren_depth == 0:
+            args.append(arg_str[last_idx:match.start()].strip())
+            last_idx = match.end()
+
+    final_str = arg_str[last_idx:].strip()
+    if last_idx > 0 or final_str or not args:
+        args.append(final_str)
+
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
@@ -136,6 +125,8 @@ def _build_iff_chain(args: list[str]) -> str:
     rest = args[2:]
     return f"iff({cond}, {val}, {_build_iff_chain(rest)})"
 
+_CASE_PAREN_TOKEN_RE = _re.compile(r"'(?:\\.|[^'\\])*'|\"(?:\\.|[^\"\\])*\"|\(|\)")
+
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
     
@@ -148,26 +139,18 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        for token_match in _CASE_PAREN_TOKEN_RE.finditer(kql, open_paren_idx + 1):
+            token = token_match.group(0)
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = token_match.start()
                     break
-        
+
         if close_paren_idx == -1:
             break
             
@@ -228,6 +211,7 @@ def _preprocess_datetime_literals(kql: str) -> str:
     return _DATETIME_ISO_RE.sub(lambda m: f"datetime('{m.group(1)}')", kql)
 
 
+
 def _preprocess_bool_funcs(kql: str) -> str:
     i = 0
     while i < len(kql):
@@ -236,24 +220,18 @@ def _preprocess_bool_funcs(kql: str) -> str:
             break
         open_paren_idx = match.end() - 1
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
-        for j in range(open_paren_idx + 1, len(kql)):
-            c = kql[j]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+
+        for token_match in _CASE_PAREN_TOKEN_RE.finditer(kql, open_paren_idx + 1):
+            token = token_match.group(0)
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = j
+                    close_paren_idx = token_match.start()
                     break
+
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
