@@ -1,10 +1,10 @@
-# FAILURE: Layer 6: Set Operations (UNION)
+# FAILURE: Arithmetic Operator Precedence Stress
 
 **KQL:**
 ```kusto
-SecurityEvents
-| union HoneypotHits
-| project source_ip
+Orders
+| extend cost = (UnitPrice * Quantity) * (1.0 - Discount) + ShippingFee
+| project OrderId, cost
 ```
 
 **Traceback:**

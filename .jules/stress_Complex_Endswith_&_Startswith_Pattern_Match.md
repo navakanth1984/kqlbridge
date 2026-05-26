@@ -1,10 +1,10 @@
-# FAILURE: Layer 6: Set Operations (UNION)
+# FAILURE: Complex Endswith & Startswith Pattern Match
 
 **KQL:**
 ```kusto
 SecurityEvents
-| union HoneypotHits
-| project source_ip
+| where Message startswith "login" or Message endswith "failed"
+| project Message
 ```
 
 **Traceback:**

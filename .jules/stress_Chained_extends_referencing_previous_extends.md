@@ -1,18 +1,19 @@
-# FAILURE: Layer 6: Set Operations (UNION)
+# FAILURE: Chained extends referencing previous extends
 
 **KQL:**
 ```kusto
 SecurityEvents
-| union HoneypotHits
-| project source_ip
+| extend base_score = 50
+| extend final_score = base_score + 10
+| project final_score
 ```
 
 **Traceback:**
 ```python
 Traceback (most recent call last):
-  File "C:\Users\navka\navakanth001\kqlbridge\run_stress_test.py", line 163, in run
-    _, pyspark_code = smart_transpile(kql.strip(), force_engine="pyspark")
-                      ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\navka\navakanth001\kqlbridge\run_stress_test.py", line 159, in run
+    engine, code = smart_transpile(kql.strip())
+                   ~~~~~~~~~~~~~~~^^^^^^^^^^^^^
   File "C:\Users\navka\navakanth001\kqlbridge\src\kqlbridge\smart.py", line 114, in smart_transpile
     return "pyspark", gen.generate(optimized_query)
                       ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^

@@ -82,15 +82,25 @@ def _annotate_op(op, notes: list[str], warnings: list[str]) -> None:
         _annotate_where(op, notes, warnings)
 
     elif isinstance(op, ProjectOp):
-        aliases = op.aliases or {}
-        if aliases:
-            alias_list = ", ".join(f"{s} AS {a}" for s, a in aliases.items())
+        renames = [f"{expr} AS {alias}" for item in op.columns if isinstance(item, tuple) for alias, expr in [item]]
+        if renames:
+            alias_list = ", ".join(renames)
             notes.append(f"project col=alias → SELECT {alias_list} [column renaming]")
-        else:
-            notes.append(
-                f"project {', '.join(op.columns[:3])}{'...' if len(op.columns) > 3 else ''} "
-                f"→ SELECT specific columns [drops all others]"
-            )
+        
+        # Also list some columns for context
+        col_names = []
+        for item in op.columns:
+            if isinstance(item, tuple):
+                col_names.append(item[0])
+            elif hasattr(item, 'name'):
+                col_names.append(item.name)
+            else:
+                col_names.append("col")
+        
+        notes.append(
+            f"project {', '.join(col_names[:3])}{'...' if len(col_names) > 3 else ''} "
+            f"→ SELECT specific columns [drops all others]"
+        )
 
     elif isinstance(op, SummarizeOp):
         agg_names = []

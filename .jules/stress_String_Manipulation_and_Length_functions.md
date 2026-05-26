@@ -1,10 +1,10 @@
-# FAILURE: Layer 6: Set Operations (UNION)
+# FAILURE: String Manipulation and Length functions
 
 **KQL:**
 ```kusto
 SecurityEvents
-| union HoneypotHits
-| project source_ip
+| extend normalized = tolower(trim(username)), len = strlen(username)
+| project normalized, len
 ```
 
 **Traceback:**

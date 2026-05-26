@@ -1,10 +1,10 @@
-# FAILURE: Layer 6: Set Operations (UNION)
+# FAILURE: Logical Operators AND, OR, NOT combinatorics
 
 **KQL:**
 ```kusto
 SecurityEvents
-| union HoneypotHits
-| project source_ip
+| where not(Level == 'Info' or Level == 'Debug') and (EventID == 4624 or EventID == 4625)
+| project EventID, Level
 ```
 
 **Traceback:**
