@@ -14,6 +14,8 @@ Karpathy Principle 2: one method per operator, no speculative abstraction.
 """
 
 from __future__ import annotations
+import sys as _sys
+_sys.setrecursionlimit(8000)
 import re as _re
 from pathlib import Path
 from lark import Lark, Tree, Token
