@@ -19,10 +19,6 @@ import sys as _sys
 from pathlib import Path
 from lark import Lark, Tree, Token
 
-# Increase recursion limit for deeply-nested parse trees (e.g. 800-deep case/iff chains).
-# Default Python limit (1000) is insufficient; 8000 provides ample headroom.
-_sys.setrecursionlimit(8000)
-
 from .ast_nodes import (
     KQLQuery, LetBinding, PipeOp,
     # Operators
@@ -40,6 +36,10 @@ from .ast_nodes import (
     # Order
     OrderItem, DatetimeLit, IffExpr, SubqueryInExpr,
 )
+
+# Increase recursion limit for deeply-nested parse trees (e.g. 800-deep case/iff chains).
+# Default Python limit (1000) is insufficient; 8000 provides ample headroom.
+_sys.setrecursionlimit(8000)
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
 
