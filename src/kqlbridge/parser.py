@@ -15,8 +15,13 @@ Karpathy Principle 2: one method per operator, no speculative abstraction.
 
 from __future__ import annotations
 import re as _re
+import sys as _sys
 from pathlib import Path
 from lark import Lark, Tree, Token
+
+# Increase recursion limit for deeply-nested parse trees (e.g. 800-deep case/iff chains).
+# Default Python limit (1000) is insufficient; 8000 provides ample headroom.
+_sys.setrecursionlimit(8000)
 
 from .ast_nodes import (
     KQLQuery, LetBinding, PipeOp,
@@ -125,16 +130,31 @@ def _split_case_args(arg_str: str) -> list[str]:
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
+    """Iterative IFF chain builder — avoids stack overflow on deep case() statements.
+
+    Converts [c1,v1, c2,v2, ..., default] → nested iff(c1,v1,iff(c2,v2,...)) strings
+    without recursion so arbitrarily long case() blocks stay safe.
+    """
     if len(args) == 0:
         return ""
     if len(args) == 1:
         return args[0]
-    if len(args) == 2:
-        return f"iff({args[0]}, {args[1]}, null)"
-    cond = args[0]
-    val = args[1]
-    rest = args[2:]
-    return f"iff({cond}, {val}, {_build_iff_chain(rest)})"
+
+    # Build the chain right-to-left iteratively.
+    # Odd total length → last arg is the default/else value.
+    # Even total length → implicit null default.
+    if len(args) % 2 == 1:
+        # e.g. [c1,v1, c2,v2, default]
+        result = args[-1]
+        pairs = list(zip(args[:-1:2], args[1:-1:2]))
+    else:
+        # e.g. [c1,v1, c2,v2]  — trailing null default
+        result = "null"
+        pairs = list(zip(args[::2], args[1::2]))
+
+    for cond, val in reversed(pairs):
+        result = f"iff({cond}, {val}, {result})"
+    return result
 
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
