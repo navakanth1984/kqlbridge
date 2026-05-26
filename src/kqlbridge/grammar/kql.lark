@@ -24,15 +24,22 @@ table_expr: NAME
 
 pipe_op: where_op
        | project_op
+       | project_away_op
+       | project_rename_op
+       | project_reorder_op
+       | project_keep_op
        | summarize_op
        | order_op
        | take_op
        | distinct_op
        | extend_op
        | join_op
+       | lookup_op
        | union_op
        | count_op
        | serialize_op
+
+lookup_op: "lookup" join_body "on" join_keys
 
 // ─── where ──────────────────────────────────────────────────
 
@@ -41,6 +48,14 @@ where_op: "where" bool_expr
 // ─── project ────────────────────────────────────────────────
 
 project_op: "project" project_list
+project_away_op: "project-away" name_list
+project_rename_op: "project-rename" rename_list
+project_reorder_op: "project-reorder" name_list
+project_keep_op: "project-keep" name_list
+
+name_list: NAME ("," NAME)*
+rename_list: rename_item ("," rename_item)*
+rename_item: NAME "=" NAME
 
 // ─── summarize ──────────────────────────────────────────────
 
@@ -66,7 +81,14 @@ agg_func: "count" "()"                         -> agg_count
         | "bin"   "(" expr "," timespan ")"     -> agg_bin
         | "percentile" "(" expr "," expr ")"    -> agg_percentile
         | "make_list" "(" expr ")"              -> agg_make_list
+        | "make_set" "(" expr ")"               -> agg_make_set
+        | "any" "(" expr ")"                    -> agg_any
+        | "take_any" "(" expr ")"               -> agg_any
+        | "arg_max" "(" expr "," (NAME | "*" | expr_list) ")" -> agg_arg_max
+        | "arg_min" "(" expr "," (NAME | "*" | expr_list) ")" -> agg_arg_min
         | "stdev" "(" expr ")"                  -> agg_stdev
+
+expr_list: expr ("," expr)*
 
 groupby_list: groupby_item ("," groupby_item)*
 groupby_item: NAME "=" groupby_expr             -> named_group
@@ -104,13 +126,18 @@ assign_val: expr COMP_OP expr   -> assign_comparison
 
 // ─── join ───────────────────────────────────────────────────
 
-join_op: "join" join_kind? "(" table_expr ("|" pipe_op)* ")" "on" join_keys
+join_op: "join" join_kind? join_body "on" join_keys
+
+join_body: "(" table_ref_expr ")"
+         | NAME
 
 join_kind: "kind" "=" JOIN_KIND_VAL
 
 JOIN_KIND_VAL: "inner" | "leftouter" | "rightouter" | "fullouter"
 
-join_keys: NAME ("," NAME)*
+join_keys: join_key_item ("," join_key_item)*
+join_key_item: NAME
+             | "$left." NAME "==" "$right." NAME
 
 // ─── union ──────────────────────────────────────────────────
 
@@ -119,7 +146,6 @@ union_op: "union" union_tables
 union_tables: union_item ("," union_item)*
 union_item: NAME              -> union_table_name
           | "(" table_ref_expr ")"  -> union_table_subquery
-            | "(" table_expr ("|" pipe_op)* ")" ("," "(" table_expr ("|" pipe_op)* ")")*
 
 // ─── count ──────────────────────────────────────────────────
 
@@ -127,7 +153,7 @@ count_op: "count"
 
 // ─── serialize ──────────────────────────────────────────────
 
-serialize_op: "serialize"
+serialize_op: "serialize" assign_list?
 
 // ─── Expressions ─────────────────────────────────────────────
 
@@ -146,10 +172,15 @@ comparison: expr COMP_OP expr
           | expr "in~" "(" table_ref_expr ")"    -> subquery_in_ci_expr
           | expr "!in~" "(" table_ref_expr ")"   -> subquery_not_in_ci_expr
           | expr "has" STRING                    -> has_expr
+          | expr "!has" STRING                   -> not_has_expr
           | expr "contains" STRING               -> contains_expr
+          | expr "!contains" STRING              -> not_contains_expr
           | expr "startswith" STRING             -> startswith_expr
+          | expr "!startswith" STRING            -> not_startswith_expr
           | expr "endswith" STRING               -> endswith_expr
-          | expr "matches" "regex" STRING        -> regex_expr
+          | expr "!endswith" STRING              -> not_endswith_expr
+          | expr "matches" "regex" expr          -> regex_expr
+          | expr "!matches" "regex" expr         -> not_regex_expr
           | "isnotnull"  "(" expr ")"            -> isnotnull_expr
           | "isnotempty" "(" expr ")"            -> isnotempty_expr
           | "isempty"    "(" expr ")"            -> isempty_expr
@@ -173,13 +204,19 @@ term: term "*" factor -> mul
     | term "/" factor -> div
     | factor
 
-factor: iff_call
-      | ago_expr
-      | bin_expr
-      | func_call
-      | NAME            -> column_ref
-      | literal
-      | "(" expr ")"   -> paren_expr
+?factor: primary
+       | "-" primary                    -> unary_minus
+       | primary "[" (INT | STRING) "]" -> indexed_access
+       | factor "." NAME                -> property_access
+
+?primary: iff_call
+        | ago_expr
+        | bin_expr
+        | func_call
+        | NAME            -> column_ref
+        | literal
+        | "(" expr ")"   -> paren_expr
+        | bool_expr      -> bool_as_expr
 
 ago_expr  : "ago" "(" timespan ")"
 bin_expr  : "bin" "(" expr "," timespan ")"
@@ -210,15 +247,15 @@ TIMEUNIT: "d" | "h" | "m" | "s" | "ms" | "us" | "ns"
 
 col_list: NAME ("," NAME)*
 project_list: project_item ("," project_item)*
-project_item: NAME "=" NAME   -> project_alias
-            | NAME             -> project_col
+project_item: NAME "=" expr   -> project_alias
+            | expr             -> project_col
 
 // ─── Terminals ───────────────────────────────────────────────
 
 NAME   : /[a-zA-Z_][a-zA-Z0-9_.]*/ 
-STRING : /\"[^\"]*\"/ | /\'[^\']*\'/
+STRING : /@?\"[^\"]*\"/ | /@?\'[^\']*\'/
 INT    : /[0-9]+/
-FLOAT  : /[0-9]+\.[0-9]+/
+FLOAT  : /[0-9]*\.[0-9]+([eE][+-]?[0-9]+)?/ | /[0-9]+[eE][+-]?[0-9]+/
 
 %ignore /\s+/
 %ignore /\/\/[^\n]*/    // line comments

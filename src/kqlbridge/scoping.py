@@ -204,30 +204,19 @@ class ScopeManager:
         if symbol is not None:
             return symbol
 
-        # 2. Check if symbol exists anywhere in ancestors (to prevent auto-declaring blocked or outer symbols)
-        exists_anywhere = False
-        curr = self.current_scope
-        while curr is not None:
-            ans_symbol = curr.lookup_local(name)
-            if ans_symbol is not None:
-                exists_anywhere = True
-                break
-            curr = curr.parent
-
-        # 3. Auto-declare new implicit physical COLUMN in CURRENT scope if not in ancestors and schema not truncated
-        if not exists_anywhere and not self._is_schema_truncated():
-            symbol = self.current_scope.declare(
-                name=name,
-                symbol_kind=SymbolKind.COLUMN,
-                origin_node=None,
-                depth=self.depth,
-                symbol_id=self._next_symbol_id(),
-                unique_name=name
-            )
-            self.analysis_result.symbols_declared += 1
-            return symbol
-
-        return None
+        # 2. Auto-declare new implicit physical COLUMN in CURRENT scope
+        # KQL is dynamic; we always allow auto-declaring columns in the active pipeline
+        # to handle joins/subqueries that might introduce them.
+        symbol = self.current_scope.declare(
+            name=name,
+            symbol_kind=SymbolKind.COLUMN,
+            origin_node=None,
+            depth=self.depth,
+            symbol_id=self._next_symbol_id(),
+            unique_name=name
+        )
+        self.analysis_result.symbols_declared += 1
+        return symbol
 
     def resolve(self, name: str) -> SymbolInfo:
         """Resolves a symbol name or raises UndefinedSymbolError if it is undeclared."""

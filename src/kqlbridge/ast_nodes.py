@@ -94,6 +94,27 @@ class FuncCall:
 
 
 @dataclass
+class IndexedAccess:
+    """col[0] or col['key']"""
+    expr: "Expr"
+    index: "Expr"
+
+
+@dataclass
+class PropertyAccess:
+    """col.prop"""
+    expr: "Expr"
+    prop: str
+
+
+@dataclass
+class UnaryOp:
+    """Unary operator: -x"""
+    op: str
+    expr: "Expr"
+
+
+@dataclass
 class BinaryOp:
     """Arithmetic: a + b, a - b, a * b, a / b"""
     left: "Expr"
@@ -104,7 +125,7 @@ class BinaryOp:
 # Expr = any scalar expression type
 Expr = Union[
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, DatetimeLit, IffExpr, SubqueryInExpr,
-    AgoExpr, BinExpr, FuncCall, BinaryOp
+    AgoExpr, BinExpr, FuncCall, BinaryOp, IndexedAccess, PropertyAccess, UnaryOp
 ]
 
 
@@ -131,8 +152,8 @@ class InExpr:
 class StringOp:
     """has, contains, startswith, endswith, matches regex"""
     col: Expr
-    op: str   # 'has', 'contains', 'startswith', 'endswith', 'matches_regex'
-    value: str
+    op: str   # 'has', 'contains', 'startswith', 'endswith', 'regex'
+    value: Union[str, Expr]
 
 
 @dataclass
@@ -271,7 +292,37 @@ class AggMakeList:
     alias: Optional[str] = None
 
 
-AggExpr = Union[AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList]
+@dataclass
+class AggMakeSet:
+    """make_set(col)"""
+    col: Expr
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggAny:
+    """any(col)"""
+    col: Expr
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggArgMax:
+    """arg_max(col, *) or arg_max(col, col2)"""
+    col: Expr
+    targets: Union[str, list[Expr]]
+    alias: Optional[str] = None
+
+
+@dataclass
+class AggArgMin:
+    """arg_min(col, *) or arg_min(col, col2)"""
+    col: Expr
+    targets: Union[str, list[Expr]]
+    alias: Optional[str] = None
+
+
+AggExpr = Union[AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList, AggMakeSet, AggAny, AggArgMax, AggArgMin]
 
 
 # ─── Group By Items ──────────────────────────────────────────────────────────
@@ -312,9 +363,14 @@ class WhereOp:
 
 @dataclass
 class ProjectOp:
-    """| project Message, Level  or  | project NewName=OldName, Level"""
+    """| project Message, Level  or  | project NewName=Expr, Level"""
+    columns: list[Union[Expr, tuple[str, Expr]]]
+
+
+@dataclass
+class ProjectAwayOp:
+    """| project-away col1, col2"""
     columns: list[str]
-    aliases: dict[str, str] = None  # {source_col: alias} for project col=alias syntax
 
 
 @dataclass
@@ -353,8 +409,15 @@ class ExtendOp:
 class JoinOp:
     """| join kind=inner (RightTable | ...) on key"""
     right: "KQLQuery"
-    keys: list[str]
+    keys: list[Union[str, tuple[str, str]]]
     kind: str = "inner"   # 'inner', 'leftouter', 'rightouter', 'fullouter'
+
+
+@dataclass
+class LookupOp:
+    """| lookup (RightTable | ...) on key"""
+    right: "KQLQuery"
+    keys: list[Union[str, tuple[str, str]]]
 
 
 @dataclass
@@ -372,13 +435,13 @@ class CountOp:
 
 @dataclass
 class SerializeOp:
-    """| serialize"""
-    pass
+    """| serialize  or  | serialize col=expr"""
+    assignments: list[tuple[str, Expr]] = field(default_factory=list)
 
 
 PipeOp = Union[
-    WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp
+    WhereOp, ProjectOp, ProjectAwayOp, SummarizeOp, OrderOp, TakeOp,
+    DistinctOp, ExtendOp, JoinOp, LookupOp, UnionOp, CountOp, SerializeOp,
 ]
 
 

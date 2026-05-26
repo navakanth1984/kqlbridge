@@ -22,18 +22,18 @@ from .ast_nodes import (
     KQLQuery, LetBinding, PipeOp,
     # Operators
     WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
+    DistinctOp, ExtendOp, JoinOp, LookupOp, UnionOp, CountOp, SerializeOp,
     # Aggregations
-    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList, AggMakeSet, AggAny, AggArgMax, AggArgMin,
     # Groupby
     BinGroup, PlainGroup,
     # Expressions
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
-    FuncCall, BinaryOp,
+    FuncCall, BinaryOp, IndexedAccess, PropertyAccess, UnaryOp,
     # Bool expressions
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
     # Order
-    OrderItem, DatetimeLit, IffExpr, SubqueryInExpr,
+    OrderItem, DatetimeLit, IffExpr, SubqueryInExpr, ProjectAwayOp,
 )
 
 _GRAMMAR_FILE = Path(__file__).parent / "grammar" / "kql.lark"
@@ -360,20 +360,53 @@ def _build_pipe_op(tree: Tree) -> PipeOp:
     dispatch = {
         "where_op":      _build_where,
         "project_op":    _build_project,
+        "project_away_op": _build_project_away,
         "summarize_op":  _build_summarize,
         "order_op":      _build_order,
         "take_op":       _build_take,
         "distinct_op":   _build_distinct,
         "extend_op":     _build_extend,
         "join_op":       _build_join,
+        "lookup_op":     _build_lookup,
         "union_op":      _build_union,
         "count_op":      lambda _: CountOp(),
-        "serialize_op":  lambda _: SerializeOp(),
+        "serialize_op":  _build_serialize,
     }
     builder = dispatch.get(inner.data)
     if builder is None:
-        raise NotImplementedError(f"Parser: operator not implemented: {inner.data}")
+        raise NotImplementedError(f"Unknown pipe op: {inner.data}")
     return builder(inner)
+
+
+def _build_serialize(tree: Tree) -> SerializeOp:
+    assignments = []
+    if len(tree.children) > 0:
+        assignments = _build_assign_list(tree.children[0])
+    return SerializeOp(assignments=assignments)
+
+
+def _build_assign_list(assign_list: Tree) -> list[tuple[str, Expr]]:
+    assignments = []
+    for item in assign_list.children:
+        if isinstance(item, Tree) and item.data == "assign_item":
+            name = str(item.children[0])
+            val_node = item.children[1]
+            if isinstance(val_node, Tree):
+                if val_node.data == "assign_comparison":
+                    left = _build_expr(val_node.children[0])
+                    op = str(val_node.children[1])
+                    right = _build_expr(val_node.children[2])
+                    expr = Comparison(left=left, op=op, right=right)
+                else:
+                    expr = _build_expr(val_node.children[0])
+            else:
+                expr = _build_expr(val_node)
+            assignments.append((name, expr))
+    return assignments
+
+
+def _build_extend(tree: Tree) -> ExtendOp:
+    return ExtendOp(assignments=_build_assign_list(tree.children[0]))
 
 
 def _build_where(tree: Tree) -> WhereOp:
@@ -383,21 +416,26 @@ def _build_where(tree: Tree) -> WhereOp:
 def _build_project(tree: Tree) -> ProjectOp:
     project_list = tree.children[0]  # project_list Tree
     columns = []
-    aliases = {}
     for item in project_list.children:
         if not isinstance(item, Tree):
             continue
         if item.data == "project_alias":
-            # project_alias: NAME "=" NAME  (alias = source)
+            # project_alias: NAME "=" expr
             alias = str(item.children[0])
-            source = str(item.children[1])
-            columns.append(source)
-            aliases[source] = alias
+            expr = _build_expr(item.children[1])
+            columns.append((alias, expr))
         else:
-            # project_col: NAME
-            col = str(item.children[0])
-            columns.append(col)
-    return ProjectOp(columns=columns, aliases=aliases)
+            # project_col: expr
+            expr = _build_expr(item.children[0])
+            columns.append(expr)
+    return ProjectOp(columns=columns)
+
+
+def _build_project_away(tree: Tree) -> ProjectAwayOp:
+    # project_away_op: "project-away" name_list
+    name_list = tree.children[0]
+    cols = [str(c) for c in name_list.children if not isinstance(c, Tree)]
+    return ProjectAwayOp(columns=cols)
 
 
 def _build_summarize(tree: Tree) -> SummarizeOp:
@@ -491,6 +529,14 @@ def _build_agg_func(tree: Tree, alias):
         "agg_make_list": lambda t, a: AggMakeList(
             col=_build_expr(t.children[0]), alias=a
         ),
+        "agg_make_set": lambda t, a: AggMakeSet(
+            col=_build_expr(t.children[0]), alias=a
+        ),
+        "agg_any": lambda t, a: AggAny(
+            col=_build_expr(t.children[0]), alias=a
+        ),
+        "agg_arg_max": lambda t, a: _build_arg_max_min(t, a, AggArgMax),
+        "agg_arg_min": lambda t, a: _build_arg_max_min(t, a, AggArgMin),
         "agg_stdev": lambda t, a: AggAvg(col=FuncCall(name="stddev", args=[_build_expr(t.children[0])]), alias=a),
     }
     builder = dispatch.get(tree.data)
@@ -499,7 +545,27 @@ def _build_agg_func(tree: Tree, alias):
     return builder(tree, alias)
 
 
-def _build_groupby_list(tree: Tree) -> list:
+def _build_arg_max_min(tree: Tree, alias, cls):
+    if len(tree.children) < 2:
+        # Fallback if grammar changed or unexpected tree structure
+        col = _build_expr(tree.children[0])
+        targets = "*"
+    else:
+        col = _build_expr(tree.children[0])
+        target_node = tree.children[1]
+        if isinstance(target_node, Token):
+            if str(target_node) == "*":
+                targets = "*"
+            else:
+                targets = [ColumnRef(name=str(target_node))]
+        elif isinstance(target_node, Tree) and target_node.data == "expr_list":
+            targets = [_build_expr(c) for c in target_node.children]
+        else:
+            targets = [ColumnRef(name=str(target_node))]
+    return cls(col=col, targets=targets, alias=alias)
+
+
+def _build_bool_expr(tree: Tree) -> BoolExpr:
     """Note: Logic moved to _build_summarize to handle re-aliasing."""
     return []
 
@@ -535,27 +601,6 @@ def _build_distinct(tree: Tree) -> DistinctOp:
     )
 
 
-def _build_extend(tree: Tree) -> ExtendOp:
-    assign_list = tree.children[0]
-    assignments = []
-    for item in assign_list.children:
-        if isinstance(item, Tree) and item.data == "assign_item":
-            name = str(item.children[0])
-            val_node = item.children[1]
-            if isinstance(val_node, Tree):
-                if val_node.data == "assign_comparison":
-                    left = _build_expr(val_node.children[0])
-                    op = str(val_node.children[1])
-                    right = _build_expr(val_node.children[2])
-                    expr = Comparison(left=left, op=op, right=right)
-                else:
-                    expr = _build_expr(val_node.children[0])
-            else:
-                expr = _build_expr(val_node)
-            assignments.append((name, expr))
-    return ExtendOp(assignments=assignments)
-
-
 def _build_join(tree: Tree) -> JoinOp:
     kind = "inner"
     right_query = None
@@ -565,24 +610,63 @@ def _build_join(tree: Tree) -> JoinOp:
         if isinstance(child, Tree):
             if child.data == "join_kind":
                 kind = str(child.children[-1])
-            elif child.data == "table_expr":
-                right_table = str(child.children[0])
-                right_query = KQLQuery(table=right_table, pipes=[])
-            elif child.data == "pipe_op":
-                if right_query is None:
-                    raise ValueError("join_op has no right-side table expression before pipe_op")
-                op = _build_pipe_op(child)
-                if hasattr(op, "_implicit_extends"):
-                    right_query.pipes.append(ExtendOp(assignments=op._implicit_extends))
-                    del op._implicit_extends
-                right_query.pipes.append(op)
+            elif child.data == "join_body":
+                body = child.children[0]
+                if isinstance(body, Tree) and body.data == "table_ref_expr":
+                    right_query = _build_table_ref(body)
+                else:
+                    # body is NAME Token
+                    right_table = str(body)
+                    right_query = KQLQuery(table=right_table, pipes=[])
             elif child.data == "join_keys":
-                keys = [str(t) for t in child.children if isinstance(t, Token)]
+                for k in child.children:
+                    if not isinstance(k, Tree):
+                        keys.append(str(k))
+                    elif k.data == "join_key_item":
+                        if len(k.children) == 1:
+                            keys.append(str(k.children[0]))
+                        else:
+                            # $left.X == $right.Y -> children are [X, Y]
+                            left_col = str(k.children[0])
+                            right_col = str(k.children[1])
+                            keys.append((left_col, right_col))
 
     if right_query is None:
         raise ValueError("join_op has no right-side table expression")
 
     return JoinOp(right=right_query, keys=keys, kind=kind)
+
+
+def _build_lookup(tree: Tree) -> LookupOp:
+    # lookup_op: "lookup" join_body "on" join_keys
+    right_query = None
+    keys = []
+
+    for child in tree.children:
+        if isinstance(child, Tree):
+            if child.data == "join_body":
+                body = child.children[0]
+                if isinstance(body, Tree) and body.data == "table_ref_expr":
+                    right_query = _build_table_ref(body)
+                else:
+                    right_table = str(body)
+                    right_query = KQLQuery(table=right_table, pipes=[])
+            elif child.data == "join_keys":
+                for k in child.children:
+                    if not isinstance(k, Tree):
+                        keys.append(str(k))
+                    elif k.data == "join_key_item":
+                        if len(k.children) == 1:
+                            keys.append(str(k.children[0]))
+                        else:
+                            left_col = str(k.children[0])
+                            right_col = str(k.children[1])
+                            keys.append((left_col, right_col))
+
+    if right_query is None:
+        raise ValueError("lookup_op has no right-side table expression")
+
+    return LookupOp(right=right_query, keys=keys)
 
 
 def _build_union(tree: Tree) -> UnionOp:
@@ -682,11 +766,36 @@ def _build_bool_expr(tree) -> object:
         return SubqueryInExpr(col=col, subquery=subquery, negated=True, case_insensitive=True)
 
     if tree.data in ("has_expr", "contains_expr", "startswith_expr",
-                     "endswith_expr", "regex_expr"):
+                     "endswith_expr"):
         op_name = tree.data.replace("_expr", "").replace("_", " ")
         col = _build_expr(tree.children[0])
         value = _strip_quotes(str(tree.children[1]))
         return StringOp(col=col, op=op_name, value=value)
+
+    if tree.data == "regex_expr":
+        col = _build_expr(tree.children[0])
+        val_expr = _build_expr(tree.children[1])
+        # If it's a string literal, we strip quotes. 
+        # If it's a variable, we keep it as ColumnRef.
+        if isinstance(val_expr, StringLit):
+            return StringOp(col=col, op="regex", value=val_expr.value)
+        else:
+            return StringOp(col=col, op="regex", value=val_expr)
+
+    if tree.data in ("not_has_expr", "not_contains_expr", "not_startswith_expr",
+                     "not_endswith_expr"):
+        op_name = tree.data.replace("not_", "").replace("_expr", "").replace("_", " ")
+        col = _build_expr(tree.children[0])
+        value = _strip_quotes(str(tree.children[1]))
+        return Negation(expr=StringOp(col=col, op=op_name, value=value))
+
+    if tree.data == "not_regex_expr":
+        col = _build_expr(tree.children[0])
+        val_expr = _build_expr(tree.children[1])
+        if isinstance(val_expr, StringLit):
+            return Negation(expr=StringOp(col=col, op="regex", value=val_expr.value))
+        else:
+            return Negation(expr=StringOp(col=col, op="regex", value=val_expr))
 
     if tree.data == "has_any_expr":
         col = _build_expr(tree.children[0])
@@ -736,6 +845,16 @@ def _build_expr(tree) -> object:
     if tree.data == "column_ref":
         return ColumnRef(name=str(tree.children[0]))
 
+    if tree.data == "indexed_access":
+        expr = _build_expr(tree.children[0])
+        idx = _build_expr(tree.children[1])
+        return IndexedAccess(expr=expr, index=idx)
+
+    if tree.data == "property_access":
+        expr = _build_expr(tree.children[0])
+        prop = str(tree.children[1])
+        return PropertyAccess(expr=expr, prop=prop)
+
     if tree.data == "ago_expr":
         amount, unit = _build_timespan(tree.children[0])
         return AgoExpr(amount=amount, unit=unit)
@@ -757,10 +876,16 @@ def _build_expr(tree) -> object:
         right = _build_expr(tree.children[1])
         return BinaryOp(left=left, op=op, right=right)
 
+    if tree.data == "unary_minus":
+        return UnaryOp(op="-", expr=_build_expr(tree.children[0]))
+
     if tree.data == "paren_expr":
         return _build_expr(tree.children[0])
 
-    if tree.data == "string_lit":
+    if tree.data == "bool_as_expr":
+        return _build_bool_expr(tree.children[0])
+
+    if tree.data == "literal":
         return StringLit(value=_strip_quotes(str(tree.children[0])))
     if tree.data == "int_lit":
         return IntLit(value=int(str(tree.children[0])))
