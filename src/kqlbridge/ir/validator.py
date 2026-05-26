@@ -31,7 +31,7 @@ Usage::
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import List, Optional, Set
+from typing import List, Set
 
 
 # ─── IRValidationError ───────────────────────────────────────────────────────
@@ -121,8 +121,7 @@ def validate_ir(query: "SemanticQuery") -> ValidationResult:
     """
     # Import here to avoid circular imports at module load time
     from .nodes import (
-        SemanticQuery, SemanticFilter, SemanticProjection, ProjectionItem,
-        SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
+        SemanticQuery, SemanticFilter, SemanticProjection, SemanticAggregate, SemanticJoin, SemanticUnion,
     )
 
     issues: List[ValidationIssue] = []

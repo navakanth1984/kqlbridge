@@ -190,7 +190,7 @@ def run_manual_analysis():
     print(f"Files analyzed: {stats['files']}")
     print(f"Functions: {stats['functions']}")
     print(f"Classes: {stats['classes']}")
-    print(f"\nKarpathy Principle 2 — Functions > 30 lines:")
+    print("\nKarpathy Principle 2 — Functions > 30 lines:")
     if stats["long_functions"]:
         for fn in stats["long_functions"]:
             print(f"  [WARN] {fn}")
@@ -245,9 +245,9 @@ def _check_architecture_rules(gods: list, surprises: list):
         src = str(edge.get("source", ""))
         tgt = str(edge.get("target", ""))
         if "generator" in src and "semantic" in tgt:
-            violations.append(f"generators -> semantic (generators should be pure AST -> SQL)")
+            violations.append("generators -> semantic (generators should be pure AST -> SQL)")
         if "semantic" in src and "parser" in tgt:
-            violations.append(f"semantic -> parser (semantic is downstream, not upstream)")
+            violations.append("semantic -> parser (semantic is downstream, not upstream)")
 
     if violations:
         print("  [FAIL] Architecture violations found:")

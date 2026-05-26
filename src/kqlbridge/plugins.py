@@ -1,5 +1,4 @@
 from __future__ import annotations
-import inspect
 from typing import Callable, Dict, Tuple, List, Type, Any
 
 # Global registries for plugins

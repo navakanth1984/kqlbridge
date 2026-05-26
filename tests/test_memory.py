@@ -1,6 +1,5 @@
 from __future__ import annotations
 import os
-import pytest
 import threading
 from kqlbridge.memory import TranslationMemory
 

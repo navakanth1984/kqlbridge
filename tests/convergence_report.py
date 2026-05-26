@@ -280,21 +280,21 @@ def print_summary(report: dict) -> None:
     t1, t2, t3 = report["tier1"], report["tier2"], report["tier3"]
 
     print(f"\n{'='*50}")
-    print(f"  CONVERGENCE SCOREBOARD")
+    print("  CONVERGENCE SCOREBOARD")
     print(f"{'='*50}")
     print(f"  Tier 1:  {t1['passing']:>4}/{t1['total']:<4}  ({t1['rate']:>5.1f}%)")
     print(f"  Tier 2:  {t2['passing']:>4}/{t2['total']:<4}  ({t2['rate']:>5.1f}%)")
     if t3['total'] > 0:
         print(f"  Tier 3:  {t3['passing']:>4}/{t3['total']:<4}  ({t3['rate']:>5.1f}%)")
     else:
-        print(f"  Tier 3:  not yet extracted")
+        print("  Tier 3:  not yet extracted")
     print(f"{'-'*50}")
     print(f"  Snapshots: {'PASS' if gate['validator_snapshots'] else 'FAIL'}")
     print(f"  Phase 3B Complete: {'[OK] YES' if gate['phase3b_complete'] else '[FAIL] NO'}")
 
     cats = report.get("all_categories", {})
     if cats:
-        print(f"\n  Failure Categories:")
+        print("\n  Failure Categories:")
         for cat, count in list(cats.items())[:10]:
             bar = "#" * min(count, 30)
             print(f"  [{count:>4}] {bar}  {cat}")

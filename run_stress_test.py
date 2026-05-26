@@ -2,9 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.abspath('src'))
 from kqlbridge.parser import parse
-from kqlbridge.generators.spark_sql import SparkSQLGenerator
-from kqlbridge.generators.tsql import TSQLGenerator
-from kqlbridge import translate, lint, smart_transpile
+from kqlbridge import lint, smart_transpile
 import traceback
 import os
 tests = {
@@ -161,7 +159,7 @@ def run():
             print(code.strip())
             print("")
             _, pyspark_code = smart_transpile(kql.strip(), force_engine="pyspark")
-            print(f"PySpark Generator (Forced):")
+            print("PySpark Generator (Forced):")
             print(pyspark_code.strip())
             print("")
         except Exception as e:

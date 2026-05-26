@@ -1,9 +1,7 @@
-import pytest
 from kqlbridge import translate
 from kqlbridge.parser import parse
 from kqlbridge.scoping import ScopeManager
 from kqlbridge.passes.alpha_renaming import AlphaRenamer
-from kqlbridge.passes.constant_folding import ConstantFolder
 
 def test_lexical_shadowing_alpha_renaming():
     kql = "let threshold = 100; AppLogs | extend threshold = threshold + 5"

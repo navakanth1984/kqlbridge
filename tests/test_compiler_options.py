@@ -1,5 +1,3 @@
-import sys
-import pytest
 from kqlbridge import translate, CompilerOptions
 
 def test_compiler_options_flow():

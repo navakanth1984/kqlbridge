@@ -1,5 +1,4 @@
 from __future__ import annotations
-import pytest
 from kqlbridge import translate, smart_analyze, smart_transpile
 
 def test_smart_analyze_simple():

@@ -3,7 +3,7 @@ import os
 import json
 import re
 import threading
-from typing import Dict, List, Optional, Any
+from typing import Optional
 
 class TranslationMemory:
     """

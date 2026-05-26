@@ -1,7 +1,6 @@
 from __future__ import annotations
-import pytest
 from kqlbridge.plugins import register_renderer, register_optimizer, get_renderer, get_optimizers
-from kqlbridge.ast_nodes import WhereOp, ColumnRef, StringLit
+from kqlbridge.ast_nodes import WhereOp
 from kqlbridge import translate
 import kqlbridge.plugins
 
@@ -25,7 +24,7 @@ def test_renderer_plugin_pyspark():
     # Setup custom renderer for WhereOp in pyspark dialect
     @register_renderer(node_type=WhereOp, dialect="pyspark")
     def custom_where_pyspark(generator, node, df_name):
-        return f"filter('CUSTOM_PYSPARK_WHERE')"
+        return "filter('CUSTOM_PYSPARK_WHERE')"
         
     try:
         py_code = translate("Logs | where x == 1", target="pyspark")

@@ -1,9 +1,9 @@
 import json
-from typing import Any, Dict, List, Union
+from typing import Any
 from .nodes import (
-    SemanticIRNode, SemanticQuery, SemanticFilter, SemanticProjection,
+    SemanticQuery, SemanticFilter, SemanticProjection,
     ProjectionItem, SemanticAggregate, AggregateItem, SemanticJoin,
-    SemanticUnion, SemanticExpression, SemanticColumnRef, SemanticLiteral,
+    SemanticUnion, SemanticColumnRef, SemanticLiteral,
     SemanticComparison, SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
     SemanticJoinCondition, UnionColumnMapping
 )

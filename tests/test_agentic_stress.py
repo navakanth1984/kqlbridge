@@ -17,10 +17,7 @@ import pytest
 import threading
 import concurrent.futures
 import re
-import sys
 import os
-import time
-from typing import Any
 
 
 # ─── IMPORT kqlbridge ──────────────────────────────────────────────────────────

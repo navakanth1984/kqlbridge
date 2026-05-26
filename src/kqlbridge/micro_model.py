@@ -180,8 +180,8 @@ class TimeSeriesMicroModel:
             step_val = self.step.get("value", 0)
             if step_val == 0:
                 raise ValueError(
-                    f"step value must be > 0, got 0. "
-                    f"A zero-step generates an infinite sequence at runtime."
+                    "step value must be > 0, got 0. "
+                    "A zero-step generates an infinite sequence at runtime."
                 )
 
         # Guard 2: end before or equal to start produces wrong/empty results silently

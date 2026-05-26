@@ -39,11 +39,11 @@ from typing import List
 
 from ..nodes import (
     SemanticQuery, SemanticFilter, SemanticProjection, ProjectionItem,
-    SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
-    SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticComparison,
+    SemanticAggregate, SemanticJoin, SemanticUnion,
+    SemanticColumnRef, SemanticLiteral, SemanticComparison,
     SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
 )
-from ...ast_nodes import ColumnRef, BinExpr, FuncCall, WhereOp
+from ...ast_nodes import FuncCall
 from ...generators.spark_sql import SparkSQLGenerator, _INTERVAL_UNIT, _COMP_OP_MAP
 from ...plugins import get_renderer
 

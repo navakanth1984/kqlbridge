@@ -1,6 +1,6 @@
 import os
 import pytest
-from kqlbridge import translate, mlm_agent, MLMAgent
+from kqlbridge import translate, mlm_agent
 from kqlbridge.mlm import MLMAgent as DirectMLMAgent
 
 def test_mlm_telemetry_and_rules(tmp_path):

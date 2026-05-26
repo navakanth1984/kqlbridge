@@ -17,7 +17,7 @@ Test Philosophy:
 
 import pytest
 import re
-from kqlbridge import translate, detect_operators, is_supported
+from kqlbridge import translate, detect_operators
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

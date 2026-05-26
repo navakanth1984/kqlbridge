@@ -12,15 +12,10 @@ Design:
 
 from __future__ import annotations
 import re
-from typing import List, Optional
 
 from ..nodes import (
-    SemanticQuery, SemanticFilter, SemanticProjection, ProjectionItem,
-    SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
-    SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticComparison,
-    SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
+    SemanticColumnRef, SemanticLiteral, SemanticFunctionCall,
 )
-from ...ast_nodes import ColumnRef, BinExpr, FuncCall, WhereOp
 from ...generators.tsql import TSQLGenerator, _TSQL_DATEADD_UNIT
 from .spark_ir import IRSparkSQLGenerator
 

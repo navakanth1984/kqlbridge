@@ -1,4 +1,3 @@
-import pytest
 from kqlbridge import translate, CompilerOptions
 
 def test_tsql_binning_legacy_2019():

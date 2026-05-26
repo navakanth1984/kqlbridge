@@ -1,5 +1,4 @@
-import pytest
-from kqlbridge import explain_semantic, ExplainSemanticResult
+from kqlbridge import explain_semantic
 
 def test_recursive_self_reference():
     """Verify that shadowing a variable in subsequent extends (recursive self-reference) traces correctly without loops."""

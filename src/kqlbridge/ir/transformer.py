@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional, Set, Union
+from typing import Any, Dict, List, Optional, Set
 from ..ast_nodes import (
-    KQLQuery, LetBinding, ColumnRef, ExtendOp, ProjectOp, WhereOp,
+    KQLQuery, ColumnRef, ExtendOp, ProjectOp, WhereOp,
     SummarizeOp, JoinOp, UnionOp, OrderOp, PlainGroup, BinGroup,
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
     InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
@@ -26,8 +26,6 @@ from .nodes import (
     SemanticAggregate,
     SemanticJoin,
     SemanticUnion,
-    SemanticJoinCondition,
-    UnionColumnMapping,
 )
 
 def collect_expression_symbol_ids(expr: SemanticExpression) -> List[int]:

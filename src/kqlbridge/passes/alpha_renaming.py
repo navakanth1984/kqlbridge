@@ -1,13 +1,12 @@
 from __future__ import annotations
-from typing import Any, List, Set, Union, Dict, Optional
+from typing import Any
 
 from kqlbridge.scoping import ScopeManager, SymbolKind, ScopeType
 from kqlbridge.ast_nodes import (
-    KQLQuery, LetBinding, ColumnRef, ExtendOp, ProjectOp, WhereOp,
-    SummarizeOp, JoinOp, UnionOp, OrderOp, PlainGroup, BinGroup,
+    KQLQuery, ColumnRef, ExtendOp, ProjectOp, WhereOp,
+    SummarizeOp, JoinOp, OrderOp, PlainGroup, BinGroup,
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
-    InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
-    OrderItem
+    InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr
 )
 
 class AlphaRenamer:

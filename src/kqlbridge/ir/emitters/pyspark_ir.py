@@ -14,12 +14,10 @@ Design:
 
 from __future__ import annotations
 import re
-from typing import List, Optional
 
 from ..nodes import (
-    SemanticQuery, SemanticFilter, SemanticProjection, ProjectionItem,
-    SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
-    SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticFunctionCall,
+    SemanticQuery, SemanticFilter, SemanticProjection, SemanticAggregate, SemanticJoin, SemanticUnion,
+    SemanticColumnRef, SemanticLiteral, SemanticFunctionCall,
 )
 from .spark_ir import IRSparkSQLGenerator
 

@@ -1,5 +1,4 @@
 from __future__ import annotations
-import pytest
 from kqlbridge.registry import (
     CapabilityLevel, get_capability_level, is_operator_supported, get_supported_dialects
 )

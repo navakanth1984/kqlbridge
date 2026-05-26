@@ -1,8 +1,5 @@
-import pytest
 from kqlbridge import translate, detect_operators, is_supported
 
-import pytest
-from kqlbridge import translate, detect_operators, is_supported
 
 def test_unsupported_operators():
     """Verify that unsupported operators are correctly flagged by is_supported."""

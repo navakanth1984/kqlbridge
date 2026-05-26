@@ -20,14 +20,12 @@ from __future__ import annotations
 import json
 import os
 import stat
-import sys
 import threading
 import logging
 
 import pytest
 
-import kqlbridge
-from kqlbridge import translate, mlm_agent, MLMAgent, detect_operators, is_supported
+from kqlbridge import translate, mlm_agent, is_supported
 from kqlbridge.mlm import MLMAgent as _MLMAgentClass
 
 

@@ -1,16 +1,15 @@
 from __future__ import annotations
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 import copy
 
 from kqlbridge.ast_nodes import (
-    KQLQuery, LetBinding, ColumnRef, ExtendOp, ProjectOp, WhereOp,
-    SummarizeOp, JoinOp, UnionOp, OrderOp, PlainGroup, BinGroup,
+    KQLQuery, ColumnRef, ExtendOp, ProjectOp, WhereOp,
+    SummarizeOp, JoinOp, OrderOp, PlainGroup, BinGroup,
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
     InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
-    IntLit, FloatLit, BoolLit, StringLit, DatetimeLit, AgoExpr,
-    OrderItem
+    IntLit, FloatLit, BoolLit, StringLit, DatetimeLit
 )
-from kqlbridge.scoping import ScopeManager, ScopeType, SymbolKind, FunctionPurity
+from kqlbridge.scoping import ScopeManager, ScopeType
 
 class ConstantFolder:
     def __init__(self, scope_manager: ScopeManager):

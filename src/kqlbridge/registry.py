@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Dict, Set
+from typing import Dict
 
 class CapabilityLevel(Enum):
     NATIVE = "NATIVE"

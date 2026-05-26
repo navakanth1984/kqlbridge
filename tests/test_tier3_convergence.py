@@ -261,7 +261,7 @@ class TestConvergenceReport:
 
         with capsys.disabled():
             print(f"\n{'='*50}")
-            print(f"  Tier 3 Failure Categories:")
+            print("  Tier 3 Failure Categories:")
             if not categories:
                 print("  All queries converged!")
             for cat, ids in sorted(categories.items(), key=lambda x: -len(x[1])):

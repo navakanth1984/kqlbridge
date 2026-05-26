@@ -1,5 +1,4 @@
 from __future__ import annotations
-import pytest
 from kqlbridge.parser import parse
 from kqlbridge.optimizer import ASTOptimizer
 from kqlbridge.ast_nodes import WhereOp, OrderOp, ExtendOp, ProjectOp, SummarizeOp, JoinOp

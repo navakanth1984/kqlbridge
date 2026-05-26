@@ -1,4 +1,3 @@
-import pytest
 from kqlbridge import translate
 
 def test_alias_contract():

@@ -563,7 +563,7 @@ def explain_semantic(kql: str, target: str = "spark") -> ExplainSemanticResult:
     walk_ir(ir_query)
 
     # 4. Determine output visible columns of terminal query state
-    from .scoping import SymbolTable, ScopeType, SymbolKind
+    from .scoping import SymbolTable, ScopeType
     def get_visible_column_symbols_local(symbol_table: SymbolTable) -> list[SymbolInfo]:
         visible = {}
         curr = symbol_table

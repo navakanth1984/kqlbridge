@@ -12,7 +12,6 @@ Unlike prepare.py:
 - They're meant for fast TDD cycles during BIT Build phase
 """
 
-import pytest
 from kqlbridge import translate, detect_operators, is_supported
 
 

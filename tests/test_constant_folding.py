@@ -1,9 +1,8 @@
-import pytest
 from kqlbridge.parser import parse
 from kqlbridge.scoping import ScopeManager
 from kqlbridge.passes.alpha_renaming import AlphaRenamer
 from kqlbridge.passes.constant_folding import ConstantFolder
-from kqlbridge.ast_nodes import IntLit, FloatLit, BoolLit, StringLit, FuncCall, BinaryOp
+from kqlbridge.ast_nodes import IntLit, FloatLit, BoolLit, StringLit
 
 def test_static_arithmetic_folding():
     # 5 + 5 should fold to 10

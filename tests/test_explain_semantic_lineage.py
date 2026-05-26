@@ -1,5 +1,4 @@
-import pytest
-from kqlbridge import explain_semantic, ExplainSemanticResult, SymbolLineageNode
+from kqlbridge import explain_semantic, ExplainSemanticResult
 
 def test_multi_hop_lineage_through_summarize():
     """Total -> B -> A -> X, Y - traces through dead summarize scope."""

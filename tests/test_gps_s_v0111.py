@@ -3,7 +3,9 @@ GPS S — Stress sweep on kqlbridge v0.11.2
 Four scenarios: standard, edge, overload, adversarial
 Pass criterion: all assertions green, no exceptions outside expected guards
 """
-import time, gc, sys, traceback, concurrent.futures, statistics
+import time
+import sys
+import concurrent.futures
 import kqlbridge
 from kqlbridge import translate, smart_transpile, detect_operators, is_supported, TimeSeriesMicroModel
 
@@ -203,7 +205,7 @@ def main():
     # ── REPORT ────────────────────────────────────────────────────────────────────
     print()
     print("=" * 72)
-    print(f"  GPS S — kqlbridge v0.11.2 stress sweep")
+    print("  GPS S — kqlbridge v0.11.2 stress sweep")
     print("=" * 72)
     passed = sum(1 for r in results if r[1] == "PASS")
     failed = sum(1 for r in results if r[1] == "FAIL")

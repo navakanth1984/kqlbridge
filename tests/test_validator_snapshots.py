@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 import pytest
 from kqlbridge.parser import parse
-from kqlbridge.ir import to_semantic_ir, validate_ir, serialize_ir, IRValidationError
+from kqlbridge.ir import to_semantic_ir, validate_ir, serialize_ir
 
 
 SNAPSHOTS_DIR = Path(__file__).parent / "snapshots"

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Set
+from typing import TYPE_CHECKING, Set
 from kqlbridge.optimizer.optimizer import OptimizationRule
 from kqlbridge.ast_nodes import WhereOp, ProjectOp, ExtendOp, OrderOp, ColumnRef
 

@@ -31,7 +31,6 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import os
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -180,9 +179,9 @@ def main():
 
     print(f"  Extracted: {len(queries)} queries")
     print(f"  Output: {args.out}")
-    print(f"\nNext step:")
-    print(f"  py -m pytest tests/test_tier3_convergence.py -v")
-    print(f"  py -m pytest tests/test_tier3_convergence.py -v --tb=short -q")
+    print("\nNext step:")
+    print("  py -m pytest tests/test_tier3_convergence.py -v")
+    print("  py -m pytest tests/test_tier3_convergence.py -v --tb=short -q")
     print()
 
 
