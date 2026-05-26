@@ -283,7 +283,7 @@ class TestJoin:
 
     def test_union_join_pipeline(self):
         result = sql("Table1 | union Table2 | join (Table3) on x")
-        assert "FROM (\nSELECT * FROM Table1\nUNION ALL\nSELECT * FROM Table2\n) _union_result" in result
+        assert "FROM (\nSELECT *\nFROM Table1\nUNION ALL\nSELECT * FROM Table2\n) _union_result" in result
         assert "INNER JOIN Table3 ON _union_result.x = Table3.x" in result
 
 
@@ -293,8 +293,9 @@ class TestUnion:
     def test_union_two_tables(self):
         result = sql("AppLogs | union ErrorLogs")
         assert "UNION ALL" in result
-        assert "SELECT * FROM AppLogs" in result
+        assert "SELECT *\nFROM AppLogs" in result
         assert "SELECT * FROM ErrorLogs" in result
+
 
     def test_union_three_tables(self):
         result = sql("T1 | union T2, T3")

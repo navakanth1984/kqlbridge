@@ -118,12 +118,17 @@ def is_supported(kql: str) -> bool:
     Queries with unsupported operators (make-series, render, etc.)
     return False — the caller should keep those in the native KQL engine.
     """
+    normalized_kql = " ".join(kql.lower().split())
+    for op in ("make-series", "render", "bag_unpack", "series_decompose_anomalies", "ipv4_is_in_range", "udf"):
+        if op in normalized_kql:
+            return False
     try:
         query = parse(kql)
         result = _semantic_check(query)
         return result.is_supported
     except Exception:
         return False
+
 
 
 def check(kql: str) -> SemanticResult:

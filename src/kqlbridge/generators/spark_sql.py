@@ -150,7 +150,6 @@ class SparkSQLGenerator:
                 if mv_expand_assignment:
                     self._mv_expand_col = self._expr(mv_expand_assignment.args[0])
                 else:
-<<<<<<< Updated upstream
                     # Extend: keep existing cols + add computed cols
                     extend_parts = [f"{self._expr(expr)} AS {alias}"
                                     for alias, expr in op.assignments]
@@ -158,6 +157,7 @@ class SparkSQLGenerator:
                         select_cols = ["*"] + extend_parts
                     else:
                         select_cols = select_cols + extend_parts
+
                     # If a summarize follows, we must wrap the current state in a subquery
                     # so the extended columns are visible to GROUP BY / agg functions
                     future_ops = query.pipes[query.pipes.index(op) + 1:]
@@ -174,10 +174,7 @@ class SparkSQLGenerator:
                         table = "(\n" + inner_sql + "\n) _extended"
                         select_cols = ["*"]
                         where_clauses = []
-=======
-                    select_cols = select_cols + extend_parts
-                # DO NOT wrap in a subquery for Spark SQL; extended aliases can be referenced directly.
->>>>>>> Stashed changes
+
 
             elif isinstance(op, JoinOp):
                 # Inline join — handled in assembly
