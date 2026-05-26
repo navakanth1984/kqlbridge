@@ -62,7 +62,7 @@ class IRValidationError(Exception):
 _KNOWN_AGG_FUNCTIONS: Set[str] = {
     "count", "sum", "avg", "min", "max", "dcount",
     "countif", "sumif", "avgif", "maxif", "minif", "dcountif",
-    "percentile", "make_list", "stdev",
+    "percentile", "make_list", "make_set", "stdev",
 }
 
 

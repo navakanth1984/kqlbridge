@@ -11,13 +11,14 @@ from ..schema_hint import SchemaHint
 from ..options import CompilerOptions
 from ..ast_nodes import (
     KQLQuery,
-    WhereOp, ProjectOp, SummarizeOp, OrderOp, TakeOp,
-    DistinctOp, ExtendOp, JoinOp, UnionOp, CountOp, SerializeOp,
+    WhereOp, ProjectOp, ProjectAwayOp, SummarizeOp, OrderOp, TakeOp,
+    DistinctOp, ExtendOp, JoinOp, LookupOp, UnionOp, CountOp, SerializeOp,
     AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
-    AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
+    AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList, AggMakeSet, AggAny, AggArgMax, AggArgMin,
     BinGroup, PlainGroup,
+    Expr,
     ColumnRef, StringLit, IntLit, FloatLit, BoolLit, AgoExpr, BinExpr,
-    FuncCall, BinaryOp,
+    FuncCall, BinaryOp, IndexedAccess, PropertyAccess, UnaryOp,
     Comparison, InExpr, StringOp, NullCheck, LogicalOp, Negation, IffExpr,
     SubqueryInExpr, DatetimeLit, HasAnyExpr,
 )
@@ -32,6 +33,7 @@ class SparkSQLGenerator:
         self.hint = hint
         self.options = options if options is not None else CompilerOptions(oracle_parity=oracle_parity)
         self.oracle_parity = self.options.oracle_parity
+        self._is_recursing_func = False
 
     def generate(self, query: KQLQuery) -> str:
         self._scalar_bindings = {}
@@ -66,34 +68,32 @@ class SparkSQLGenerator:
         summarize_active = False
 
         for idx, op in enumerate(query.pipes):
+            # Force wrap if we have active state that shouldn't be merged
+            is_schema_changing = isinstance(op, (ProjectOp, ProjectAwayOp, SummarizeOp, JoinOp, LookupOp, UnionOp))
+            has_accumulated_state = bool(where_clauses or group_by or order or limit or distinct or (select_cols != ["*"]))
+
+            if is_schema_changing and (summarize_active or has_accumulated_state):
+                table = "(\n" + self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct) + "\n) _pipe"
+                select_cols = ["*"]
+                where_clauses, group_by, order, limit, distinct = [], [], "", "", False
+                summarize_active = False
+
             if isinstance(op, WhereOp):
-                if summarize_active:
-                    inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = "(\n" + inner_sql + "\n) _filtered"
-                    select_cols = ["*"]
-                    where_clauses = [self._where(op)]
-                    group_by = []
-                    order = ""
-                    limit = ""
-                    distinct = False
-                    summarize_active = False
-                else:
-                    where_clauses.append(self._where(op))
+                where_clauses.append(self._where(op))
 
             elif isinstance(op, ProjectOp):
-                aliases = op.aliases or {}
-                select_cols = [f"{col} AS {aliases[col]}" if col in aliases else col for col in op.columns]
+                select_cols = []
+                for col in op.columns:
+                    if isinstance(col, tuple):
+                        alias, expr = col
+                        select_cols.append(f"{self._expr(expr)} AS {alias}")
+                    else:
+                        select_cols.append(self._expr(col))
+
+            elif isinstance(op, ProjectAwayOp):
+                select_cols = [f"* EXCEPT ({', '.join(op.columns)})"]
 
             elif isinstance(op, SummarizeOp):
-                if summarize_active:
-                    inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]
-                    where_clauses = []
-                    group_by = []
-                    order = ""
-                    limit = ""
-                    distinct = False
                 select_cols, group_by = self._summarize(op)
                 summarize_active = True
 
@@ -110,15 +110,10 @@ class SparkSQLGenerator:
 
             elif isinstance(op, ExtendOp):
                 if summarize_active:
-                    inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]
-                    where_clauses = []
-                    group_by = []
-                    order = ""
-                    limit = ""
-                    distinct = False
-                    summarize_active = False
+                     table = "(\n" + self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct) + "\n) _summarized"
+                     select_cols = ["*"]
+                     where_clauses, group_by, order, limit, distinct = [], [], "", "", False
+                     summarize_active = False
 
                 mv_expand_assignment = None
                 for alias, expr in op.assignments:
@@ -133,6 +128,7 @@ class SparkSQLGenerator:
                         select_cols = ["*"] + extend_parts
                     else:
                         select_cols = select_cols + extend_parts
+                    
                     future_ops = query.pipes[idx + 1:]
                     if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
                         inner_sql = self._assemble(select_cols, table, where_clauses, [], "", "", False)
@@ -141,44 +137,58 @@ class SparkSQLGenerator:
                         where_clauses = []
 
             elif isinstance(op, JoinOp):
-                if summarize_active:
-                    inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]
-                    where_clauses = []
-                    group_by = []
-                    order = ""
-                    limit = ""
-                    distinct = False
-                    summarize_active = False
                 join_sql = self._join(table, op, where_clauses)
                 table = join_sql
                 select_cols = ["*"]
+                where_clauses, group_by, order, limit, distinct = [], [], "", "", False
+
+            elif isinstance(op, LookupOp):
+                mock_join = JoinOp(right=op.right, keys=op.keys, kind="leftouter")
+                join_sql = self._join(table, mock_join, where_clauses)
+                table = join_sql
+                select_cols = ["*"]
+                where_clauses, group_by, order, limit, distinct = [], [], "", "", False
 
             elif isinstance(op, UnionOp):
-                if summarize_active:
-                    inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = "(\n" + inner_sql + "\n) _summarized"
-                    select_cols = ["*"]
-                    where_clauses = []
-                    group_by = []
-                    order = ""
-                    limit = ""
-                    distinct = False
-                    summarize_active = False
                 union_sql = self._union(table, op)
                 if union_sql != table:
                     table = union_sql
                     select_cols = ["*"]
+                    where_clauses, group_by, order, limit, distinct = [], [], "", "", False
                     remaining = query.pipes[idx + 1:]
                     if not remaining:
                         return union_sql
-
             elif isinstance(op, CountOp):
                 select_cols = ["COUNT(*) AS count_"]
 
             elif isinstance(op, SerializeOp):
-                pass
+                if op.assignments:
+                    # Treat like extend
+                    if summarize_active:
+                        inner_sql = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
+                        table = "(\n" + inner_sql + "\n) _summarized"
+                        select_cols = ["*"]
+                        where_clauses = []
+                        group_by = []
+                        order = ""
+                        limit = ""
+                        distinct = False
+                        summarize_active = False
+
+                    extend_parts = [f"{self._expr(expr)} AS {alias}" for alias, expr in op.assignments]
+                    if select_cols == ["*"]:
+                        select_cols = ["*"] + extend_parts
+                    else:
+                        select_cols = select_cols + extend_parts
+                    
+                    future_ops = query.pipes[idx + 1:]
+                    if any(isinstance(f, (SummarizeOp, ProjectOp)) for f in future_ops):
+                        inner_sql = self._assemble(select_cols, table, where_clauses, [], "", "", False)
+                        table = "(\n" + inner_sql + "\n) _extended"
+                        select_cols = ["*"]
+                        where_clauses = []
+                else:
+                    pass
 
         return self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
 
@@ -246,6 +256,10 @@ class SparkSQLGenerator:
             return f"approx_percentile({self._expr(agg.col)}, {pct_expr}){alias_suffix}"
         if isinstance(agg, AggMakeList):
             return f"collect_list({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggMakeSet):
+            return f"collect_set({self._expr(agg.col)}){alias_suffix}"
+        if isinstance(agg, AggAny):
+            return f"any_value({self._expr(agg.col)}){alias_suffix}"
         if isinstance(agg, AggSumIf):
             return f"SUM(CASE WHEN {self._bool_expr(agg.condition)} THEN {self._expr(agg.col)} END){alias_suffix}"
         if isinstance(agg, AggAvgIf):
@@ -256,6 +270,29 @@ class SparkSQLGenerator:
             return f"MIN(CASE WHEN {self._bool_expr(agg.condition)} THEN {self._expr(agg.col)} END){alias_suffix}"
         if isinstance(agg, AggDCountIf):
             return f"COUNT(DISTINCT CASE WHEN {self._bool_expr(agg.condition)} THEN {self._expr(agg.col)} END){alias_suffix}"
+        
+        if isinstance(agg, AggArgMax):
+            col_expr = self._expr(agg.col)
+            if agg.targets == "*":
+                return f"max_by(struct(*), {col_expr}).*"
+            else:
+                target_exprs = [self._expr(t) for t in agg.targets]
+                if len(target_exprs) == 1:
+                    return f"max_by({target_exprs[0]}, {col_expr}){alias_suffix}"
+                else:
+                    return f"max_by(struct({', '.join(target_exprs)}), {col_expr}){alias_suffix}"
+
+        if isinstance(agg, AggArgMin):
+            col_expr = self._expr(agg.col)
+            if agg.targets == "*":
+                return f"min_by(struct(*), {col_expr}).*"
+            else:
+                target_exprs = [self._expr(t) for t in agg.targets]
+                if len(target_exprs) == 1:
+                    return f"min_by({target_exprs[0]}, {col_expr}){alias_suffix}"
+                else:
+                    return f"min_by(struct({', '.join(target_exprs)}), {col_expr}){alias_suffix}"
+                    
         raise NotImplementedError(f"Unknown agg: {type(agg).__name__}")
 
     def _order(self, op: OrderOp) -> str:
@@ -300,7 +337,14 @@ class SparkSQLGenerator:
                 else:
                     left_prefix = first_token
 
-        on_clause = " AND ".join(f"{left_prefix}.{k} = {right_alias}.{k}" for k in op.keys)
+        on_parts = []
+        for k in op.keys:
+            if isinstance(k, tuple):
+                l_col, r_col = k
+                on_parts.append(f"{left_prefix}.{l_col} = {right_alias}.{r_col}")
+            else:
+                on_parts.append(f"{left_prefix}.{k} = {right_alias}.{k}")
+        on_clause = " AND ".join(on_parts)
         return f"{left_table}\n{join_kw} {right_expr} ON {on_clause}"
 
     def _union(self, table, op: UnionOp) -> str:
@@ -331,6 +375,11 @@ class SparkSQLGenerator:
             if getattr(self, "_scalar_bindings", None) and expr.name in self._scalar_bindings:
                 return self._expr(self._scalar_bindings[expr.name])
             return expr.name
+        if isinstance(expr, IndexedAccess):
+            return f"{self._expr(expr.expr)}[{self._expr(expr.index)}]"
+        if isinstance(expr, PropertyAccess):
+            # For Spark SQL, property access is usually col.prop
+            return f"{self._expr(expr.expr)}.{expr.prop}"
         if isinstance(expr, StringLit):
             return f"'{expr.value}'"
         if isinstance(expr, IntLit):
@@ -346,6 +395,8 @@ class SparkSQLGenerator:
             return self._render_bin(self._expr(expr.col), expr.amount, expr.unit)
         if isinstance(expr, BinaryOp):
             return f"({self._expr(expr.left)} {expr.op} {self._expr(expr.right)})"
+        if isinstance(expr, UnaryOp):
+            return f"({expr.op}{self._expr(expr.expr)})"
         if isinstance(expr, Comparison):
             if expr.op == "=~":
                 return f"(LOWER({self._expr(expr.left)}) = LOWER({self._expr(expr.right)}))"
@@ -533,14 +584,25 @@ class SparkSQLGenerator:
             return f"{col} {not_kw}IN ({inner_sql})"
         if isinstance(expr, StringOp):
             col = self._expr(expr.col)
-            op_map = {
-                "has": f"{col} RLIKE '(?i)\\\\b{expr.value}\\\\b'",
-                "contains": f"{col} LIKE '%{expr.value}%'",
-                "startswith": f"{col} LIKE '{expr.value}%'",
-                "endswith": f"{col} LIKE '%{expr.value}'",
-                "matches regex": f"regexp_like({col}, '{expr.value}')",
-            }
-            return op_map.get(expr.op, f"{col} LIKE '%{expr.value}%'")
+            if isinstance(expr.value, str):
+                val_sql = f"'{expr.value.replace('@', '')}'"
+                val_clean = expr.value.replace('@', '')
+            else:
+                val_sql = self._expr(expr.value)
+                val_clean = val_sql.strip("'\"")
+            
+            if expr.op == "has":
+                return f"{col} RLIKE '(?i)\\\\b{val_clean}\\\\b'"
+            if expr.op == "contains":
+                return f"{col} LIKE '%{val_clean}%'"
+            if expr.op == "startswith":
+                return f"{col} LIKE '{val_clean}%'"
+            if expr.op == "endswith":
+                return f"{col} LIKE '%{val_clean}'"
+            if expr.op == "regex":
+                return f"{col} RLIKE {val_sql}"
+            
+            return f"{col} LIKE '%{val_clean}%'"
         if isinstance(expr, NullCheck):
             col = self._expr(expr.col)
             return f"{col} IS NULL" if expr.is_null else f"{col} IS NOT NULL"

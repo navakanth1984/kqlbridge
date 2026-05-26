@@ -116,11 +116,14 @@ class PySparkGenerator:
                     
             elif isinstance(pipe, ProjectOp):
                 cols = []
-                for col in pipe.columns:
-                    if pipe.aliases and col in pipe.aliases:
-                        cols.append(f"\"{col} AS {pipe.aliases[col]}\"")
+                for item in pipe.columns:
+                    if isinstance(item, tuple):
+                        alias, expr = item
+                        sql_expr = self.sql_gen._expr(expr)
+                        cols.append(f"\"{sql_expr} AS {alias}\"")
                     else:
-                        cols.append(f"\"{col}\"")
+                        sql_expr = self.sql_gen._expr(item)
+                        cols.append(f"\"{sql_expr}\"")
                 cols_str = ", ".join(cols)
                 lines.append(f"{df_name} = {df_name}.selectExpr({cols_str})")
                 

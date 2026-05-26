@@ -19,6 +19,8 @@ from ..nodes import (
     SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
     SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticComparison,
     SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
+    SemanticIndexedAccess, SemanticPropertyAccess,
+    SemanticUnaryOp, SemanticBinaryOp,
 )
 from ...ast_nodes import ColumnRef, BinExpr, FuncCall, WhereOp
 from ...generators.tsql import TSQLGenerator, _TSQL_DATEADD_UNIT
@@ -81,102 +83,138 @@ class IRTSQLGenerator(IRSparkSQLGenerator, TSQLGenerator):
             return str(val)
 
         elif isinstance(expr, SemanticFunctionCall):
-            name = expr.name.lower()
-            args = expr.arguments
+            return self._func_call(expr)
 
-            if name == "bin":
-                col_sql = self._expr(args[0])
-                val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
-                if m:
-                    amount = int(m.group(1))
-                    unit = m.group(2)
-                else:
-                    amount = 1
-                    unit = "d"
-                return self._render_bin(col_sql, amount, unit)
+        elif isinstance(expr, SemanticIndexedAccess):
+            col_sql = self._expr(expr.expression)
+            idx_sql = self._expr(expr.index).strip("'\"")
+            return f"JSON_VALUE({col_sql}, '$[{idx_sql}]')"
 
-            elif name == "ago":
-                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
-                if m:
-                    amount = int(m.group(1))
-                    unit = m.group(2)
-                else:
-                    amount = 1
-                    unit = "d"
-                tsql_unit = _TSQL_DATEADD_UNIT.get(unit, unit)
-                return f"DATEADD({tsql_unit}, -{amount}, GETDATE())"
+        elif isinstance(expr, SemanticPropertyAccess):
+            col_sql = self._expr(expr.expression)
+            return f"JSON_VALUE({col_sql}, '$.{expr.property}')"
 
-            elif name == "datetime":
-                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                val_clean = str(val_str).strip("'\"")
-                return f"CAST('{val_clean}' AS DATETIME2)"
+        elif isinstance(expr, SemanticUnaryOp):
+            return f"({expr.operator}{self._expr(expr.expression)})"
 
-            elif name == "datetime_add":
-                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                unit_clean = str(unit_str).strip("'\"").lower()
-                tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
-                amount_sql = self._expr(args[1])
-                dt_sql = self._expr(args[2])
-                return f"DATEADD({tsql_unit}, {amount_sql}, {dt_sql})"
-
-            elif name == "datetime_diff":
-                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                unit_clean = str(unit_str).strip("'\"").lower()
-                tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
-                dt1_sql = self._expr(args[1])
-                dt2_sql = self._expr(args[2])
-                return f"DATEDIFF({tsql_unit}, {dt2_sql}, {dt1_sql})"
-
-            elif name == "array_index_of":
-                arr_sql = self._expr(args[0])
-                val_sql = self._expr(args[1])
-                return f"COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON({arr_sql}) WHERE [value] = {val_sql}), -1)"
-
-            elif name == "." and len(args) == 2:
-                left_sql = self._expr(args[0])
-                right = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
-                field_name = str(right).strip("'\"")
-                return f"JSON_VALUE({left_sql}, '$.{field_name}')"
-
-            elif name == "parse_json_path":
-                col_sql = self._expr(args[0])
-                field = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                field_clean = str(field).strip("'\"")
-                return f"JSON_VALUE({col_sql}, '$.{field_clean}')"
-
-            elif name == "tostring":
-                return f"CAST({self._expr(args[0])} AS NVARCHAR(MAX))"
-
-            elif name == "toint":
-                return f"CAST({self._expr(args[0])} AS INT)"
-
-            elif name == "tolong":
-                return f"CAST({self._expr(args[0])} AS BIGINT)"
-
-            elif name == "todouble":
-                return f"CAST({self._expr(args[0])} AS FLOAT)"
-
-            elif name == "has_any":
-                col_sql = self._expr(args[0])
-                parts = []
-                for v in args[1:]:
-                    val_str = v.value if isinstance(v, SemanticLiteral) else self._expr(v).strip("'\"")
-                    parts.append(f"{col_sql} LIKE '%{val_str}%'")
-                return f"({' OR '.join(parts)})"
-
-            elif name == "ipv4_is_private":
-                col_sql = self._expr(args[0])
-                return self._render_ipv4_is_private([col_sql])
-
-            elif name == "ipv4_is_in_range":
-                col_sql = self._expr(args[0])
-                range_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                range_clean = str(range_str).strip("'\"")
-                return self._render_ipv4_is_in_range([col_sql, f"'{range_clean}'"])
+        elif isinstance(expr, SemanticBinaryOp):
+            return f"({self._expr(expr.left)} {expr.operator} {self._expr(expr.right)})"
 
         return IRSparkSQLGenerator._expr(self, expr)
+
+    def _func_call(self, expr: SemanticFunctionCall) -> str:
+        name = expr.name.lower()
+        args = expr.arguments
+
+        if name == "bin":
+            col_sql = self._expr(args[0])
+            val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+            if m:
+                amount = int(m.group(1))
+                unit = m.group(2)
+            else:
+                amount = 1
+                unit = "d"
+            return self._render_bin(col_sql, amount, unit)
+
+        elif name == "ago":
+            val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+            if m:
+                amount = int(m.group(1))
+                unit = m.group(2)
+            else:
+                amount = 1
+                unit = "d"
+            tsql_unit = _TSQL_DATEADD_UNIT.get(unit, unit)
+            return f"DATEADD({tsql_unit}, -{amount}, GETDATE())"
+
+        elif name == "datetime":
+            val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            val_clean = str(val_str).strip("'\"")
+            return f"CAST('{val_clean}' AS DATETIME2)"
+
+        elif name == "datetime_add":
+            unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            unit_clean = str(unit_str).strip("'\"").lower()
+            tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
+            amount_sql = self._expr(args[1])
+            dt_sql = self._expr(args[2])
+            return f"DATEADD({tsql_unit}, {amount_sql}, {dt_sql})"
+
+        elif name == "datetime_diff":
+            unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            unit_clean = str(unit_str).strip("'\"").lower()
+            tsql_unit = _TSQL_DATEADD_UNIT.get(unit_clean, unit_clean)
+            dt1_sql = self._expr(args[1])
+            dt2_sql = self._expr(args[2])
+            return f"DATEDIFF({tsql_unit}, {dt2_sql}, {dt1_sql})"
+
+        elif name == "array_index_of":
+            arr_sql = self._expr(args[0])
+            val_sql = self._expr(args[1])
+            return f"COALESCE((SELECT MIN(CAST([key] AS INT)) FROM OPENJSON({arr_sql}) WHERE [value] = {val_sql}), -1)"
+
+        elif name == "." and len(args) == 2:
+            left_sql = self._expr(args[0])
+            right = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
+            field_name = str(right).strip("'\"")
+            return f"JSON_VALUE({left_sql}, '$.{field_name}')"
+
+        elif name == "parse_json_path":
+            col_sql = self._expr(args[0])
+            field = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            field_clean = str(field).strip("'\"")
+            return f"JSON_VALUE({col_sql}, '$.{field_clean}')"
+
+        elif name == "tostring":
+            return f"CAST({self._expr(args[0])} AS NVARCHAR(MAX))"
+
+        elif name == "toint":
+            return f"CAST({self._expr(args[0])} AS INT)"
+
+        elif name == "tolong":
+            return f"CAST({self._expr(args[0])} AS BIGINT)"
+
+        elif name == "todouble":
+            return f"CAST({self._expr(args[0])} AS FLOAT)"
+
+        elif name == "has_any":
+            col_sql = self._expr(args[0])
+            parts = []
+            for v in args[1:]:
+                val_str = v.value if isinstance(v, SemanticLiteral) else self._expr(v).strip("'\"")
+                parts.append(f"{col_sql} LIKE '%{val_str}%'")
+            return f"({' OR '.join(parts)})"
+
+        elif name == "ipv4_is_private":
+            col_sql = self._expr(args[0])
+            return self._render_ipv4_is_private([col_sql])
+
+        elif name == "ipv4_is_in_range":
+            col_sql = self._expr(args[0])
+            range_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            range_clean = str(range_str).strip("'\"")
+            return self._render_ipv4_in_range([col_sql, f"'{range_clean}'"])
+
+        elif name == "regex":
+            col_sql = self._expr(args[0])
+            val_sql = self._expr(args[1])
+            return f"{col_sql} LIKE {val_sql}"
+
+        elif name in ("has", "contains", "startswith", "endswith"):
+            col_sql = self._expr(args[0])
+            val_str = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
+            val_clean = str(val_str).strip("'\"").replace("@", "")
+            if name == "startswith": return f"{col_sql} LIKE '{val_clean}%'"
+            if name == "endswith": return f"{col_sql} LIKE '%{val_clean}'"
+            if name == "contains": return f"{col_sql} LIKE '%{val_clean}%'"
+            return f"{col_sql} LIKE '%{val_clean}%'"
+
+        # Fallback to base IR Spark generator for common functions
+        return IRSparkSQLGenerator._func_call(self, expr)
+
 
     def _bool_expr(self, expr, is_top_level: bool = False) -> str:
         if isinstance(expr, SemanticLiteral):

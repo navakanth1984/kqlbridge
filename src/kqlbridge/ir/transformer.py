@@ -1,12 +1,13 @@
 from typing import Any, Dict, List, Optional, Set, Union
 from ..ast_nodes import (
     KQLQuery, LetBinding, ColumnRef, ExtendOp, ProjectOp, WhereOp,
-    SummarizeOp, JoinOp, UnionOp, OrderOp, PlainGroup, BinGroup,
+    SummarizeOp, JoinOp, LookupOp, UnionOp, OrderOp, PlainGroup, BinGroup,
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
     InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
     AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf,
-    AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList,
-    TakeOp, DistinctOp, CountOp, SerializeOp, DatetimeLit, AgoExpr
+    AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggPercentile, AggMakeList, AggMakeSet, AggAny, AggArgMax, AggArgMin,
+    TakeOp, DistinctOp, CountOp, SerializeOp, DatetimeLit, AgoExpr,
+    IndexedAccess, PropertyAccess, UnaryOp, ProjectAwayOp
 )
 from ..scoping import ScopeManager, SymbolKind, ScopeType, SymbolTable, SymbolInfo
 from .nodes import (
@@ -28,7 +29,12 @@ from .nodes import (
     SemanticUnion,
     SemanticJoinCondition,
     UnionColumnMapping,
+    SemanticIndexedAccess,
+    SemanticPropertyAccess,
+    SemanticUnaryOp,
+    SemanticBinaryOp,
 )
+
 
 def collect_expression_symbol_ids(expr: SemanticExpression) -> List[int]:
     """Helper to collect and deduplicate all symbol IDs in a Semantic Expression."""
@@ -44,6 +50,16 @@ def collect_expression_symbol_ids(expr: SemanticExpression) -> List[int]:
     elif isinstance(expr, SemanticFunctionCall):
         for arg in expr.arguments:
             ids.extend(collect_expression_symbol_ids(arg))
+    elif isinstance(expr, SemanticIndexedAccess):
+        ids.extend(collect_expression_symbol_ids(expr.expression))
+        ids.extend(collect_expression_symbol_ids(expr.index))
+    elif isinstance(expr, SemanticPropertyAccess):
+        ids.extend(collect_expression_symbol_ids(expr.expression))
+    elif isinstance(expr, SemanticUnaryOp):
+        ids.extend(collect_expression_symbol_ids(expr.expression))
+    elif isinstance(expr, SemanticBinaryOp):
+        ids.extend(collect_expression_symbol_ids(expr.left))
+        ids.extend(collect_expression_symbol_ids(expr.right))
     elif isinstance(expr, SemanticSubquery):
         # We can scan the subquery steps if necessary, but keep it isolated in Phase 2A
         pass
@@ -180,34 +196,36 @@ class ASTToIRTransformer:
             self.scope_manager.push_scope(ScopeType.PIPELINE)
             items: List[ProjectionItem] = []
             
-            # Project aliased columns
-            if op.aliases:
-                for src, alias in op.aliases.items():
-                    sym = self.scope_manager.declare(alias, SymbolKind.COLUMN, op, unique_name=alias)
-                    src_sym = self.scope_manager.lookup(src)
-                    src_id = src_sym.symbol_id if src_sym else 0
-                    
-                    items.append(ProjectionItem(
-                         alias=alias,
-                         expression=SemanticColumnRef(name=src, symbol_id=src_id),
-                         symbol_id=sym.symbol_id,
-                         derived_from=[src_id] if src_id else [],
-                         origin_node=op
-                    ))
-                    
-            # Project plain columns
             for col in op.columns:
-                if op.aliases and col in op.aliases:
-                    continue
-                sym = self.scope_manager.declare(col, SymbolKind.COLUMN, op, unique_name=col)
-                items.append(ProjectionItem(
-                    alias=col,
-                    expression=SemanticColumnRef(name=col, symbol_id=sym.symbol_id),
-                    symbol_id=sym.symbol_id,
-                    derived_from=[sym.symbol_id],
-                    origin_node=op
-                ))
-                
+                if isinstance(col, tuple):
+                    alias, expr = col
+                    expr_node = self.visit_expr(expr)
+                    sym = self.scope_manager.declare(alias, SymbolKind.COLUMN, op, unique_name=alias)
+                    derived = collect_expression_symbol_ids(expr_node)
+                    items.append(ProjectionItem(
+                        alias=alias,
+                        expression=expr_node,
+                        symbol_id=sym.symbol_id,
+                        derived_from=derived,
+                        origin_node=op
+                    ))
+                else:
+                    expr_node = self.visit_expr(col)
+                    alias = None
+                    if isinstance(expr_node, SemanticColumnRef):
+                        alias = expr_node.name
+                    
+                    # If it's a simple column ref, we can keep its name as alias
+                    sym_alias = alias or f"proj_{len(items)}"
+                    sym = self.scope_manager.declare(sym_alias, SymbolKind.COLUMN, op, unique_name=sym_alias)
+                    derived = collect_expression_symbol_ids(expr_node)
+                    items.append(ProjectionItem(
+                        alias=alias,
+                        expression=expr_node,
+                        symbol_id=sym.symbol_id,
+                        derived_from=derived,
+                        origin_node=op
+                    ))
             return SemanticProjection(items=items, is_extend_only=False)
             
         elif isinstance(op, SummarizeOp):
@@ -303,6 +321,22 @@ class ASTToIRTransformer:
                 elif isinstance(agg, AggMakeList):
                     func_name = "make_list"
                     args = [self.visit_expr(agg.col)]
+                elif isinstance(agg, AggMakeSet):
+                    func_name = "make_set"
+                    args = [self.visit_expr(agg.col)]
+                elif isinstance(agg, AggAny):
+                    func_name = "any"
+                    args = [self.visit_expr(agg.col)]
+                elif isinstance(agg, AggArgMax):
+                    func_name = "arg_max"
+                    args = [self.visit_expr(agg.col)]
+                    if isinstance(agg.targets, list):
+                        args.extend([self.visit_expr(t) for t in agg.targets])
+                elif isinstance(agg, AggArgMin):
+                    func_name = "arg_min"
+                    args = [self.visit_expr(agg.col)]
+                    if isinstance(agg.targets, list):
+                        args.extend([self.visit_expr(t) for t in agg.targets])
                     
                 alias = agg.alias if getattr(agg, "alias", None) else f"{func_name}_"
                 sym = self.scope_manager.declare(alias, SymbolKind.COLUMN, op, unique_name=alias)
@@ -329,14 +363,19 @@ class ASTToIRTransformer:
             from .nodes import SemanticJoinCondition
             conditions = []
             for key in op.keys:
-                left_sym = self.scope_manager.lookup(key)
+                if isinstance(key, tuple):
+                    l_col, r_col = key
+                else:
+                    l_col = r_col = key
+                
+                left_sym = self.scope_manager.lookup(l_col)
                 left_sid = left_sym.symbol_id if left_sym else 0
                 
                 right_sym = None
                 if right_query.symbol_table:
                     curr_tbl = right_query.symbol_table
                     while curr_tbl:
-                        right_sym = curr_tbl.lookup_local(key)
+                        right_sym = curr_tbl.lookup_local(r_col)
                         if right_sym:
                             break
                         curr_tbl = curr_tbl.parent
@@ -345,8 +384,8 @@ class ASTToIRTransformer:
                 conditions.append(SemanticJoinCondition(
                     left_symbol_id=left_sid,
                     right_symbol_id=right_sid,
-                    left_col=key,
-                    right_col=key,
+                    left_col=l_col,
+                    right_col=r_col,
                     operator="=="
                 ))
                 
@@ -359,11 +398,51 @@ class ASTToIRTransformer:
                 
             return SemanticJoin(
                 right_query=right_query,
+                right_alias=right_alias,
                 kind=op.kind,
                 conditions=conditions,
                 on_keys=op.keys
             )
             
+        elif isinstance(op, LookupOp):
+            right_query = self.visit_query(op.right)
+            from .nodes import SemanticJoinCondition
+            conditions = []
+            for key in op.keys:
+                if isinstance(key, tuple):
+                    l_col, r_col = key
+                else:
+                    l_col = r_col = key
+                
+                left_sym = self.scope_manager.lookup(l_col)
+                left_sid = left_sym.symbol_id if left_sym else 0
+                
+                right_sym = None
+                if right_query.symbol_table:
+                    curr_tbl = right_query.symbol_table
+                    while curr_tbl:
+                        right_sym = curr_tbl.lookup_local(r_col)
+                        if right_sym:
+                            break
+                        curr_tbl = curr_tbl.parent
+                right_sid = right_sym.symbol_id if right_sym else 0
+                
+                conditions.append(SemanticJoinCondition(
+                    left_symbol_id=left_sid,
+                    right_symbol_id=right_sid,
+                    left_col=l_col,
+                    right_col=r_col,
+                    operator="=="
+                ))
+                
+            right_alias = op.right.table
+            return SemanticJoin(
+                right_query=right_query,
+                right_alias=right_alias,
+                conditions=conditions,
+                kind="leftouter"
+            )
+
         elif isinstance(op, UnionOp):
             transformed_subqueries = {}
             if op.subqueries:
@@ -472,7 +551,19 @@ class ASTToIRTransformer:
             sym_id = sym.symbol_id if sym else 0
             name = sym.unique_name if sym else expr.name
             return SemanticColumnRef(name=name, symbol_id=sym_id)
-            
+
+        elif isinstance(expr, IndexedAccess):
+            return SemanticIndexedAccess(
+                expression=self.visit_expr(expr.expr),
+                index=self.visit_expr(expr.index)
+            )
+
+        elif isinstance(expr, PropertyAccess):
+            return SemanticPropertyAccess(
+                expression=self.visit_expr(expr.expr),
+                property=expr.prop
+            )
+
         elif hasattr(expr, "value") and not isinstance(expr, (PlainGroup, BinGroup, SubqueryInExpr, StringOp)):
             return SemanticLiteral(value=expr.value)
             
@@ -503,13 +594,20 @@ class ASTToIRTransformer:
                 name=expr.name,
                 arguments=[self.visit_expr(arg) for arg in expr.args]
             )
-            
+
         elif isinstance(expr, BinaryOp):
-            return SemanticFunctionCall(
-                name=expr.op,
-                arguments=[self.visit_expr(expr.left), self.visit_expr(expr.right)]
+            return SemanticBinaryOp(
+                left=self.visit_expr(expr.left),
+                operator=expr.op,
+                right=self.visit_expr(expr.right)
             )
-            
+
+        elif isinstance(expr, UnaryOp):
+            return SemanticUnaryOp(
+                operator=expr.op,
+                expression=self.visit_expr(expr.expr)
+            )
+
         elif isinstance(expr, BinExpr):
             return SemanticFunctionCall(
                 name="bin",
@@ -554,9 +652,10 @@ class ASTToIRTransformer:
             return SemanticFunctionCall(name=name, arguments=args)
             
         elif isinstance(expr, StringOp):
+            val_node = self.visit_expr(expr.value) if not isinstance(expr.value, str) else SemanticLiteral(value=expr.value)
             return SemanticFunctionCall(
                 name=expr.op,
-                arguments=[self.visit_expr(expr.col), SemanticLiteral(value=expr.value)]
+                arguments=[self.visit_expr(expr.col), val_node]
             )
             
         elif isinstance(expr, NullCheck):

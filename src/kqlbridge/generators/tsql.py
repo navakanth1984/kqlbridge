@@ -18,7 +18,8 @@ import re
 from ..schema_hint import SchemaHint
 from ..ast_nodes import (
     AgoExpr, BinExpr, DatetimeLit, BoolLit, HasAnyExpr, StringLit,
-    AggPercentile, AggMakeList, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf,
+    IndexedAccess, PropertyAccess,
+    AggPercentile, AggMakeList, AggMakeSet, AggAny, AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf,
 )
 from .spark_sql import SparkSQLGenerator
 
@@ -123,6 +124,17 @@ class TSQLGenerator(SparkSQLGenerator):
     # ─── Override 3+4: T-SQL-specific expr rendering ─────────────────────
 
     def _expr(self, expr) -> str:
+        if isinstance(expr, IndexedAccess):
+            col = self._expr(expr.expr)
+            idx = self._expr(expr.index)
+            # Remove quotes from index if it's a numeric index in a string lit
+            idx = idx.strip("'\"")
+            return f"JSON_VALUE({col}, '$[{idx}]')"
+        
+        if isinstance(expr, PropertyAccess):
+            col = self._expr(expr.expr)
+            return f"JSON_VALUE({col}, '$.{expr.prop}')"
+
         if isinstance(expr, AgoExpr):
             unit = _TSQL_DATEADD_UNIT.get(expr.unit, expr.unit)
             return f"DATEADD({unit}, -{expr.amount}, GETDATE())"
@@ -275,6 +287,13 @@ class TSQLGenerator(SparkSQLGenerator):
         if isinstance(agg, AggMakeList):
             col_expr = self._expr(agg.col)
             return f"STRING_AGG({col_expr}, ','){alias_suffix}"
+        if isinstance(agg, AggMakeSet):
+            col_expr = self._expr(agg.col)
+            return f"STRING_AGG({col_expr}, ','){alias_suffix}"
+        if isinstance(agg, AggAny):
+            col_expr = self._expr(agg.col)
+            # T-SQL has ANY_VALUE in newer versions, or use MAX/MIN as surrogate
+            return f"MAX({col_expr}){alias_suffix}"
 
         if isinstance(agg, AggSumIf):
             cond = self._bool_expr(agg.condition)

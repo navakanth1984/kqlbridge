@@ -51,7 +51,7 @@ class PredicatePushdownRule(OptimizationRule):
                     elif isinstance(prev, ProjectOp):
                         # Safe if the where clause does not reference any alias defined in project
                         where_cols = get_referenced_columns(current.condition)
-                        project_aliases = set(prev.aliases.values()) if prev.aliases else set()
+                        project_aliases = {col[0] for col in prev.columns if isinstance(col, tuple)}
                         # If a column was renamed/created as an alias, we can't push unless we rename it,
                         # so let's check intersection.
                         if not (where_cols & project_aliases):

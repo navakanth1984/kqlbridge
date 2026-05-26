@@ -8,7 +8,7 @@ from kqlbridge.ast_nodes import (
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
     InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
     IntLit, FloatLit, BoolLit, StringLit, DatetimeLit, AgoExpr,
-    OrderItem
+    OrderItem, IndexedAccess, PropertyAccess
 )
 from kqlbridge.scoping import ScopeManager, ScopeType, SymbolKind, FunctionPurity
 
@@ -73,6 +73,14 @@ class ConstantFolder:
             return op
             
         elif isinstance(op, ProjectOp):
+            new_columns = []
+            for col in op.columns:
+                if isinstance(col, tuple):
+                    alias, expr = col
+                    new_columns.append((alias, self.fold_expr(expr)))
+                else:
+                    new_columns.append(self.fold_expr(col))
+            op.columns = new_columns
             return op
         
         elif isinstance(op, SummarizeOp):
@@ -150,12 +158,21 @@ class ConstantFolder:
                             val = lval % rval
                 except Exception:
                     pass
-                
+
                 if val is not None:
                     if isinstance(val, int):
                         return IntLit(value=val)
                     else:
                         return FloatLit(value=val)
+            return expr
+
+        elif isinstance(expr, IndexedAccess):
+            expr.expr = self.fold_expr(expr.expr)
+            expr.index = self.fold_expr(expr.index)
+            return expr
+
+        elif isinstance(expr, PropertyAccess):
+            expr.expr = self.fold_expr(expr.expr)
             return expr
 
         elif isinstance(expr, Comparison):

@@ -42,6 +42,8 @@ from ..nodes import (
     SemanticAggregate, AggregateItem, SemanticJoin, SemanticUnion,
     SemanticExpression, SemanticColumnRef, SemanticLiteral, SemanticComparison,
     SemanticLogicalOp, SemanticFunctionCall, SemanticSubquery,
+    SemanticIndexedAccess, SemanticPropertyAccess,
+    SemanticUnaryOp, SemanticBinaryOp,
 )
 from ...ast_nodes import ColumnRef, BinExpr, FuncCall, WhereOp
 from ...generators.spark_sql import SparkSQLGenerator, _INTERVAL_UNIT, _COMP_OP_MAP
@@ -81,157 +83,192 @@ class IRSparkSQLGenerator(SparkSQLGenerator):
             return self._bool_expr(expr)
 
         elif isinstance(expr, SemanticFunctionCall):
-            name = expr.name.lower()
-            args = expr.arguments
-
-            if name == "bin":
-                col_sql = self._expr(args[0])
-                val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
-                if m:
-                    amount = int(m.group(1))
-                    unit = m.group(2)
-                else:
-                    amount = 1
-                    unit = "d"
-                return self._render_bin(col_sql, amount, unit)
-
-            elif name == "ago":
-                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
-                if m:
-                    amount = int(m.group(1))
-                    unit = m.group(2)
-                else:
-                    amount = 1
-                    unit = "d"
-                unit_mapped = _INTERVAL_UNIT.get(unit, unit)
-                return f"CURRENT_TIMESTAMP - INTERVAL '{amount} {unit_mapped}'"
-
-            elif name == "iff" and len(args) == 3:
-                branches = []
-                curr = expr
-                while isinstance(curr, SemanticFunctionCall) and curr.name.lower() == "iff" and len(curr.arguments) == 3:
-                    cond = self._bool_expr(curr.arguments[0])
-                    true_v = self._expr(curr.arguments[1])
-                    branches.append(f"WHEN {cond} THEN {true_v}")
-                    curr = curr.arguments[2]
-                default_val = self._expr(curr)
-                return f"CASE {' '.join(branches)} ELSE {default_val} END"
-
-            elif name in ("in", "not_in", "in_case_insensitive", "not_in_case_insensitive"):
-                col_sql = self._expr(args[0])
-                not_kw = "NOT " if "not_in" in name else ""
-                if len(args) == 2 and isinstance(args[1], SemanticSubquery):
-                    inner_sql = self.emit(args[1].query)
-                    if "case_insensitive" in name:
-                        return f"LOWER({col_sql}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
-                    return f"{col_sql} {not_kw}IN ({inner_sql})"
-                if "case_insensitive" in name:
-                    col_sql = f"LOWER({col_sql})"
-                    values = ", ".join(f"LOWER({self._expr(v)})" for v in args[1:])
-                else:
-                    values = ", ".join(self._expr(v) for v in args[1:])
-                return f"{col_sql} {not_kw}IN ({values})"
-
-            elif name in ("has", "contains", "startswith", "endswith", "matches regex"):
-                col_sql = self._expr(args[0])
-                val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                val_str_clean = val_str.strip("'\"")
-                op_map = {
-                    "has": f"{col_sql} RLIKE '(?i)\\\\b{val_str_clean}\\\\b'",
-                    "contains": f"{col_sql} LIKE '%{val_str_clean}%'",
-                    "startswith": f"{col_sql} LIKE '{val_str_clean}%'",
-                    "endswith": f"{col_sql} LIKE '%{val_str_clean}'",
-                    "matches regex": f"regexp_like({col_sql}, '{val_str_clean}')",
-                }
-                return op_map.get(name, f"{col_sql} LIKE '%{val_str_clean}%'")
-
-            elif name in ("isnull", "isnotnull"):
-                col_sql = self._expr(args[0])
-                return f"{col_sql} IS NULL" if name == "isnull" else f"{col_sql} IS NOT NULL"
-
-            elif name == "has_any":
-                col_sql = self._expr(args[0])
-                parts = []
-                for v in args[1:]:
-                    val_str = v.value if isinstance(v, SemanticLiteral) else self._expr(v).strip("'\"")
-                    parts.append(f"{col_sql} RLIKE '(?i)\\\\b{val_str}\\\\b'")
-                return f"({' OR '.join(parts)})"
-
-            elif name in ("+", "-", "*", "/", "%", "==", "!=", "<", ">", "<=", ">="):
-                return f"({self._expr(args[0])} {name} {self._expr(args[1])})"
-
-            # ─── Window functions: prev/next → LAG/LEAD ───────────────────
-            elif name in ("prev", "next"):
-                return self._render_window_func(name, args)
-
-            elif name in ("row_number", "rank", "dense_rank", "percent_rank", "cume_dist"):
-                return self._render_window_func(name, args, is_ranking=True)
-
-            elif name == "ntile":
-                return self._render_window_func(name, args, is_ranking=False)
-
-            # ─── DateTime functions ───────────────────────────────────────
-            elif name == "datetime":
-                val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                val_clean = str(val_str).strip("'\"")
-                return f"TIMESTAMP '{val_clean}'"
-
-            elif name == "datetime_add":
-                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                unit_clean = str(unit_str).strip("'\"")
-                amount_sql = self._expr(args[1])
-                dt_sql = self._expr(args[2])
-                return f"({dt_sql} + ({amount_sql} * INTERVAL '1' {unit_clean.upper()}))"
-
-            elif name == "datetime_diff":
-                unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
-                dt1_sql = self._expr(args[1])
-                dt2_sql = self._expr(args[2])
-                return f"datediff({dt1_sql}, {dt2_sql})"
-
-            # ─── SOC threat-hunting functions ──────────────────────────────
-            elif name == "ipv4_is_private":
-                col_sql = self._expr(args[0])
-                return self._render_ipv4_is_private(col_sql)
-
-            elif name == "ipv4_is_in_range":
-                col_sql = self._expr(args[0])
-                range_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                range_clean = str(range_str).strip("'\"")
-                return self._render_ipv4_range(col_sql, range_clean)
-
-            elif name == "parse_json":
-                col_sql = self._expr(args[0])
-                return col_sql  # parse_json is a no-op in Spark — JSON columns are already parsed
-
-            elif name == "." and len(args) == 2:
-                # parse_json(col).field — dot accessor
-                left_sql = self._expr(args[0])
-                right = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
-                field_name = str(right).strip("'\"")
-                return f"get_json_object({left_sql}, '$.{field_name}')"
-
-            elif name == "parse_json_path":
-                col_sql = self._expr(args[0])
-                field = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
-                field_clean = str(field).strip("'\"")
-                return f"get_json_object({col_sql}, '$.{field_clean}')"
-
-            elif name == "array_index_of":
-                arr_sql = self._expr(args[0])
-                val_sql = self._expr(args[1])
-                return f"array_position({arr_sql}, {val_sql})"
-
-            # Mock standard AST FuncCall for code re-use
-            mock_expr = FuncCall(name=expr.name, args=expr.arguments)
-            return super()._func_call(mock_expr)
+            return self._func_call(expr)
 
         elif isinstance(expr, SemanticSubquery):
             return f"({self.emit(expr.query)})"
 
+        elif isinstance(expr, SemanticIndexedAccess):
+            return f"{self._expr(expr.expression)}[{self._expr(expr.index)}]"
+
+        elif isinstance(expr, SemanticPropertyAccess):
+            # Spark SQL uses dot notation or get_json_object for complex properties
+            # If it's a dynamic property access, get_json_object is safer.
+            return f"get_json_object({self._expr(expr.expression)}, '$.{expr.property}')"
+
+        elif isinstance(expr, SemanticUnaryOp):
+            return f"({expr.operator}{self._expr(expr.expression)})"
+
+        elif isinstance(expr, SemanticBinaryOp):
+            return f"({self._expr(expr.left)} {expr.operator} {self._expr(expr.right)})"
+
         return super()._expr(expr)
+
+    def _func_call(self, expr: SemanticFunctionCall) -> str:
+        name = expr.name.lower()
+        args = expr.arguments
+
+        # Check if this node has a custom renderer plugin
+        custom_renderer = get_renderer(type(expr), "spark")
+        if custom_renderer:
+            return custom_renderer(self, expr)
+
+        if name == "bin":
+            col_sql = self._expr(args[0])
+            val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+            if m:
+                amount = int(m.group(1))
+                unit = m.group(2)
+            else:
+                amount = 1
+                unit = "d"
+            return self._render_bin(col_sql, amount, unit)
+
+        elif name == "ago":
+            val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            m = re.match(r"(\d+)([a-zA-Z]+)", val_str.strip())
+            if m:
+                amount = int(m.group(1))
+                unit = m.group(2)
+            else:
+                amount = 1
+                unit = "d"
+            unit_mapped = _INTERVAL_UNIT.get(unit, unit)
+            return f"CURRENT_TIMESTAMP - INTERVAL '{amount} {unit_mapped}'"
+
+        elif name == "iff" and len(args) == 3:
+            branches = []
+            curr = expr
+            while isinstance(curr, SemanticFunctionCall) and curr.name.lower() == "iff" and len(curr.arguments) == 3:
+                cond = self._bool_expr(curr.arguments[0])
+                true_v = self._expr(curr.arguments[1])
+                branches.append(f"WHEN {cond} THEN {true_v}")
+                curr = curr.arguments[2]
+            default_val = self._expr(curr)
+            return f"CASE {' '.join(branches)} ELSE {default_val} END"
+
+        elif name in ("in", "not_in", "in_case_insensitive", "not_in_case_insensitive"):
+            col_sql = self._expr(args[0])
+            not_kw = "NOT " if "not_in" in name else ""
+            if len(args) == 2 and isinstance(args[1], SemanticSubquery):
+                inner_sql = self.emit(args[1].query)
+                if "case_insensitive" in name:
+                    return f"LOWER({col_sql}) {not_kw}IN (SELECT LOWER(x) FROM ({inner_sql}) AS _ci_sub(x))"
+                return f"{col_sql} {not_kw}IN ({inner_sql})"
+            if "case_insensitive" in name:
+                col_sql = f"LOWER({col_sql})"
+                values = ", ".join(f"LOWER({self._expr(v)})" for v in args[1:])
+            else:
+                values = ", ".join(self._expr(v) for v in args[1:])
+            return f"{col_sql} {not_kw}IN ({values})"
+
+        elif name in ("has", "contains", "startswith", "endswith", "matches regex", "regex"):
+            col_sql = self._expr(args[0])
+            val_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            val_str_clean = val_str.strip("'\"")
+            
+            # Handle verbatim prefix
+            val_str_clean = val_str_clean.replace("@", "")
+
+            op_map = {
+                "has": f"{col_sql} RLIKE '(?i)\\\\b{val_str_clean}\\\\b'",
+                "contains": f"{col_sql} LIKE '%{val_str_clean}%'",
+                "startswith": f"{col_sql} LIKE '{val_str_clean}%'",
+                "endswith": f"{col_sql} LIKE '%{val_str_clean}'",
+                "matches regex": f"{col_sql} RLIKE '{val_str_clean}'",
+                "regex": f"{col_sql} RLIKE '{val_str_clean}'",
+            }
+            return op_map.get(name, f"{col_sql} LIKE '%{val_str_clean}%'")
+
+        elif name in ("isnull", "isnotnull"):
+            col_sql = self._expr(args[0])
+            return f"{col_sql} IS NULL" if name == "isnull" else f"{col_sql} IS NOT NULL"
+
+        elif name == "has_any":
+            col_sql = self._expr(args[0])
+            parts = []
+            for v in args[1:]:
+                val_str = v.value if isinstance(v, SemanticLiteral) else self._expr(v).strip("'\"")
+                parts.append(f"{col_sql} RLIKE '(?i)\\\\b{val_str}\\\\b'")
+            return f"({' OR '.join(parts)})"
+
+        elif name in ("+", "-", "*", "/", "%", "==", "!=", "<", ">", "<=", ">="):
+            return f"({self._expr(args[0])} {name} {self._expr(args[1])})"
+
+        # ─── Window functions: prev/next → LAG/LEAD ───────────────────
+        elif name in ("prev", "next"):
+            return self._render_window_func(name, args)
+
+        elif name in ("row_number", "rank", "dense_rank", "percent_rank", "cume_dist"):
+            return self._render_window_func(name, args, is_ranking=True)
+
+        elif name == "ntile":
+            return self._render_window_func(name, args, is_ranking=False)
+
+        # ─── DateTime functions ───────────────────────────────────────
+        elif name == "datetime":
+            val_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            val_clean = str(val_str).strip("'\"")
+            return f"TIMESTAMP '{val_clean}'"
+
+        elif name == "datetime_add":
+            unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            unit_clean = str(unit_str).strip("'\"")
+            amount_sql = self._expr(args[1])
+            dt_sql = self._expr(args[2])
+            return f"({dt_sql} + ({amount_sql} * INTERVAL '1' {unit_clean.upper()}))"
+
+        elif name == "datetime_diff":
+            unit_str = args[0].value if isinstance(args[0], SemanticLiteral) else str(args[0])
+            dt1_sql = self._expr(args[1])
+            dt2_sql = self._expr(args[2])
+            return f"datediff({dt1_sql}, {dt2_sql})"
+
+        # ─── SOC threat-hunting functions ──────────────────────────────
+        elif name == "ipv4_is_private":
+            col_sql = self._expr(args[0])
+            return self._render_ipv4_is_private(col_sql)
+
+        elif name == "ipv4_is_in_range":
+            col_sql = self._expr(args[0])
+            range_str = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            range_clean = str(range_str).strip("'\"")
+            return self._render_ipv4_range(col_sql, range_clean)
+
+        elif name == "parse_json":
+            col_sql = self._expr(args[0])
+            return col_sql  # parse_json is a no-op in Spark — JSON columns are already parsed
+
+        elif name == "." and len(args) == 2:
+            # parse_json(col).field — dot accessor
+            left_sql = self._expr(args[0])
+            right = args[1].value if isinstance(args[1], SemanticLiteral) else self._expr(args[1])
+            field_name = str(right).strip("'\"")
+            return f"get_json_object({left_sql}, '$.{field_name}')"
+
+        elif name == "parse_json_path":
+            col_sql = self._expr(args[0])
+            field = args[1].value if isinstance(args[1], SemanticLiteral) else str(args[1])
+            field_clean = str(field).strip("'\"")
+            return f"get_json_object({col_sql}, '$.{field_clean}')"
+
+        elif name == "array_index_of":
+            arr_sql = self._expr(args[0])
+            val_sql = self._expr(args[1])
+            return f"array_position({arr_sql}, {val_sql})"
+
+        # Mock standard AST FuncCall for code re-use.
+        # We pre-render arguments to strings and wrap them in ColumnRef
+        # (which renders as its name) to break recursion.
+        mock_args = []
+        for arg in expr.arguments:
+            arg_rendered = self._expr(arg)
+            mock_args.append(ColumnRef(name=arg_rendered))
+        
+        mock_expr = FuncCall(name=expr.name, args=mock_args)
+        return super()._func_call(mock_expr)
+
 
     def _bool_expr(self, expr, is_top_level: bool = False) -> str:
         if isinstance(expr, SemanticColumnRef):
@@ -318,6 +355,7 @@ class IRSparkSQLGenerator(SparkSQLGenerator):
         order = ""
         limit = ""
         distinct = False
+        summarize_active = False
 
         for i, step in enumerate(ir.steps):
             remaining = ir.steps[i + 1:]
@@ -391,40 +429,57 @@ class IRSparkSQLGenerator(SparkSQLGenerator):
                             select_cols = ["*"]; where_clauses = []; group_by = []
                             order = ""; limit = ""; distinct = False
                 else:
+                    # project: wrap current state if any
+                    has_accumulated_state = bool(where_clauses or group_by or order or limit or distinct or (select_cols != ["*"]))
+                    if has_accumulated_state:
+                        inner = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
+                        table = f"(\n{inner}\n) _pipe"
+                        select_cols = ["*"]; where_clauses = []; group_by = []
+                        order = ""; limit = ""; distinct = False
                     select_cols = self._render_projection_items_passthrough(step.items)
 
             elif isinstance(step, SemanticAggregate):
                 # Wrap if select_cols has content beyond bare "*" (after extend or re-summarize)
-                if select_cols != ["*"]:
+                has_accumulated_state = bool(where_clauses or group_by or order or limit or distinct or (select_cols != ["*"]))
+                if summarize_active or has_accumulated_state:
                     inner = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = f"(\n{inner}\n) _extended"
+                    table = f"(\n{inner}\n) _pipe"
                     select_cols = ["*"]; where_clauses = []; group_by = []
                     order = ""; limit = ""; distinct = False
+                    summarize_active = False
                 # Build summarize SELECT + GROUP BY using origin_nodes for rendering parity
                 select_cols, group_by = self._emit_aggregate_step(step)
+                summarize_active = True
 
             elif isinstance(step, SemanticJoin):
-                # Delegate to inherited _join() via reconstructed AST-like call
-                if group_by:
+                has_accumulated_state = bool(where_clauses or group_by or order or limit or distinct or (select_cols != ["*"]))
+                if summarize_active or has_accumulated_state:
                     inner = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = f"(\n{inner}\n) _summarized"
+                    table = f"(\n{inner}\n) _pipe"
                     select_cols = ["*"]; where_clauses = []; group_by = []
                     order = ""; limit = ""; distinct = False
+                    summarize_active = False
+                
                 join_sql = self._emit_join_step(table, step, where_clauses)
                 table = join_sql
                 select_cols = ["*"]
+                where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False
 
             elif isinstance(step, SemanticUnion):
-                if group_by:
+                has_accumulated_state = bool(where_clauses or group_by or order or limit or distinct or (select_cols != ["*"]))
+                if summarize_active or has_accumulated_state:
                     inner = self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
-                    table = f"(\n{inner}\n) _summarized"
+                    table = f"(\n{inner}\n) _pipe"
                     select_cols = ["*"]; where_clauses = []; group_by = []
                     order = ""; limit = ""; distinct = False
+                    summarize_active = False
+                
                 union_sql = self._emit_union_step(table, step)
                 if union_sql != table:
                     table = union_sql
                     select_cols = ["*"]
-                    # If union is the last step, return it directly (matches existing behavior)
+                    where_clauses = []; group_by = []; order = ""; limit = ""; distinct = False
+                    # If union is the last step, return it directly
                     remaining_idx = ir.steps.index(step) + 1
                     if remaining_idx >= len(ir.steps) and not ir.pipeline_state:
                         return union_sql

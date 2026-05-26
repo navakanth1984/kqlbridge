@@ -4,10 +4,12 @@ from typing import Any, List, Set, Union, Dict, Optional
 from kqlbridge.scoping import ScopeManager, SymbolKind, ScopeType
 from kqlbridge.ast_nodes import (
     KQLQuery, LetBinding, ColumnRef, ExtendOp, ProjectOp, WhereOp,
-    SummarizeOp, JoinOp, UnionOp, OrderOp, PlainGroup, BinGroup,
+    SummarizeOp, JoinOp, LookupOp, UnionOp, OrderOp, PlainGroup, BinGroup,
     IffExpr, SubqueryInExpr, BinExpr, FuncCall, BinaryOp, Comparison,
     InExpr, StringOp, NullCheck, LogicalOp, Negation, HasAnyExpr,
-    OrderItem
+    OrderItem, IndexedAccess, PropertyAccess,
+    AggCount, AggSum, AggAvg, AggMin, AggMax, AggDCount, AggCountIf, AggPercentile, AggMakeList, AggMakeSet,
+    AggSumIf, AggAvgIf, AggMaxIf, AggMinIf, AggDCountIf, AggAny, AggArgMax, AggArgMin,
 )
 
 class AlphaRenamer:
@@ -58,39 +60,31 @@ class AlphaRenamer:
             return op
             
         elif isinstance(op, ProjectOp):
-            # Resolve RHS expressions
-            new_aliases = {}
-            if op.aliases:
-                for src, alias in op.aliases.items():
-                    resolved_src_unique = src
-                    symbol = self.scope_manager.lookup(src)
-                    if symbol:
-                        resolved_src_unique = symbol.unique_name
-                    new_aliases[resolved_src_unique] = alias
-            
-            # Resolve columns
             new_columns = []
+            output_symbols = set()
             for col in op.columns:
-                symbol = self.scope_manager.lookup(col)
-                if symbol:
-                    new_columns.append(symbol.unique_name)
+                if isinstance(col, tuple):
+                    alias, expr = col
+                    new_expr = self.visit_expr(expr)
+                    new_columns.append((alias, new_expr))
+                    output_symbols.add(alias)
                 else:
-                    new_columns.append(col)
-
-            # Purge columns by pushing a new PIPELINE scope
-            self.scope_manager.push_scope(ScopeType.PIPELINE)
+                    new_expr = self.visit_expr(col)
+                    new_columns.append(new_expr)
+                    if isinstance(new_expr, ColumnRef):
+                        output_symbols.add(new_expr.name)
             
-            # Declare newly projected symbols
-            if op.aliases:
-                for src_uniq, alias in new_aliases.items():
-                    self.scope_manager.declare(alias, SymbolKind.COLUMN, op, unique_name=alias)
-            for col in op.columns:
-                if op.aliases and col in op.aliases.values():
-                    continue
-                self.scope_manager.declare(col, SymbolKind.COLUMN, op, unique_name=col)
-
             op.columns = new_columns
-            op.aliases = new_aliases if op.aliases else None
+            # Purge columns by pushing a new PIPELINE scope
+            self.scope_manager.push_scope(ScopeType.PIPELINE, grouping_keys=output_symbols)
+            
+            # Declare output columns in the new scope
+            for col in op.columns:
+                if isinstance(col, tuple):
+                    alias, _ = col
+                    self.scope_manager.declare(alias, SymbolKind.COLUMN, op, unique_name=alias)
+                elif isinstance(col, ColumnRef):
+                    self.scope_manager.declare(col.name, SymbolKind.COLUMN, op, unique_name=col.name)
             return op
         
         elif isinstance(op, SummarizeOp):
@@ -143,6 +137,10 @@ class AlphaRenamer:
                         elif isinstance(new_agg, AggDCountIf): prefix = "dcountif_"
                         elif isinstance(new_agg, AggPercentile): prefix = "percentile_"
                         elif isinstance(new_agg, AggMakeList): prefix = "make_list_"
+                        elif isinstance(new_agg, AggMakeSet): prefix = "make_set_"
+                        elif isinstance(new_agg, AggAny): prefix = "any_"
+                        elif isinstance(new_agg, AggArgMax): prefix = "arg_max_"
+                        elif isinstance(new_agg, AggArgMin): prefix = "arg_min_"
                         if prefix:
                             new_agg.alias = f"{prefix}{col_name}"
                             new_agg.is_implicit_alias = True
@@ -170,7 +168,13 @@ class AlphaRenamer:
         
         elif isinstance(op, JoinOp):
             self.scope_manager.push_scope(ScopeType.SUBQUERY)
-            self.rename_query(op.right)
+            op.right = self.rename_query(op.right)
+            self.scope_manager.pop_scope()
+            return op
+
+        elif isinstance(op, LookupOp):
+            self.scope_manager.push_scope(ScopeType.SUBQUERY)
+            op.right = self.rename_query(op.right)
             self.scope_manager.pop_scope()
             return op
 
@@ -186,6 +190,11 @@ class AlphaRenamer:
             # Resolve the reference, raising UndefinedSymbolError if not declared
             symbol = self.scope_manager.resolve(expr.name)
             return ColumnRef(name=symbol.unique_name)
+        elif isinstance(expr, IndexedAccess):
+            expr.expr = self.visit_expr(expr.expr)
+            expr.index = self.visit_expr(expr.index)
+        elif isinstance(expr, PropertyAccess):
+            expr.expr = self.visit_expr(expr.expr)
         elif isinstance(expr, IffExpr):
             expr.condition = self.visit_expr(expr.condition)
             expr.true_val = self.visit_expr(expr.true_val)
@@ -227,4 +236,6 @@ class AlphaRenamer:
             agg.col = self.visit_expr(agg.col)
         if hasattr(agg, "condition") and agg.condition is not None:
             agg.condition = self.visit_expr(agg.condition)
+        if hasattr(agg, "targets") and isinstance(agg.targets, list):
+            agg.targets = [self.visit_expr(t) for t in agg.targets]
         return agg

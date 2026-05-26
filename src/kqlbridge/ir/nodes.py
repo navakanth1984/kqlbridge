@@ -35,10 +35,40 @@ class SemanticLogicalOp(SemanticExpression):
     expressions: List[SemanticExpression]
 
 @dataclass(slots=True)
+class SemanticBinaryOp(SemanticExpression):
+    """Arithmetic or binary operator (+, -, *, /)."""
+    left: SemanticExpression
+    operator: str
+    right: SemanticExpression
+
+@dataclass(slots=True)
+class SemanticUnaryOp(SemanticExpression):
+    """Unary operator (e.g. -x)."""
+    operator: str
+    expression: SemanticExpression
+
+@dataclass(slots=True)
 class SemanticFunctionCall(SemanticExpression):
     """Normalized function call (scalar, type conversion, timespan arithmetic)."""
     name: str
     arguments: List[SemanticExpression]
+
+    @property
+    def args(self) -> List[SemanticExpression]:
+        """Alias for compatibility with AST-based generators."""
+        return self.arguments
+
+@dataclass(slots=True)
+class SemanticIndexedAccess(SemanticExpression):
+    """Array or dynamic map indexing (e.g. col[0], col['key'])."""
+    expression: SemanticExpression
+    index: SemanticExpression
+
+@dataclass(slots=True)
+class SemanticPropertyAccess(SemanticExpression):
+    """Dynamic property or member access (e.g. col.prop)."""
+    expression: SemanticExpression
+    property: str
 
 @dataclass(slots=True)
 class SemanticSubquery(SemanticExpression):
@@ -122,6 +152,7 @@ class SemanticJoinCondition:
 class SemanticJoin(SemanticIRNode):
     """Expanded relational Join intermediate representation node."""
     right_query: 'SemanticQuery'
+    right_alias: str
     kind: str  # e.g., 'inner', 'leftouter'
     conditions: List[SemanticJoinCondition] = field(default_factory=list)
     on_keys: List[str] = field(default_factory=list)
