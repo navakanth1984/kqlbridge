@@ -95,36 +95,38 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
+# Optimization: replacing char-by-char traversal with re.finditer is significantly faster
+_SPLIT_CASE_RE = _re.compile(
+    r'(?P<dquote>"(?:[^"\\]|\\.)*")|'
+    r"(?P<squote>'(?:[^'\\]|\\.)*')|"
+    r'(?P<lparen>\()|'
+    r'(?P<rparen>\))|'
+    r'(?P<comma>,)|'
+    r'(?P<other>[^"\'(),]+)|'
+    r'(?P<fallback>.)'
+)
+
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
     current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
+    for match in _SPLIT_CASE_RE.finditer(arg_str):
+        token = match.group(0)
+        kind = match.lastgroup
+
+        if kind == "lparen":
             paren_depth += 1
-            current.append(c)
-        elif c == ')':
+            current.append(token)
+        elif kind == "rparen":
             paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
+            current.append(token)
+        elif kind == "comma" and paren_depth == 0:
             args.append("".join(current).strip())
             current = []
         else:
-            current.append(c)
-        i += 1
+            current.append(token)
+
     if current:
         args.append("".join(current).strip())
     return args
@@ -168,24 +170,16 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        for m in _SPLIT_CASE_RE.finditer(kql, open_paren_idx + 1):
+            kind = m.lastgroup
+            if kind == "lparen":
                 paren_depth += 1
-            elif c == ')':
+            elif kind == "rparen":
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = m.start()
                     break
         
         if close_paren_idx == -1:
@@ -250,30 +244,25 @@ def _preprocess_datetime_literals(kql: str) -> str:
 
 def _preprocess_bool_funcs(kql: str) -> str:
     i = 0
-    while i < len(kql):
+    while True:
         match = _BOOL_FUNCS_RE.search(kql, i)
         if not match:
             break
+
         open_paren_idx = match.end() - 1
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
-        for j in range(open_paren_idx + 1, len(kql)):
-            c = kql[j]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+
+        for m in _SPLIT_CASE_RE.finditer(kql, open_paren_idx + 1):
+            kind = m.lastgroup
+            if kind == "lparen":
                 paren_depth += 1
-            elif c == ')':
+            elif kind == "rparen":
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = j
+                    close_paren_idx = m.start()
                     break
+
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
