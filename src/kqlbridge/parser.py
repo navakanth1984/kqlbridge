@@ -293,6 +293,9 @@ def parse(kql: str) -> KQLQuery:
     Keywords are normalized to lowercase (KQL is case-insensitive for keywords).
     Raises lark.exceptions.UnexpectedInput on syntax errors.
     """
+    # Guard against parser abuse and excessive nesting
+    if kql.count("(") > 500 or kql.count(")") > 500:
+        raise ValueError("Query exceeds maximum allowed nesting depth (500).")
     # Apply custom preprocessors for SOC threat hunting capabilities
     kql = _preprocess_case(kql)
     kql = _preprocess_json(kql)

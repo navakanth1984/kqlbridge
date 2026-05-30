@@ -178,7 +178,7 @@ class SparkSQLGenerator:
                 select_cols = ["COUNT(*) AS count_"]
 
             elif isinstance(op, SerializeOp):
-                pass
+                raise NotImplementedError("The serialize operator is not supported. Use 'order by' instead to establish window partitions.")
 
         return self._assemble(select_cols, table, where_clauses, group_by, order, limit, distinct)
 
