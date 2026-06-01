@@ -95,36 +95,28 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
+_TOKENIZER_RE = _re.compile(r"""'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\(|\)|[^'"()]+|.""")
+_SPLIT_TOKENIZER_RE = _re.compile(r"""'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|\(|\)|,|[^'"(),]+|.""")
+
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
     current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
+    for match in _SPLIT_TOKENIZER_RE.finditer(arg_str):
+        token = match.group()
+        if token == '(':
             paren_depth += 1
-            current.append(c)
-        elif c == ')':
+            current.append(token)
+        elif token == ')':
             paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
+            current.append(token)
+        elif token == ',' and paren_depth == 0:
             args.append("".join(current).strip())
-            current = []
+            current.clear()
         else:
-            current.append(c)
-        i += 1
+            current.append(token)
+
     if current:
         args.append("".join(current).strip())
     return args
@@ -168,26 +160,18 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        for t_match in _TOKENIZER_RE.finditer(kql, open_paren_idx + 1):
+            token = t_match.group()
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = t_match.end() - 1
                     break
-        
+
         if close_paren_idx == -1:
             break
             
@@ -249,42 +233,31 @@ def _preprocess_datetime_literals(kql: str) -> str:
 
 
 def _preprocess_bool_funcs(kql: str) -> str:
-    i = 0
-    while i < len(kql):
-        match = _BOOL_FUNCS_RE.search(kql, i)
-        if not match:
-            break
+    matches = list(_BOOL_FUNCS_RE.finditer(kql))
+    if not matches:
+        return kql
+
+    for match in reversed(matches):
         open_paren_idx = match.end() - 1
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
-        for j in range(open_paren_idx + 1, len(kql)):
-            c = kql[j]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+
+        for t_match in _TOKENIZER_RE.finditer(kql, open_paren_idx + 1):
+            token = t_match.group()
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = j
+                    close_paren_idx = t_match.end() - 1
                     break
-        if close_paren_idx == -1:
-            i = open_paren_idx + 1
-            continue
 
-        # Fast regex check for all comparison operators instead of manual prefix loops.
-        # This properly handles `!in\b` without breaking because `!` isn't a word boundary.
-        if not _BOOL_COMP_RE.match(kql, close_paren_idx + 1):
-            kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
-            i = close_paren_idx + 1 + len(" == true")
-        else:
-            i = close_paren_idx + 1
+        if close_paren_idx != -1:
+            # Fast regex check for all comparison operators instead of manual prefix loops.
+            # This properly handles `!in\b` without breaking because `!` isn't a word boundary.
+            if not _BOOL_COMP_RE.match(kql, close_paren_idx + 1):
+                kql = kql[:close_paren_idx + 1] + " == true" + kql[close_paren_idx + 1:]
+
     return kql
 
 def parse(kql: str) -> KQLQuery:
