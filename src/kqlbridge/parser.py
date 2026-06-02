@@ -83,6 +83,33 @@ _KQL_KEYWORDS = {
 # Replaces O(N) python-level looping with optimized C-level regex substitution.
 _NORMALIZE_RE = _re.compile(r'("[^"]*"|\'[^\']*\')|([A-Za-z_][A-Za-z0-9_.]*)')
 
+_CASE_ARGS_TOKEN_RE = _re.compile(
+    r"""
+    '(?:[^'\\]|\\.)*' |  # Single quoted string with escapes
+    "(?:[^"\\]|\\.)*" |  # Double quoted string with escapes
+    \(                |  # Open paren
+    \)                |  # Close paren
+    ,                 |  # Comma
+    [^'",()]+         |  # Any other characters
+    .                    # Fallback for malformed
+    """,
+    _re.VERBOSE
+)
+
+_PAREN_SCANNER_RE = _re.compile(
+    r"""
+    '(?:[^'\\]|\\.)*' |  # Single quoted string with escapes
+    "(?:[^"\\]|\\.)*" |  # Double quoted string with escapes
+    \(                |  # Open paren
+    \)                |  # Close paren
+    [^'"{()]+         |  # Any other characters
+    .                    # Fallback
+    """,
+    _re.VERBOSE
+)
+
+
+
 def _normalize_replacer(match: _re.Match) -> str:
     if match.group(1) is not None:
         return match.group(1)
@@ -99,32 +126,21 @@ def _split_case_args(arg_str: str) -> list[str]:
     args = []
     current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
+    for match in _CASE_ARGS_TOKEN_RE.finditer(arg_str):
+        token = match.group(0)
+        if token == '(':
             paren_depth += 1
-            current.append(c)
-        elif c == ')':
+            current.append(token)
+        elif token == ')':
             paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
+            current.append(token)
+        elif token == ',' and paren_depth == 0:
             args.append("".join(current).strip())
             current = []
         else:
-            current.append(c)
-        i += 1
+            current.append(token)
+
     if current:
         args.append("".join(current).strip())
     return args
@@ -168,26 +184,18 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        for token_match in _PAREN_SCANNER_RE.finditer(kql, open_paren_idx + 1):
+            token = token_match.group(0)
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = token_match.start()
                     break
-        
+
         if close_paren_idx == -1:
             break
             
@@ -256,24 +264,18 @@ def _preprocess_bool_funcs(kql: str) -> str:
             break
         open_paren_idx = match.end() - 1
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
-        for j in range(open_paren_idx + 1, len(kql)):
-            c = kql[j]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+
+        for token_match in _PAREN_SCANNER_RE.finditer(kql, open_paren_idx + 1):
+            token = token_match.group(0)
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = j
+                    close_paren_idx = token_match.start()
                     break
+
         if close_paren_idx == -1:
             i = open_paren_idx + 1
             continue
