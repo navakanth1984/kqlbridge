@@ -95,40 +95,6 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
-def _split_case_args(arg_str: str) -> list[str]:
-    args = []
-    current = []
-    paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
-    
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
-            paren_depth += 1
-            current.append(c)
-        elif c == ')':
-            paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
-    return args
-
 def _build_iff_chain(args: list[str]) -> str:
     """Iterative IFF chain builder — avoids stack overflow on deep case() statements.
 
@@ -140,15 +106,10 @@ def _build_iff_chain(args: list[str]) -> str:
     if len(args) == 1:
         return args[0]
 
-    # Build the chain right-to-left iteratively.
-    # Odd total length → last arg is the default/else value.
-    # Even total length → implicit null default.
     if len(args) % 2 == 1:
-        # e.g. [c1,v1, c2,v2, default]
         result = args[-1]
         pairs = list(zip(args[:-1:2], args[1:-1:2]))
     else:
-        # e.g. [c1,v1, c2,v2]  — trailing null default
         result = "null"
         pairs = list(zip(args[::2], args[1::2]))
 
@@ -163,43 +124,46 @@ def _preprocess_case(kql: str) -> str:
         match = pattern.search(kql)
         if not match:
             break
-        
+
         start_idx = match.start()
-        open_paren_idx = match.end() - 1
         
+        args = []
+        current_arg = []
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
+
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        search_start = match.end()
+        for token_match in _SCAN_TOKEN_RE.finditer(kql, search_start):
+            token = token_match.group(0)
+
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+                current_arg.append(token)
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = token_match.end()
                     break
-        
+                current_arg.append(token)
+            elif token == ',' and paren_depth == 1:
+                args.append("".join(current_arg).strip())
+                current_arg.clear()
+            else:
+                current_arg.append(token)
+
         if close_paren_idx == -1:
             break
             
-        arg_str = kql[open_paren_idx + 1:close_paren_idx]
-        arg_str_rewritten = _preprocess_case(arg_str)
-        args = _split_case_args(arg_str_rewritten)
-        iff_chain = _build_iff_chain(args)
+        if current_arg:
+            args.append("".join(current_arg).strip())
+
+        rewritten_args = [_preprocess_case(arg) for arg in args]
+        iff_chain = _build_iff_chain(rewritten_args)
         
-        kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        kql = kql[:start_idx] + iff_chain + kql[close_paren_idx:]
         
     return kql
-
 def _preprocess_json(kql: str) -> str:
     return _re.sub(
         r"(?i)\bparse_json\(\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\)\.([a-zA-Z0-9_.]+)",
@@ -248,34 +212,42 @@ def _preprocess_datetime_literals(kql: str) -> str:
     return _DATETIME_ISO_RE.sub(lambda m: f"datetime('{m.group(1)}')", kql)
 
 
+_SCAN_TOKEN_RE = _re.compile(
+    r"'(?:[^'\\]|\\.)*'"  # Single quotes
+    r'|"(?:[^"\\]|\\.)*"' # Double quotes
+    r"|\("                # Open paren
+    r"|\)"                # Close paren
+    r"|,"                 # Comma
+    r"|[^'\"(),]+"        # Bulk characters without structural tokens
+    r"|."                 # Fallback
+)
+
 def _preprocess_bool_funcs(kql: str) -> str:
     i = 0
-    while i < len(kql):
+    while True:
         match = _BOOL_FUNCS_RE.search(kql, i)
         if not match:
             break
-        open_paren_idx = match.end() - 1
+
+        start_idx = match.start()
+
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
-        for j in range(open_paren_idx + 1, len(kql)):
-            c = kql[j]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+
+        search_start = match.end()
+        for token_match in _SCAN_TOKEN_RE.finditer(kql, search_start):
+            token = token_match.group(0)
+
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = j
+                    close_paren_idx = token_match.end() - 1
                     break
+
         if close_paren_idx == -1:
-            i = open_paren_idx + 1
+            i = search_start
             continue
 
         # Fast regex check for all comparison operators instead of manual prefix loops.
@@ -285,8 +257,8 @@ def _preprocess_bool_funcs(kql: str) -> str:
             i = close_paren_idx + 1 + len(" == true")
         else:
             i = close_paren_idx + 1
-    return kql
 
+    return kql
 def parse(kql: str) -> KQLQuery:
     """
     Parse a KQL query string into a KQLQuery AST.
