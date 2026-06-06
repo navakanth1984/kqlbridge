@@ -95,36 +95,27 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
+# Optimization: Replaces character-by-character parsing loop with C-optimized regex
+# finditer scanning. The fallback token (.) ensures no data is silently dropped.
+_SPLIT_CASE_RE = _re.compile(r"""'(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*"|[^'",()]+|.""")
+
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
     current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
-            paren_depth += 1
-            current.append(c)
-        elif c == ')':
-            paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
+    for match in _SPLIT_CASE_RE.finditer(arg_str):
+        token = match.group(0)
+        if token == ',' and paren_depth == 0:
             args.append("".join(current).strip())
             current = []
         else:
-            current.append(c)
-        i += 1
+            if token == '(':
+                paren_depth += 1
+            elif token == ')':
+                paren_depth -= 1
+            current.append(token)
+
     if current:
         args.append("".join(current).strip())
     return args

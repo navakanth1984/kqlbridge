@@ -53,5 +53,38 @@
     "tier3_total": 119,
     "rate": 100.0,
     "gate": true
+  },
+  {
+    "timestamp": "2026-06-06T15:24:32.804480+00:00",
+    "tier1": 25,
+    "tier1_total": 25,
+    "tier2": 10,
+    "tier2_total": 10,
+    "tier3": 119,
+    "tier3_total": 119,
+    "rate": 100.0,
+    "gate": true
+  },
+  {
+    "timestamp": "2026-06-06T15:30:48.461599+00:00",
+    "tier1": 25,
+    "tier1_total": 25,
+    "tier2": 10,
+    "tier2_total": 10,
+    "tier3": 119,
+    "tier3_total": 119,
+    "rate": 100.0,
+    "gate": true
+  },
+  {
+    "timestamp": "2026-06-06T15:36:07.534246+00:00",
+    "tier1": 25,
+    "tier1_total": 25,
+    "tier2": 10,
+    "tier2_total": 10,
+    "tier3": 119,
+    "tier3_total": 119,
+    "rate": 100.0,
+    "gate": true
   }
 ]
