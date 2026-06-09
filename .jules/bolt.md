@@ -5,3 +5,7 @@
 ## 2026-05-17 - O(N^2) String Slicing in Parsers
 **Learning:** Using `re.match(pattern, string[i:])` inside a loop for parsing or lexing causes O(N^2) behavior due to string slicing on every iteration. This is a common performance bottleneck in hand-written lexers/normalizers.
 **Action:** Always pre-compile regex patterns and use the `pos` parameter: `pattern.match(string, i)` to match at an index without creating a new string slice.
+
+## 2026-05-18 - Replacing Character-by-Character Parser Loops with re.finditer
+**Learning:** Character-by-character string parsing using a `while` loop with nested indexing and variable state tracking in Python is noticeably slower than offloading scanning to C via a pre-compiled regex and `re.finditer`. In `src/kqlbridge/parser.py`, tokenizing arguments and matching parentheses using a tokenizer regex like `r'"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'|[^\'"()]+|[()]|.'` yields significant speedups.
+**Action:** When performing simple lexical scanning or paren-matching, use `re.finditer` with a regex that captures all structural tokens (quotes, parens, delimiters) rather than manual character loops.
