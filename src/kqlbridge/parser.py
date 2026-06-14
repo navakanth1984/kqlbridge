@@ -97,36 +97,28 @@ def _normalize_keywords(kql: str) -> str:
 
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
-    current = []
     paren_depth = 0
     in_single_quote = False
     in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
+    start = 0
+    for i, c in enumerate(arg_str):
         if c == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
-            current.append(c)
         elif c == '"' and not in_single_quote:
             in_double_quote = not in_double_quote
-            current.append(c)
         elif in_single_quote or in_double_quote:
-            current.append(c)
+            continue
         elif c == '(':
             paren_depth += 1
-            current.append(c)
         elif c == ')':
             paren_depth -= 1
-            current.append(c)
         elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+            args.append(arg_str[start:i].strip())
+            start = i + 1
+
+    if start <= len(arg_str):
+        args.append(arg_str[start:].strip())
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
@@ -168,24 +160,17 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        # Fast path token scanning using re.finditer to skip characters quickly
+        for token in _re.finditer(r'(?:[^\'"()]+)|(\'(?:[^\'\\]|\\.)*\')|("(?:[^"\\]|\\.)*")|([()])|(.)', kql[open_paren_idx + 1:]):
+            g = token.groups()
+            if g[2] == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif g[2] == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = open_paren_idx + 1 + token.end() - 1
                     break
         
         if close_paren_idx == -1:
