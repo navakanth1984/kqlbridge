@@ -301,5 +301,8 @@ def check(kql: str) -> SemanticResult:
             warnings=["make-series handled via TEG v5 (TimeSeriesMicroModel)"],
             errors=[],
         )
-    query = parse(kql)
-    return _semantic_check(query)
+    try:
+        query = parse(kql)
+        return _semantic_check(query)
+    except Exception as e:
+        return SemanticResult(is_valid=False, warnings=[], errors=[str(e)])
