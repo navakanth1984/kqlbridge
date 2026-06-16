@@ -242,7 +242,7 @@ class TranslationMemory:
         """
         Analyze transpilation failure and generate a self-correcting SQL override using Sarvam AI.
         """
-        api_key = "sk_gv5b8wyc_4OCnebfWVHGJsGMr7Pp7IGr2"
+        api_key = os.environ.get("SARVAM_API_KEY")
         if not api_key:
             return None
             
