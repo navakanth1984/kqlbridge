@@ -315,3 +315,9 @@ class TestOpenPRs:
         """PR #8: !in keyword — CONFIRMED PASSING in v0.11.0."""
         sql = translate("Events | where level !in ('debug', 'trace')", "spark")
         assert "NOT IN" in sql.upper()
+
+    def test_check_exception_path(self):
+        result = check("T | where == 1")
+        assert not result.is_valid
+        assert len(result.errors) > 0
+        assert "Unexpected token" in result.errors[0] or "No terminal matches" in result.errors[0]
