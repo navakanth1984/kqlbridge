@@ -5,3 +5,7 @@
 ## 2026-05-17 - O(N^2) String Slicing in Parsers
 **Learning:** Using `re.match(pattern, string[i:])` inside a loop for parsing or lexing causes O(N^2) behavior due to string slicing on every iteration. This is a common performance bottleneck in hand-written lexers/normalizers.
 **Action:** Always pre-compile regex patterns and use the `pos` parameter: `pattern.match(string, i)` to match at an index without creating a new string slice.
+
+## 2024-06-18 - The Hidden O(N^2) in Regex Search Loops
+**Learning:** Using `match = pattern.search(kql)` inside a `while True:` loop to progressively replace matches creates severe O(N^2) quadratic scaling on large inputs, because the regex engine rescans the already-processed beginning of the string on every single iteration.
+**Action:** Always maintain a `start_search` index offset and pass it to `pattern.search(string, start_search)` to resume searching directly after the previously replaced string segment.

@@ -159,8 +159,11 @@ def _build_iff_chain(args: list[str]) -> str:
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
     
+    # ⚡ Bolt: Maintain a search offset to prevent O(N^2) quadratic rescanning.
+    # Without this, the regex engine re-evaluates the entire string from index 0 on every iteration.
+    start_search = 0
     while True:
-        match = pattern.search(kql)
+        match = pattern.search(kql, start_search)
         if not match:
             break
         
@@ -197,6 +200,7 @@ def _preprocess_case(kql: str) -> str:
         iff_chain = _build_iff_chain(args)
         
         kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        start_search = start_idx + len(iff_chain)
         
     return kql
 
