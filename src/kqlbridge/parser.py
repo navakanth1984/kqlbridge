@@ -95,38 +95,38 @@ def _normalize_keywords(kql: str) -> str:
     return _NORMALIZE_RE.sub(_normalize_replacer, kql)
 
 
+# ⚡ Bolt: Regex tokenizing optimization to avoid O(N^2) character-by-character while loops
+# Bulk matches strings, parens, and standard text to let C-level operations scan the string.
+_TOKEN_PATTERN = _re.compile(r"""
+    '(?:[^'\\]|\\.)*'|
+    "(?:[^"\\]|\\.)*"|
+    \(|
+    \)|
+    ,|
+    [^'",()]+|
+    .
+""", _re.VERBOSE)
+
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
-    current = []
     paren_depth = 0
-    in_single_quote = False
-    in_double_quote = False
+    start_idx = 0
     
-    i = 0
-    while i < len(arg_str):
-        c = arg_str[i]
-        if c == "'" and not in_double_quote:
-            in_single_quote = not in_single_quote
-            current.append(c)
-        elif c == '"' and not in_single_quote:
-            in_double_quote = not in_double_quote
-            current.append(c)
-        elif in_single_quote or in_double_quote:
-            current.append(c)
-        elif c == '(':
+    for match in _TOKEN_PATTERN.finditer(arg_str):
+        token = match.group(0)
+        if token == '(':
             paren_depth += 1
-            current.append(c)
-        elif c == ')':
+        elif token == ')':
             paren_depth -= 1
-            current.append(c)
-        elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+        elif token == ',' and paren_depth == 0:
+            args.append(arg_str[start_idx:match.start()].strip())
+            start_idx = match.end()
+
+    if start_idx < len(arg_str):
+        args.append(arg_str[start_idx:].strip())
+    elif start_idx == len(arg_str) and len(arg_str) > 0 and arg_str[-1] == ',':
+        args.append("")
+
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
@@ -158,9 +158,10 @@ def _build_iff_chain(args: list[str]) -> str:
 
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
+    start_search = 0
     
     while True:
-        match = pattern.search(kql)
+        match = pattern.search(kql, start_search)
         if not match:
             break
         
@@ -168,28 +169,21 @@ def _preprocess_case(kql: str) -> str:
         open_paren_idx = match.end() - 1
         
         paren_depth = 1
-        in_single_quote = False
-        in_double_quote = False
         close_paren_idx = -1
         
-        for i in range(open_paren_idx + 1, len(kql)):
-            c = kql[i]
-            if c == "'" and not in_double_quote:
-                in_single_quote = not in_single_quote
-            elif c == '"' and not in_single_quote:
-                in_double_quote = not in_double_quote
-            elif in_single_quote or in_double_quote:
-                continue
-            elif c == '(':
+        for token_match in _TOKEN_PATTERN.finditer(kql, open_paren_idx + 1):
+            token = token_match.group(0)
+            if token == '(':
                 paren_depth += 1
-            elif c == ')':
+            elif token == ')':
                 paren_depth -= 1
                 if paren_depth == 0:
-                    close_paren_idx = i
+                    close_paren_idx = token_match.start()
                     break
         
         if close_paren_idx == -1:
-            break
+            start_search = match.end()
+            continue
             
         arg_str = kql[open_paren_idx + 1:close_paren_idx]
         arg_str_rewritten = _preprocess_case(arg_str)
@@ -197,6 +191,7 @@ def _preprocess_case(kql: str) -> str:
         iff_chain = _build_iff_chain(args)
         
         kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        start_search = start_idx + len(iff_chain)
         
     return kql
 
