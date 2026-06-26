@@ -96,37 +96,33 @@ def _normalize_keywords(kql: str) -> str:
 
 
 def _split_case_args(arg_str: str) -> list[str]:
+    # Optimization: Replaced character-by-character appending and `"".join()`
+    # with index tracking (`start_idx`) and native string slicing.
+    # This avoids O(N) list allocations per token and speeds up parsing.
     args = []
-    current = []
     paren_depth = 0
     in_single_quote = False
     in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
+    start_idx = 0
+    for i in range(len(arg_str)):
         c = arg_str[i]
         if c == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
-            current.append(c)
         elif c == '"' and not in_single_quote:
             in_double_quote = not in_double_quote
-            current.append(c)
         elif in_single_quote or in_double_quote:
-            current.append(c)
+            pass
         elif c == '(':
             paren_depth += 1
-            current.append(c)
         elif c == ')':
             paren_depth -= 1
-            current.append(c)
         elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+            args.append(arg_str[start_idx:i].strip())
+            start_idx = i + 1
+
+    if start_idx < len(arg_str):
+        args.append(arg_str[start_idx:].strip())
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
