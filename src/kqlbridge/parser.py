@@ -810,8 +810,17 @@ def _token_to_expr(token: Token) -> object:
     s = str(token)
     if s.startswith(("'", '"')):
         return StringLit(value=_strip_quotes(s))
-    if s.lower() in ("true", "false"):
-        return BoolLit(value=s.lower() == "true")
+
+    s_lower = s.lower()
+    if s_lower in ("true", "false"):
+        return BoolLit(value=s_lower == "true")
+
+    # Fast path for common column names to avoid expensive try/except int/float parsing
+    if s:
+        c = s[0]
+        if (c.isalpha() or c == "_") and s_lower not in ("inf", "nan", "infinity"):
+            return ColumnRef(name=s)
+
     try:
         return IntLit(value=int(s))
     except ValueError:
