@@ -808,10 +808,20 @@ def _build_expr(tree) -> object:
 
 def _token_to_expr(token: Token) -> object:
     s = str(token)
-    if s.startswith(("'", '"')):
+    if not s:
+        return ColumnRef(name=s)
+
+    if s[0] in ("'", '"'):
         return StringLit(value=_strip_quotes(s))
-    if s.lower() in ("true", "false"):
-        return BoolLit(value=s.lower() == "true")
+
+    # Fast path: bypass expensive int()/float() exception handling for typical identifiers
+    if s[0].isalpha() or s[0] == '_':
+        ls = s.lower()
+        if ls in ("true", "false"):
+            return BoolLit(value=(ls == "true"))
+        if ls not in ('inf', 'infinity', 'nan'):
+            return ColumnRef(name=s)
+
     try:
         return IntLit(value=int(s))
     except ValueError:
