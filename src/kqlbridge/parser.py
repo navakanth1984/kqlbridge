@@ -812,6 +812,13 @@ def _token_to_expr(token: Token) -> object:
         return StringLit(value=_strip_quotes(s))
     if s.lower() in ("true", "false"):
         return BoolLit(value=s.lower() == "true")
+
+    # Fast path for identifiers to avoid expensive try/except on standard column names
+    if s:
+        c0 = s[0]
+        if (c0.isalpha() or c0 == "_") and s.lower() not in ("inf", "nan", "infinity"):
+            return ColumnRef(name=s)
+
     try:
         return IntLit(value=int(s))
     except ValueError:
