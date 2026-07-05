@@ -53,5 +53,16 @@
     "tier3_total": 119,
     "rate": 100.0,
     "gate": true
+  },
+  {
+    "timestamp": "2026-07-05T15:24:16.481996+00:00",
+    "tier1": 25,
+    "tier1_total": 25,
+    "tier2": 10,
+    "tier2_total": 10,
+    "tier3": 119,
+    "tier3_total": 119,
+    "rate": 100.0,
+    "gate": true
   }
 ]
