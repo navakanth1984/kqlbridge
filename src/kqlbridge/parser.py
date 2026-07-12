@@ -96,37 +96,34 @@ def _normalize_keywords(kql: str) -> str:
 
 
 def _split_case_args(arg_str: str) -> list[str]:
+    """Splits case/iff arguments by comma, respecting quotes and parentheses.
+    Optimized: uses index tracking and string slicing instead of char-by-char list building.
+    """
     args = []
-    current = []
+    start_idx = 0
     paren_depth = 0
     in_single_quote = False
     in_double_quote = False
     
-    i = 0
-    while i < len(arg_str):
+    for i in range(len(arg_str)):
         c = arg_str[i]
         if c == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
-            current.append(c)
         elif c == '"' and not in_single_quote:
             in_double_quote = not in_double_quote
-            current.append(c)
         elif in_single_quote or in_double_quote:
-            current.append(c)
+            continue
         elif c == '(':
             paren_depth += 1
-            current.append(c)
         elif c == ')':
             paren_depth -= 1
-            current.append(c)
         elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+            args.append(arg_str[start_idx:i].strip())
+            start_idx = i + 1
+
+    if start_idx < len(arg_str):
+        args.append(arg_str[start_idx:].strip())
+
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
@@ -808,10 +805,22 @@ def _build_expr(tree) -> object:
 
 def _token_to_expr(token: Token) -> object:
     s = str(token)
-    if s.startswith(("'", '"')):
+    if not s:
+        return ColumnRef(name="")
+
+    c = s[0]
+    # Fast path for identifiers to bypass expensive try...except ValueError for int/float
+    if c.isalpha() or c == "_":
+        if s.lower() in ("true", "false"):
+            return BoolLit(value=s.lower() == "true")
+        # float() handles these specific alphabetical strings
+        if s.lower() in ("inf", "nan", "infinity"):
+            return FloatLit(value=float(s))
+        return ColumnRef(name=s)
+
+    if c in ("'", '"'):
         return StringLit(value=_strip_quotes(s))
-    if s.lower() in ("true", "false"):
-        return BoolLit(value=s.lower() == "true")
+
     try:
         return IntLit(value=int(s))
     except ValueError:
