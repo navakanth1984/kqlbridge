@@ -159,8 +159,10 @@ def _build_iff_chain(args: list[str]) -> str:
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
     
+    # ⚡ Bolt: Maintain search index to prevent O(N^2) rescanning of the string from index 0
+    start_search = 0
     while True:
-        match = pattern.search(kql)
+        match = pattern.search(kql, start_search)
         if not match:
             break
         
@@ -198,6 +200,9 @@ def _preprocess_case(kql: str) -> str:
         
         kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
         
+        # ⚡ Bolt: Resume search exactly at the newly inserted iff chain to allow processing of nested cases without skipping
+        start_search = start_idx
+
     return kql
 
 def _preprocess_json(kql: str) -> str:
