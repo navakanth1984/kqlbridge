@@ -810,8 +810,23 @@ def _token_to_expr(token: Token) -> object:
     s = str(token)
     if s.startswith(("'", '"')):
         return StringLit(value=_strip_quotes(s))
-    if s.lower() in ("true", "false"):
-        return BoolLit(value=s.lower() == "true")
+
+    if not s:
+        return ColumnRef(name=s)
+
+    # Fast path: bypass expensive try...except for identifiers
+    c = s[0]
+    if c.isalpha() or c == '_':
+        if c.isalpha():
+            s_lower = s.lower()
+            if s_lower == "true":
+                return BoolLit(value=True)
+            if s_lower == "false":
+                return BoolLit(value=False)
+            if s_lower in ("inf", "nan", "infinity"):
+                return FloatLit(value=float(s))
+        return ColumnRef(name=s)
+
     try:
         return IntLit(value=int(s))
     except ValueError:
