@@ -159,8 +159,9 @@ def _build_iff_chain(args: list[str]) -> str:
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
     
+    start_search = 0
     while True:
-        match = pattern.search(kql)
+        match = pattern.search(kql, start_search)
         if not match:
             break
         
@@ -189,7 +190,8 @@ def _preprocess_case(kql: str) -> str:
                     break
         
         if close_paren_idx == -1:
-            break
+            start_search = match.end()
+            continue
             
         arg_str = kql[open_paren_idx + 1:close_paren_idx]
         arg_str_rewritten = _preprocess_case(arg_str)
@@ -197,6 +199,7 @@ def _preprocess_case(kql: str) -> str:
         iff_chain = _build_iff_chain(args)
         
         kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        start_search = start_idx
         
     return kql
 
