@@ -5,3 +5,7 @@
 ## 2026-05-17 - O(N^2) String Slicing in Parsers
 **Learning:** Using `re.match(pattern, string[i:])` inside a loop for parsing or lexing causes O(N^2) behavior due to string slicing on every iteration. This is a common performance bottleneck in hand-written lexers/normalizers.
 **Action:** Always pre-compile regex patterns and use the `pos` parameter: `pattern.match(string, i)` to match at an index without creating a new string slice.
+
+## 2024-05-18 - Fast-path bypassing exception control flow
+**Learning:** Using `try...except ValueError` for type-casting as a form of control flow (e.g., checking if a string can be parsed as a float/int) is extremely slow in Python when exceptions are expected frequently, which is true when parsing typical text tokens (most are alphabetic column references).
+**Action:** Implementing a fast path (e.g., checking `isalpha()` or `_`) avoids the substantial overhead of raising and catching exceptions in hot parsing paths.
