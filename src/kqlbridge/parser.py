@@ -97,36 +97,29 @@ def _normalize_keywords(kql: str) -> str:
 
 def _split_case_args(arg_str: str) -> list[str]:
     args = []
-    current = []
     paren_depth = 0
     in_single_quote = False
     in_double_quote = False
+    start_idx = 0
     
-    i = 0
-    while i < len(arg_str):
+    for i in range(len(arg_str)):
         c = arg_str[i]
         if c == "'" and not in_double_quote:
             in_single_quote = not in_single_quote
-            current.append(c)
         elif c == '"' and not in_single_quote:
             in_double_quote = not in_double_quote
-            current.append(c)
         elif in_single_quote or in_double_quote:
-            current.append(c)
+            continue
         elif c == '(':
             paren_depth += 1
-            current.append(c)
         elif c == ')':
             paren_depth -= 1
-            current.append(c)
         elif c == ',' and paren_depth == 0:
-            args.append("".join(current).strip())
-            current = []
-        else:
-            current.append(c)
-        i += 1
-    if current:
-        args.append("".join(current).strip())
+            args.append(arg_str[start_idx:i].strip())
+            start_idx = i + 1
+
+    if start_idx <= len(arg_str):
+        args.append(arg_str[start_idx:].strip())
     return args
 
 def _build_iff_chain(args: list[str]) -> str:
@@ -159,8 +152,9 @@ def _build_iff_chain(args: list[str]) -> str:
 def _preprocess_case(kql: str) -> str:
     pattern = _re.compile(r"\bcase\b\s*\(", _re.IGNORECASE)
     
+    start_search = 0
     while True:
-        match = pattern.search(kql)
+        match = pattern.search(kql, start_search)
         if not match:
             break
         
@@ -189,7 +183,8 @@ def _preprocess_case(kql: str) -> str:
                     break
         
         if close_paren_idx == -1:
-            break
+            start_search = match.end()
+            continue
             
         arg_str = kql[open_paren_idx + 1:close_paren_idx]
         arg_str_rewritten = _preprocess_case(arg_str)
@@ -197,6 +192,7 @@ def _preprocess_case(kql: str) -> str:
         iff_chain = _build_iff_chain(args)
         
         kql = kql[:start_idx] + iff_chain + kql[close_paren_idx + 1:]
+        start_search = start_idx
         
     return kql
 
